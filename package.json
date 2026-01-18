@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:prod": "ng build --configuration production --base-href /boda-judith-jesus/",
+    "deploy": "ng deploy --repo=https://github.com/jesusMartinez88/boda-judith-jesus.git --base-href=/boda-judith-jesus/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -37,6 +39,7 @@
     "@angular/cli": "^21.1.0",
     "@angular/compiler-cli": "^21.1.0",
     "@tailwindcss/postcss": "^4.1.12",
+    "angular-cli-ghpages": "^3.0.2",
     "jsdom": "^27.1.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.12",
