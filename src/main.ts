@@ -1,3 +1,7 @@
+(window as any).proccess = { env: {
+  NG_APP_SHEETURL: ''
+ }
+};
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
