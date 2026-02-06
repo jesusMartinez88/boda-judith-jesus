@@ -1,0 +1,91 @@
+@import "leaflet/dist/leaflet.css";
+#mapContainer {
+  height: 500px;
+  width: 100%;
+}
+.map-container {
+  padding: 3rem 2rem;
+  max-width: 100%;
+}
+
+.map-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+.map-info {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.map-info p {
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin: 0.25rem 0;
+}
+
+.map-info p:first-child {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 1.25rem;
+}
+
+.leaflet-map {
+  width: 100%;
+  height: 500px;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border: 2px solid #f3f4f6;
+  overflow: hidden;
+}
+
+.custom-marker-container {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2));
+}
+
+.custom-marker {
+  font-size: 2rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 640px) {
+  .leaflet-map {
+    height: 350px;
+  }
+
+  .map-title {
+    font-size: 1.875rem;
+  }
+
+  .map-container {
+    padding: 2rem 1rem;
+  }
+}
+
+/* Estilos del popup de Leaflet */
+:global(.leaflet-popup-content) {
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+:global(.leaflet-popup-content strong) {
+  color: #ec4899;
+}
