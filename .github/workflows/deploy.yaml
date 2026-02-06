@@ -24,8 +24,9 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build
-
+        run: npm run build -- --configuration production --base-href /boda-judith-jesus/
+        env:
+          NG_APP_SHEETURL: ${{ vars.NG_APP_SHEETURL }}
       - name: Deploy to Github pages
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
