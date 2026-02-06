@@ -17,8 +17,8 @@ export class MapComponent implements OnInit {
 
   private initializeMap() {
     // Coordenadas de Pericon Azahar (ubicación aproximada)
-    const lat = 37.1686;
-    const lng = -3.5944;
+    const lat = 38.2151126;
+    const lng = -1.3497794;
 
     this.map = L.map(this.mapContainer.nativeElement).setView([lat, lng], 15);
 
