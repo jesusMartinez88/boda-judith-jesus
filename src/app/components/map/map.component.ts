@@ -29,7 +29,7 @@ export class MapComponent implements OnInit {
 
     // Agregar marcador personalizado
     const customIcon = L.divIcon({
-      html: `<div class="custom-marker">💍</div>`,
+      html: `<div class="custom-marker" style="font-size: 40px;">💍</div>`,
       className: 'custom-marker-container',
       iconSize: [40, 40],
       iconAnchor: [20, 40],

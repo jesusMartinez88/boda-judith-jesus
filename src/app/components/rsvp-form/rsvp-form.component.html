@@ -99,16 +99,30 @@
     </div>
 
     <!-- Transport -->
-    <div class="form-group checkbox-group">
-      <label for="needsTransport" class="checkbox-label">
-        <input
-          type="checkbox"
-          id="needsTransport"
-          formControlName="needsTransport"
-          class="checkbox-input"
-        />
-        <span>Necesito transporte</span>
-      </label>
+    <div class="form-group radio-group">
+      <label class="form-label">¿Necesitas Transporte? *</label>
+      <div class="radio-options">
+        <label class="radio-label">
+          <input
+            type="radio"
+            name="needsTransport"
+            [value]="'true'"
+            formControlName="needsTransport"
+            class="radio-input"
+          />
+          <span class="radio-text">Sí, necesito transporte</span>
+        </label>
+        <label class="radio-label">
+          <input
+            type="radio"
+            name="needsTransport"
+            [value]="'false'"
+            formControlName="needsTransport"
+            class="radio-input"
+          />
+          <span class="radio-text">No necesito transporte</span>
+        </label>
+      </div>
     </div>
 
     <!-- Allergies -->
