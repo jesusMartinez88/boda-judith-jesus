@@ -6,6 +6,7 @@ import { TimelineComponent } from './components/timeline/timeline.component';
 import { MapComponent } from './components/map/map.component';
 import { RsvpFormComponent } from './components/rsvp-form/rsvp-form.component';
 import { MusicPlayerComponent } from './components/music-player/music-player.component';
+import { GiftsComponent } from './components/gifts/gifts.component';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,8 @@ import { MusicPlayerComponent } from './components/music-player/music-player.com
     TimelineComponent,
     MapComponent,
     RsvpFormComponent,
-    MusicPlayerComponent
+    MusicPlayerComponent,
+    GiftsComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'

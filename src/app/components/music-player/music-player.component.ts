@@ -25,6 +25,9 @@ export class MusicPlayerComponent {
             // Intentar reproducir automáticamente
             // Nota: Los navegadores pueden bloquear esto si el usuario no ha interactuado
             this.attemptAutoplay();
+
+            // Agregar listeners para interacciones del usuario
+            this.addInteractionListeners();
         }, { allowSignalWrites: true });
     }
 
@@ -32,13 +35,44 @@ export class MusicPlayerComponent {
         // Pequeño delay para asegurar que el audio esté cargado
         setTimeout(async () => {
             try {
-                await this.audioService.play();
-                console.log('🎵 Música iniciada automáticamente');
+                if (!this.isPlaying()) {
+                    await this.audioService.play();
+                    console.log('🎵 Música iniciada automáticamente');
+                    this.removeInteractionListeners();
+                }
             } catch (error) {
-                console.log('ℹ️ Reproducción automática bloqueada por el navegador. El usuario debe hacer clic en el botón.');
-                // No mostramos error porque es comportamiento esperado en navegadores modernos
+                console.log('ℹ️ Esperando interacción del usuario para iniciar música...');
             }
         }, 500);
+    }
+
+    private addInteractionListeners(): void {
+        const startAudio = () => this.handleUserInteraction();
+
+        window.addEventListener('scroll', startAudio, { once: true });
+        window.addEventListener('mousemove', startAudio, { once: true });
+        window.addEventListener('touchstart', startAudio, { once: true });
+        window.addEventListener('click', startAudio, { once: true });
+    }
+
+    private async handleUserInteraction(): Promise<void> {
+        if (!this.isPlaying()) {
+            try {
+                await this.audioService.play();
+                console.log('🎵 Música iniciada tras interacción del usuario');
+                this.removeInteractionListeners();
+            } catch (error) {
+                // Silencioso si falla
+            }
+        }
+    }
+
+    private removeInteractionListeners(): void {
+        const startAudio = () => this.handleUserInteraction();
+        window.removeEventListener('scroll', startAudio);
+        window.removeEventListener('mousemove', startAudio);
+        window.removeEventListener('touchstart', startAudio);
+        window.removeEventListener('click', startAudio);
     }
 
     async toggleMusic(): Promise<void> {
@@ -46,7 +80,6 @@ export class MusicPlayerComponent {
             await this.audioService.toggle();
         } catch (error) {
             console.error('Error al reproducir música:', error);
-            // Aquí podrías mostrar un toast o notificación al usuario
         }
     }
 }
