@@ -20,11 +20,11 @@ export class RsvpFormComponent {
   constructor(private formBuilder: FormBuilder, private guestService: GuestService) {
     this.form = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
+      //email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required, Validators.pattern(/^[0-9\s\-\+\(\)]+$/)]],
       attending: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
       mealType: ['normal', Validators.required],
-      needsTransport: ['false', Validators.required],
+      needsTransport: [false, Validators.required],
       allergies: [''],
       notes: ['']
     });
@@ -44,11 +44,9 @@ export class RsvpFormComponent {
 
     try {
       let guestData: Guest = this.form.value;
-      // Convert needsTransport string to boolean
-      guestData.needsTransport = (guestData.needsTransport as unknown as string) === 'true';
       await this.guestService.registerGuest(guestData);
       this.submitSuccess.set(true);
-      this.form.reset({ attending: 1, mealType: 'normal', needsTransport: 'false' });
+      this.form.reset({ attending: 1, mealType: 'normal', needsTransport: false });
       setTimeout(() => this.submitSuccess.set(false), 5000);
     } catch (error: any) {
       this.submitError.set(true);
