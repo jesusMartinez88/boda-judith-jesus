@@ -7,6 +7,8 @@ import { MapComponent } from './components/map/map.component';
 import { RsvpFormComponent } from './components/rsvp-form/rsvp-form.component';
 import { MusicPlayerComponent } from './components/music-player/music-player.component';
 import { GiftsComponent } from './components/gifts/gifts.component';
+import { ContactComponent } from './components/contact/contact.component';
+import { CalendarComponent } from './components/calendar/calendar.component';
 
 @Component({
   selector: 'app-root',
@@ -18,7 +20,9 @@ import { GiftsComponent } from './components/gifts/gifts.component';
     MapComponent,
     RsvpFormComponent,
     MusicPlayerComponent,
-    GiftsComponent
+    GiftsComponent,
+    ContactComponent,
+    CalendarComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'

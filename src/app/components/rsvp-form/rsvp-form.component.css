@@ -80,12 +80,39 @@
 
 .form-input,
 .form-textarea {
-  padding: 0.875rem 1rem;
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  /* Room for icon */
   border: 2px solid #e5e7eb;
   border-radius: 0.75rem;
   font-size: 1rem;
   font-family: inherit;
   transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+.input-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  color: #ec4899;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.textarea-icon {
+  top: 1rem;
+}
+
+.form-input:focus+.input-icon,
+.form-textarea:focus+.input-icon {
+  color: #be185d;
+  transform: scale(1.1);
 }
 
 .form-input:focus,
@@ -167,6 +194,22 @@
   align-items: center;
   gap: 1.5rem;
   padding: 0.5rem 0;
+}
+
+.toggle-side {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toggle-icon {
+  color: #9ca3af;
+  transition: all 0.3s ease;
+}
+
+.toggle-side:has(.active) .toggle-icon {
+  color: #be185d;
+  transform: scale(1.1);
 }
 
 .switch {

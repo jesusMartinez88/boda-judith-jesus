@@ -1,0 +1,121 @@
+.calendar-section {
+    padding: 80px 20px;
+    background-color: #fffafb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.calendar-card {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    border: 1px solid #ffeef1;
+}
+
+.calendar-icon-wrapper {
+    margin-bottom: 20px;
+    color: #ff69b4;
+}
+
+.calendar-icon {
+    filter: drop-shadow(0 4px 6px rgba(255, 105, 180, 0.2));
+}
+
+.section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.section-description {
+    font-size: 1.1rem;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.calendar-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.calendar-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.btn-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.google-btn {
+    background: white;
+    color: #3c4043;
+    border: 1px solid #dadce0;
+}
+
+.google-btn:hover {
+    background: #fdf2f5;
+    border-color: #ffb6c1;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(236, 72, 153, 0.1);
+}
+
+.apple-btn {
+    background: #1f2937;
+    color: white;
+}
+
+.apple-btn:hover {
+    background: #111827;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.date-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: #be185d;
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+@media (max-width: 640px) {
+    .calendar-card {
+        padding: 30px 20px;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    .calendar-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .calendar-btn {
+        justify-content: center;
+    }
+}
