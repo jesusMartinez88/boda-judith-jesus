@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 interface Photo {
   id: number;
@@ -10,7 +10,7 @@ interface Photo {
 @Component({
   selector: 'app-gallery',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './gallery.component.html',
   styleUrl: './gallery.component.css'
 })

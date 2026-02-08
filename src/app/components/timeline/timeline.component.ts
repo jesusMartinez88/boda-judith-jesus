@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 interface Event {
   time: string;
@@ -12,7 +12,7 @@ interface Event {
 @Component({
   selector: 'app-timeline',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './timeline.component.html',
   styleUrl: './timeline.component.css'
 })

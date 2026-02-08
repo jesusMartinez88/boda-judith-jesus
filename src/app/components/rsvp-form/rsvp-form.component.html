@@ -4,14 +4,18 @@
     <p class="text-gray-600">Ayúdanos a preparar un día perfecto</p>
   </div>
 
-  <div *ngIf="submitSuccess()" class="success-message">
-    <div class="success-icon">✓</div>
-    <p>¡Asistencia registrada correctamente!</p>
-  </div>
+  @if (submitSuccess()) {
+    <div class="success-message">
+      <div class="success-icon">✓</div>
+      <p>¡Asistencia registrada correctamente!</p>
+    </div>
+  }
 
-  <div *ngIf="submitError()" class="error-message">
-    <p>{{ errorMessage() }}</p>
-  </div>
+  @if (submitError()) {
+    <div class="error-message">
+      <p>{{ errorMessage() }}</p>
+    </div>
+  }
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="rsvp-form">
     <!-- Name Field -->
@@ -24,139 +28,149 @@
         class="form-input"
         [class.input-error]="isFieldInvalid('name')"
         placeholder="Tu nombre completo"
-      />
-      <span *ngIf="isFieldInvalid('name')" class="error-text">
-        Por favor ingresa un nombre válido (mínimo 3 caracteres)
-      </span>
-    </div>
-
-    <!-- Email Field -->
-    <div class="form-group">
-      <label for="email" class="form-label">Email *</label>
-      <input
-        type="email"
-        id="email"
-        formControlName="email"
-        class="form-input"
-        [class.input-error]="isFieldInvalid('email')"
-        placeholder="tu@email.com"
-      />
-      <span *ngIf="isFieldInvalid('email')" class="error-text">
-        Por favor ingresa un email válido
-      </span>
-    </div>
-
-    <!-- Phone Field -->
-    <div class="form-group">
-      <label for="phone" class="form-label">Teléfono *</label>
-      <input
-        type="tel"
-        id="phone"
-        formControlName="phone"
-        class="form-input"
-        [class.input-error]="isFieldInvalid('phone')"
-        placeholder="+34 XXX XXX XXX"
-      />
-      <span *ngIf="isFieldInvalid('phone')" class="error-text">
-        Por favor ingresa un teléfono válido
-      </span>
-    </div>
-
-    <!-- Number of Guests (Attending) -->
-    <div class="form-group">
-      <label for="attending" class="form-label">Número de Asistentes *</label>
-      <select
-        id="attending"
-        formControlName="attending"
-        class="form-input"
-      >
-        <option value="1">1 persona</option>
-        <option value="2">2 personas</option>
-        <option value="3">3 personas</option>
-        <option value="4">4 personas</option>
-        <option value="5">5 personas</option>
-        <option value="6">6 personas</option>
-        <option value="7">7 personas</option>
-        <option value="8">8 personas</option>
-        <option value="9">9 personas</option>
-        <option value="10">10 personas</option>
-      </select>
-    </div>
-
-    <!-- Meal Type -->
-    <div class="form-group">
-      <label for="mealType" class="form-label">Tipo de Menú *</label>
-      <select
-        id="mealType"
-        formControlName="mealType"
-        class="form-input"
-      >
-        <option value="normal">Normal</option>
-        <option value="vegetariano">Vegetariano</option>
-        <option value="vegano">Vegano</option>
-        <option value="sin_gluten">Sin Gluten</option>
-      </select>
-    </div>
-
-    <!-- Transport -->
-    <div class="form-group radio-group">
-      <label class="form-label">¿Necesitas Transporte? *</label>
-      <div class="radio-options">
-        <label class="radio-label">
-          <input
-            type="radio"
-            name="needsTransport"
-            [value]="'true'"
-            formControlName="needsTransport"
-            class="radio-input"
-          />
-          <span class="radio-text">Sí, necesito transporte</span>
-        </label>
-        <label class="radio-label">
-          <input
-            type="radio"
-            name="needsTransport"
-            [value]="'false'"
-            formControlName="needsTransport"
-            class="radio-input"
-          />
-          <span class="radio-text">No necesito transporte</span>
-        </label>
+        />
+        @if (isFieldInvalid('name')) {
+          <span class="error-text">
+            Por favor ingresa un nombre válido (mínimo 3 caracteres)
+          </span>
+        }
       </div>
-    </div>
 
-    <!-- Allergies -->
-    <div class="form-group">
-      <label for="allergies" class="form-label">Alergias</label>
-      <input
-        type="text"
-        id="allergies"
-        formControlName="allergies"
-        class="form-input"
-        placeholder="Describe tus alergias o intolerancias"
-      />
-    </div>
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email" class="form-label">Email *</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          class="form-input"
+          [class.input-error]="isFieldInvalid('email')"
+          placeholder="tu@email.com"
+          />
+          @if (isFieldInvalid('email')) {
+            <span class="error-text">
+              Por favor ingresa un email válido
+            </span>
+          }
+        </div>
 
-    <!-- Notes -->
-    <div class="form-group">
-      <label for="notes" class="form-label">Notas</label>
-      <textarea
-        id="notes"
-        formControlName="notes"
-        class="form-input form-textarea"
-        placeholder="¡Déjanos un mensaje especial!"
-        rows="4"
-      ></textarea>
-    </div>
+        <!-- Phone Field -->
+        <div class="form-group">
+          <label for="phone" class="form-label">Teléfono *</label>
+          <input
+            type="tel"
+            id="phone"
+            formControlName="phone"
+            class="form-input"
+            [class.input-error]="isFieldInvalid('phone')"
+            placeholder="+34 XXX XXX XXX"
+            />
+            @if (isFieldInvalid('phone')) {
+              <span class="error-text">
+                Por favor ingresa un teléfono válido
+              </span>
+            }
+          </div>
 
-    <!-- Submit Button -->
-    <button
-      type="submit"
-      class="submit-btn"
-      [disabled]="isSubmitting()"
-    >
-      <span *ngIf="!isSubmitting()">Confirmar Asistencia</span>
-      <span *ngIf="isSubmitting()">Enviando...</span>
-    </button>
-  </form>
-</div>
+          <!-- Number of Guests (Attending) -->
+          <div class="form-group">
+            <label for="attending" class="form-label">Número de Asistentes *</label>
+            <select
+              id="attending"
+              formControlName="attending"
+              class="form-input"
+              >
+              <option value="1">1 persona</option>
+              <option value="2">2 personas</option>
+              <option value="3">3 personas</option>
+              <option value="4">4 personas</option>
+              <option value="5">5 personas</option>
+              <option value="6">6 personas</option>
+              <option value="7">7 personas</option>
+              <option value="8">8 personas</option>
+              <option value="9">9 personas</option>
+              <option value="10">10 personas</option>
+            </select>
+          </div>
+
+          <!-- Meal Type -->
+          <div class="form-group">
+            <label for="mealType" class="form-label">Tipo de Menú *</label>
+            <select
+              id="mealType"
+              formControlName="mealType"
+              class="form-input"
+              >
+              <option value="normal">Normal</option>
+              <option value="vegetariano">Vegetariano</option>
+              <option value="vegano">Vegano</option>
+              <option value="sin_gluten">Sin Gluten</option>
+            </select>
+          </div>
+
+          <!-- Transport -->
+          <div class="form-group radio-group">
+            <label class="form-label">¿Necesitas Transporte? *</label>
+            <div class="radio-options">
+              <label class="radio-label">
+                <input
+                  type="radio"
+                  name="needsTransport"
+                  [value]="'true'"
+                  formControlName="needsTransport"
+                  class="radio-input"
+                  />
+                  <span class="radio-text">Sí, necesito transporte</span>
+                </label>
+                <label class="radio-label">
+                  <input
+                    type="radio"
+                    name="needsTransport"
+                    [value]="'false'"
+                    formControlName="needsTransport"
+                    class="radio-input"
+                    />
+                    <span class="radio-text">No necesito transporte</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Allergies -->
+              <div class="form-group">
+                <label for="allergies" class="form-label">Alergias</label>
+                <input
+                  type="text"
+                  id="allergies"
+                  formControlName="allergies"
+                  class="form-input"
+                  placeholder="Describe tus alergias o intolerancias"
+                  />
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                  <label for="notes" class="form-label">Notas</label>
+                  <textarea
+                    id="notes"
+                    formControlName="notes"
+                    class="form-input form-textarea"
+                    placeholder="¡Déjanos un mensaje especial!"
+                    rows="4"
+                  ></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <button
+                  type="submit"
+                  class="submit-btn"
+                  [disabled]="isSubmitting()"
+                  >
+                  @if (!isSubmitting()) {
+                    <span>Confirmar Asistencia</span>
+                  }
+                  @if (isSubmitting()) {
+                    <span>Enviando...</span>
+                  }
+                </button>
+              </form>
+            </div>

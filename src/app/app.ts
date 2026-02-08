@@ -5,6 +5,7 @@ import { GalleryComponent } from './components/gallery/gallery.component';
 import { TimelineComponent } from './components/timeline/timeline.component';
 import { MapComponent } from './components/map/map.component';
 import { RsvpFormComponent } from './components/rsvp-form/rsvp-form.component';
+import { MusicPlayerComponent } from './components/music-player/music-player.component';
 
 @Component({
   selector: 'app-root',
@@ -14,9 +15,10 @@ import { RsvpFormComponent } from './components/rsvp-form/rsvp-form.component';
     GalleryComponent,
     TimelineComponent,
     MapComponent,
-    RsvpFormComponent
+    RsvpFormComponent,
+    MusicPlayerComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {}
+export class App { }

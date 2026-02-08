@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 interface TimeRemaining {
   days: number;
@@ -11,7 +11,7 @@ interface TimeRemaining {
 @Component({
   selector: 'app-countdown',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './countdown.component.html',
   styleUrl: './countdown.component.css'
 })

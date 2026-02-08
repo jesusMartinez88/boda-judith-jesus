@@ -3,32 +3,37 @@
   <p class="gallery-subtitle">Nuestros momentos especiales</p>
 
   <div class="gallery-grid">
-    <div
-      *ngFor="let photo of photos"
-      class="gallery-item"
-      (click)="openModal(photo)"
-    >
-      <div class="photo-placeholder">
-        <img
-          [src]="photo.placeholder"
-          [alt]="photo.title"
-          onerror="this.style.display='none'"
-        />
-        <span *ngIf="!photo.placeholder">{{ photo.title }}</span>
-      </div>
-      <p class="photo-title">{{ photo.title }}</p>
+    @for (photo of photos; track photo) {
+      <div
+        class="gallery-item"
+        (click)="openModal(photo)"
+        >
+        <div class="photo-placeholder">
+          <img
+            [src]="photo.placeholder"
+            [alt]="photo.title"
+            onerror="this.style.display='none'"
+            />
+            @if (!photo.placeholder) {
+              <span>{{ photo.title }}</span>
+            }
+          </div>
+          <p class="photo-title">{{ photo.title }}</p>
+        </div>
+      }
     </div>
-  </div>
 
-  <!-- Modal -->
-  <div *ngIf="selectedPhoto" class="modal-overlay" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <button class="modal-close" (click)="closeModal()">✕</button>
-      <div class="modal-photo">
-        <img [src]="selectedPhoto.placeholder" [alt]="selectedPhoto.title" />
+    <!-- Modal -->
+    @if (selectedPhoto) {
+      <div class="modal-overlay" (click)="closeModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <button class="modal-close" (click)="closeModal()">✕</button>
+          <div class="modal-photo">
+            <img [src]="selectedPhoto.placeholder" [alt]="selectedPhoto.title" />
+          </div>
+          <h3>{{ selectedPhoto.title }}</h3>
+          <p>Haz clic afuera para cerrar</p>
+        </div>
       </div>
-      <h3>{{ selectedPhoto.title }}</h3>
-      <p>Haz clic afuera para cerrar</p>
-    </div>
+    }
   </div>
-</div>
