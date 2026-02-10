@@ -21,10 +21,11 @@ export class RsvpFormComponent {
     this.form = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       //email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9\s\-\+\(\)]+$/)]],
+      phone: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
       attending: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
       mealType: ['normal', Validators.required],
       needsTransport: [false, Validators.required],
+      isSavedInBbdd: [false, Validators.required],
       allergies: [''],
       notes: ['']
     });
@@ -45,9 +46,25 @@ export class RsvpFormComponent {
     try {
       let guestData: Guest = this.form.value;
       await this.guestService.registerGuest(guestData);
+
       this.submitSuccess.set(true);
-      this.form.reset({ attending: 1, mealType: 'normal', needsTransport: false });
-      setTimeout(() => this.submitSuccess.set(false), 5000);
+      this.form.reset({ attending: 1, mealType: 'normal', needsTransport: false, isSavedInBbdd: false });
+
+      // Esperar 2 segundos usando requestAnimationFrame para máxima eficiencia
+      const startTime = performance.now();
+      const checkDelay = (now: number) => {
+        if (now - startTime >= 3000) {
+          this.submitSuccess.set(false);
+          const contactSection = document.getElementById('contact');
+          if (contactSection) {
+            contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        } else {
+          requestAnimationFrame(checkDelay);
+        }
+      };
+      requestAnimationFrame(checkDelay);
+
     } catch (error: any) {
       this.submitError.set(true);
       this.errorMessage.set(

@@ -20,7 +20,61 @@
   margin-bottom: 0.5rem;
 }
 
-.success-message,
+.success-toast {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  background: #10b981;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+  animation: toastIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.success-icon-container {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.success-title {
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.success-description {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+@keyframes toastIn {
+  from {
+    transform: translateX(100%) translateY(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
+}
+
 .error-message {
   padding: 1rem;
   border-radius: 0.75rem;
@@ -29,23 +83,9 @@
   align-items: center;
   gap: 1rem;
   animation: slideDown 0.3s ease;
-}
-
-.success-message {
-  background: #d1fae5;
-  color: #065f46;
-  border: 1px solid #a7f3d0;
-}
-
-.error-message {
   background: #fee2e2;
   color: #991b1b;
   border: 1px solid #fecaca;
-}
-
-.success-icon {
-  font-size: 1.5rem;
-  font-weight: bold;
 }
 
 @keyframes slideDown {

@@ -10,6 +10,7 @@ export interface Guest {
   attending: number;
   mealType: string;
   needsTransport: boolean;
+  isSavedInBbdd: boolean;
   allergies?: string;
   notes?: string;
 }
@@ -60,6 +61,7 @@ export class GuestService {
       try {
         const fresh = await this.getAllGuests();
         this._cachedGuests = fresh;
+        guest.isSavedInBbdd = true;
       } catch (e) {
         // Ignorar error de refresco; no queremos bloquear el registro
       }
@@ -104,6 +106,7 @@ export class GuestService {
       params.set('attending', String(guest.attending ?? ''));
       params.set('mealType', guest.mealType || '');
       params.set('needsTransport', String(guest.needsTransport ?? ''));
+      params.set('isSavedInBbdd', String(guest.isSavedInBbdd ?? ''));
       params.set('allergies', guest.allergies || '');
       params.set('notes', guest.notes || '');
       params.set('callback', callbackName);
@@ -119,7 +122,7 @@ export class GuestService {
       function cleanup() {
         try {
           delete (window as any)[callbackName];
-        } catch {}
+        } catch { }
         if (script.parentNode) script.parentNode.removeChild(script);
       }
     });
