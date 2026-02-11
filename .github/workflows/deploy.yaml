@@ -22,6 +22,18 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+      - name: Debug Environment Variable
+        run: |
+          if [ -z "$NG_APP_SHEETURL" ]; then
+            echo "LA VARIABLE ESTÁ VACÍA"
+            exit 1
+          else
+            echo "La variable tiene contenido y mide ${#NG_APP_SHEETURL} caracteres."
+            # Cuidado: la siguiente línea mostrará el valor en el log si es una VARIABLE (no secret)
+            echo "Valor: $NG_APP_SHEETURL"
+          fi
+        env:
+          NG_APP_SHEETURL: ${{ vars.NG_APP_SHEETURL }}
 
       - name: Build
         run: npm run build -- --configuration production --base-href /boda-judith-jesus/
