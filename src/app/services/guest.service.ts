@@ -89,7 +89,6 @@ export class GuestService {
   // Fallback usando JSONP (evita problemas CORS). Usa GET y un callback global.
   private addToGoogleSheetsJsonp(guest: Guest): Promise<any> {
     const base = this.sheetUrl;
-    console.log('sheetUrl: ', this.sheetUrl);
     if (!base) {
       return Promise.reject(new Error('Google Sheets URL not configured'));
     }
@@ -114,7 +113,6 @@ export class GuestService {
 
       const script = document.createElement('script');
       script.src = base + '?' + params.toString();
-      console.log('JSONP request URL:', script.src);
       script.onerror = (ev) => {
         cleanup();
         reject(new Error('JSONP script error'));
