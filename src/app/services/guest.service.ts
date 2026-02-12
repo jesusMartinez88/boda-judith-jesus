@@ -1,4 +1,4 @@
-import { Injectable, resource } from '@angular/core';
+import { inject, Injectable, resource } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -15,18 +15,18 @@ export interface Guest {
   notes?: string;
 }
 
+declare var window: any;
+
 @Injectable({
   providedIn: 'root'
 })
 export class GuestService {
   private apiUrl = environment.apiUrl;
-  private sheetUrl = process.env['NG_APP_SHEETURL'] ?? null;
+  private sheetUrl = (window as any).NG_APP_SHEETURL || process.env['NG_APP_SHEETURL'] || null;
   private _guestsResource: any | undefined;
   private _cachedGuests: Guest[] | undefined;
 
-  constructor(private http: HttpClient) {
-    console.log('API URL:', this.apiUrl);
-  }
+  private http = inject(HttpClient);
 
   // Crear el recurso de invitados perezosamente (no se crea ni carga en la inicialización)
   private createGuestsResource() {
@@ -89,6 +89,7 @@ export class GuestService {
   // Fallback usando JSONP (evita problemas CORS). Usa GET y un callback global.
   private addToGoogleSheetsJsonp(guest: Guest): Promise<any> {
     const base = this.sheetUrl;
+    console.log('sheetUrl: ', this.sheetUrl);
     if (!base) {
       return Promise.reject(new Error('Google Sheets URL not configured'));
     }
@@ -113,6 +114,7 @@ export class GuestService {
 
       const script = document.createElement('script');
       script.src = base + '?' + params.toString();
+      console.log('JSONP request URL:', script.src);
       script.onerror = (ev) => {
         cleanup();
         reject(new Error('JSONP script error'));

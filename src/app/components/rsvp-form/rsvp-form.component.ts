@@ -21,6 +21,7 @@ export class RsvpFormComponent {
     this.form = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       //email: ['', [Validators.required, Validators.email]],
+      email: [''],
       phone: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
       attending: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
       mealType: ['normal', Validators.required],
