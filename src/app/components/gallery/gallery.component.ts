@@ -24,7 +24,7 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
       id: 1,
       title: 'El comienzo',
       placeholder: 'assets/fotos/foto1.jpeg',
-      description: 'Todo empezó con una mirada y un café...',
+      description: 'Todo empezó con una mirada y una copa de vino...',
       date: 'Junio 2020'
     },
     {

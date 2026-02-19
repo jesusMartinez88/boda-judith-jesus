@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: url('/assets/fotos/hero.jpeg') no-repeat center center;
+  background: url('../../../assets/fotos/hero.jpeg') no-repeat center center;
   background-size: cover;
   overflow: hidden;
 }
