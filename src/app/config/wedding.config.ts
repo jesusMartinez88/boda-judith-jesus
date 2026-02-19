@@ -72,7 +72,7 @@ export const WEDDING_CONFIG = {
     heroSubtitle: 'Se casan el 11 de Julio de 2026',
     heroLocation: 'Granada, España',
     countdownTitle: 'Nos casamos en',
-    galleryTitle: 'Galería de Fotos',
+    galleryTitle: 'Nuestra historia',
     gallerySubtitle: 'Nuestros momentos especiales',
     timelineTitle: 'Cronograma del Día',
     mapTitle: 'Ubicación',

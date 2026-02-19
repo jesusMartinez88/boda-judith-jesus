@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { HeroComponent } from './components/hero/hero.component';
-import { CountdownComponent } from './components/countdown/countdown.component';
+/* import { CountdownComponent } from './components/countdown/countdown.component'; */
 import { GalleryComponent } from './components/gallery/gallery.component';
 import { TimelineComponent } from './components/timeline/timeline.component';
 import { MapComponent } from './components/map/map.component';
@@ -14,7 +14,7 @@ import { CalendarComponent } from './components/calendar/calendar.component';
   selector: 'app-root',
   imports: [
     HeroComponent,
-    CountdownComponent,
+    /* CountdownComponent, */
     GalleryComponent,
     TimelineComponent,
     MapComponent,

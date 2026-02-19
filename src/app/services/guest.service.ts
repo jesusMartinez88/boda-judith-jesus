@@ -2,6 +2,7 @@ import { inject, Injectable, resource } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import confetti from 'canvas-confetti';
 
 export interface Guest {
   name: string;
@@ -70,6 +71,12 @@ export class GuestService {
       this.addToGoogleSheetsJsonp(guest).catch(error => {
         console.warn('Error adding to Google Sheets backup (JSONP):', error);
       });
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff']
+      });
 
       return result;
     } catch (error) {
@@ -78,6 +85,12 @@ export class GuestService {
       try {
         const sheetResult = await this.addToGoogleSheetsJsonp(guest);
         console.log('Guest saved to Google Sheets backup (JSONP)');
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff']
+        });
         return sheetResult;
       } catch (sheetError) {
         console.error('Error registering guest (both servers failed):', sheetError);

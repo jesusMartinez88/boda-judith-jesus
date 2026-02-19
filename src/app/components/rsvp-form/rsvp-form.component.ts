@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { GuestService, Guest } from '../../services/guest.service';
+import confetti from 'canvas-confetti';
 
 @Component({
   selector: 'app-rsvp-form',
@@ -49,6 +50,14 @@ export class RsvpFormComponent {
       await this.guestService.registerGuest(guestData);
 
       this.submitSuccess.set(true);
+
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff']
+      });
+
       this.form.reset({ attending: 1, mealType: 'normal', needsTransport: false, isSavedInBbdd: false });
 
       // Esperar 2 segundos usando requestAnimationFrame para máxima eficiencia
