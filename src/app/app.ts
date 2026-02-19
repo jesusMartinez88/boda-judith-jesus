@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import AOS from 'aos';
 import { HeroComponent } from './components/hero/hero.component';
-/* import { CountdownComponent } from './components/countdown/countdown.component'; */
 import { GalleryComponent } from './components/gallery/gallery.component';
 import { TimelineComponent } from './components/timeline/timeline.component';
 import { MapComponent } from './components/map/map.component';
@@ -14,7 +14,6 @@ import { CalendarComponent } from './components/calendar/calendar.component';
   selector: 'app-root',
   imports: [
     HeroComponent,
-    /* CountdownComponent, */
     GalleryComponent,
     TimelineComponent,
     MapComponent,
@@ -27,4 +26,12 @@ import { CalendarComponent } from './components/calendar/calendar.component';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App { }
+export class App implements OnInit {
+  ngOnInit() {
+    AOS.init({
+      duration: 1000,
+      once: true,
+      easing: 'ease-out-cubic'
+    });
+  }
+}

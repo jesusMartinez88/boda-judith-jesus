@@ -2,18 +2,41 @@
   <h2 class="gallery-title">Nuestra historia</h2>
   <p class="gallery-subtitle">Un recorrido por nuestra historia de amor</p>
 
-  <div class="gallery-grid">
-    @for (photo of photos; track photo) {
-    <div class="gallery-item" (click)="openModal(photo)">
-      <div class="photo-placeholder">
-        <img [src]="photo.placeholder" [alt]="photo.title" onerror="this.style.display='none'" />
-        @if (!photo.placeholder) {
-        <span>{{ photo.title }}</span>
-        }
+  <div class="story-timeline">
+    @for (photo of photos; track photo.id; let i = $index) {
+    <div class="story-item" [class.reverse]="i % 2 !== 0" data-aos="fade-up">
+      <div class="story-image" (click)="openModal(photo)">
+        <div class="photo-frame">
+          <img [src]="photo.placeholder" [alt]="photo.title" onerror="this.style.display='none'" />
+          <div class="photo-date">{{ photo.date }}</div>
+        </div>
       </div>
-      <p class="photo-title">{{ photo.title }}</p>
+      <div class="story-content">
+        <h3 class="story-item-title">{{ photo.title }}</h3>
+        <p class="story-item-description">{{ photo.description }}</p>
+      </div>
+      <div class="story-dot"></div>
     </div>
     }
+  </div>
+
+  <!-- Infinite Slider -->
+  <h2 class="slider-section-title" data-aos="fade-up">Un poco más de nosotros</h2>
+  <div class="infinite-slider-container">
+    <div class="infinite-slider-track" #sliderTrack>
+      <!-- First set of images -->
+      @for (img of sliderImages; track $index) {
+      <div class="slider-item">
+        <img [src]="img" alt="Boda Judith y Jesús" loading="lazy">
+      </div>
+      }
+      <!-- Duplicated set for seamless loop -->
+      @for (img of sliderImages; track $index + 'dup') {
+      <div class="slider-item">
+        <img [src]="img" alt="Boda Judith y Jesús" loading="lazy">
+      </div>
+      }
+    </div>
   </div>
 
   <!-- Modal -->
