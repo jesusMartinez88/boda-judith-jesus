@@ -8,7 +8,7 @@ import { firstValueFrom } from 'rxjs';
   providedIn: 'root'
 })
 export class HealthService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   private baseUrl = environment.apiBaseUrl;
 
