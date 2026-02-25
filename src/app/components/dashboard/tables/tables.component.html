@@ -1,0 +1,346 @@
+<div class="tables-view">
+    <header class="tables-header">
+        <div class="title-group">
+            <h2>Gestión de Mesas</h2>
+            <p>Organiza a los invitados y personaliza tus mesas</p>
+        </div>
+
+        <div class="header-actions">
+            <div class="settings-card">
+                <label for="maxGuests">Capacidad Global:</label>
+                <input type="number" id="maxGuests" [ngModel]="maxGuests()" (ngModelChange)="updateMaxGuests($event)"
+                    min="1" max="20">
+            </div>
+            <button class="btn-add-table" (click)="openCreateTableModal()">
+                <span class="icon">➕</span> Nueva Mesa
+            </button>
+        </div>
+    </header>
+
+    <!-- Modal para Añadir Mesa -->
+    @if (showCreateTableModal()) {
+    <div class="modal-backdrop" (click)="closeCreateTableModal()">
+        <div class="modal-container" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Nueva Mesa</h3>
+                <button class="close-btn" (click)="closeCreateTableModal()">×</button>
+            </div>
+
+            <form class="modal-form" (submit)="$event.preventDefault(); confirmAddTable()">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Nombre de la Mesa</label>
+                        <input type="text" [ngModel]="newTableData().name"
+                            (ngModelChange)="updateNewTableField('name', $event)" name="tableName"
+                            placeholder="Ej: Mesa Real o Mesa 5" required autofocus>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Capacidad</label>
+                        <input type="number" [ngModel]="newTableData().capacity"
+                            (ngModelChange)="updateNewTableField('capacity', $event)" name="tableCapacity" min="1"
+                            max="25" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Forma</label>
+                        <select [ngModel]="newTableData().shape" (ngModelChange)="updateNewTableField('shape', $event)"
+                            name="tableShape">
+                            <option value="round">Redonda ⭕</option>
+                            <option value="square">Cuadrada 🟦</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" (click)="closeCreateTableModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary" [disabled]="isLoading()">
+                        @if (isLoading()) { Creando... } @else { Crear Mesa }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
+
+    <div class="tables-layout">
+        <!-- Panel Izquierdo: Invitados sin asignar -->
+        <aside class="guest-pool" (dragover)="onDragOver($event)" (drop)="onDrop(null)">
+            <div class="pool-header">
+                <h3>Por asignar ({{ unassignedGuests().length }})</h3>
+                <button class="add-guest-btn" (click)="openAddModal()" title="Añadir invitado manual">
+                    <span class="icon">+</span>
+                </button>
+            </div>
+
+            <div class="guest-list">
+                @for (guest of unassignedGuests(); track guest.id) {
+                <div class="guest-item" draggable="true" (dragstart)="onDragStart(guest)">
+                    <div class="guest-info">
+                        <span class="guest-name">{{ guest.name }}</span>
+                        <span class="guest-meta">{{ guest.mealType }}</span>
+                    </div>
+                    <div class="guest-actions">
+                        <button class="edit-btn" (click)="openEditModal(guest); $event.stopPropagation()"
+                            title="Editar invitado">
+                            <span class="icon">📝</span>
+                        </button>
+                        <button class="delete-btn" (click)="deleteGuest(guest); $event.stopPropagation()"
+                            title="Eliminar invitado">
+                            <span class="icon">🗑️</span>
+                        </button>
+                    </div>
+                </div>
+                }
+                @if (unassignedGuests().length === 0) {
+                <p class="empty-msg">Todos los invitados tienen mesa ✨</p>
+                }
+            </div>
+        </aside>
+
+        <!-- Panel Central: Plano de Mesas -->
+        <main class="tables-grid">
+            @for (table of tables(); track table.id) {
+            <div class="table-container" [class.full]="table.guests.length >= table.capacity"
+                [class.square]="table.shape === 'square'" (dragover)="onDragOver($event)" (drop)="onDrop(table.id)">
+
+                <!-- Controles de Mesa -->
+                <div class="table-config-overlay">
+                    <button class="config-btn shape" (click)="toggleTableShape(table.id, table.shape)"
+                        [title]="'Cambiar a ' + (table.shape === 'round' ? 'cuadrada' : 'redonda')">
+                        {{ table.shape === 'round' ? '🟦' : '⭕' }}
+                    </button>
+                    <div class="capacity-field">
+                        <input type="number" [ngModel]="table.capacity"
+                            (ngModelChange)="updateTableCapacity(table.id, $event)" min="1" max="20"
+                            title="Capacidad de esta mesa">
+                    </div>
+                    <button class="config-btn delete" (click)="deleteTable(table.id)" title="Eliminar mesa">
+                        🗑️
+                    </button>
+                </div>
+
+                <div class="table-surface">
+                    <div class="table-info">
+                        @if (editingTableId() === table.id) {
+                        <input type="text" class="edit-table-input" [ngModel]="editingName()"
+                            (ngModelChange)="editingName.set($event)" (blur)="saveTableName(table.id)"
+                            (keyup.enter)="saveTableName(table.id)" autofocus (click)="$event.stopPropagation()">
+                        } @else {
+                        <span class="table-num" (click)="startEditingTable(table.id, table.name)"
+                            title="Haz clic para renombrar">
+                            {{ table.name || 'Mesa ' + table.id }}
+                        </span>
+                        }
+                        <div class="table-stats">
+                            <span class="count">{{ table.guests.length }}/{{ table.capacity }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Anillo de progreso (solo para mesas redondas) -->
+                    @if (table.shape === 'round') {
+                    <svg class="progress-ring" viewBox="0 0 100 100">
+                        <circle class="ring-bg" cx="50" cy="50" r="45"></circle>
+                        <circle class="ring-fill" cx="50" cy="50" r="45"
+                            [style.stroke-dashoffset]="283 - (283 * (table.guests.length / table.capacity))">
+                        </circle>
+                    </svg>
+                    } @else {
+                    <!-- Marco para mesa cuadrada -->
+                    <div class="square-border" [style.--progress]="(table.guests.length / table.capacity) * 100"></div>
+                    }
+                </div>
+
+                <div class="seats-layout" [class.square-grid]="table.shape === 'square'">
+                    @for (guest of table.guests; track guest.id; let idx = $index) {
+                    <div class="guest-seat" draggable="true" (dragstart)="onDragStart(guest)" [style.--seat-index]="idx"
+                        [style.--total-seats]="table.guests.length" [title]="guest.name">
+                        <div class="seat-marker">
+                            <span class="seat-icon">👤</span>
+                        </div>
+                        <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
+                    </div>
+                    }
+                    @if (table.guests.length === 0) {
+                    <div class="empty-table-msg">Vacía</div>
+                    }
+                </div>
+            </div>
+            }
+        </main>
+    </div>
+
+    <!-- Modal para Añadir/Editar Invitado -->
+    @if (showAddModal()) {
+    <div class="modal-backdrop" (click)="closeAddModal()">
+        <div class="modal-container" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>{{ isEditingGuest() ? 'Editar Invitado' : 'Nuevo Invitado' }}</h3>
+                <button class="close-btn" (click)="closeAddModal()">×</button>
+            </div>
+
+            <form class="modal-form" (submit)="$event.preventDefault(); saveGuest()">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" [ngModel]="newGuest().name"
+                            (ngModelChange)="updateNewGuestField('name', $event)" name="name"
+                            placeholder="Ej: Juan Pérez" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" [ngModel]="newGuest().email"
+                            (ngModelChange)="updateNewGuestField('email', $event)" name="email"
+                            placeholder="email@ejemplo.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" [ngModel]="newGuest().phone"
+                            (ngModelChange)="updateNewGuestField('phone', $event)" name="phone"
+                            placeholder="600 000 000">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tipo de Menú</label>
+                        <select [ngModel]="newGuest().mealType"
+                            (ngModelChange)="updateNewGuestField('mealType', $event)" name="mealType">
+                            <option value="normal">Normal</option>
+                            <option value="vegetariano">Vegetariano</option>
+                            <option value="vegano">Vegano</option>
+                            <option value="celiaco">Celiaco</option>
+                            <option value="sin_gluten">Sin Gluten</option>
+                            <option value="intolerante_lactosa">Intolerante a la lactosa</option>
+                            <option value="intolerante_frutos_secos">Intolerante a los frutos secos</option>
+                            <option value="kid">Infantil</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Alergias</label>
+                        <textarea [ngModel]="newGuest().allergies"
+                            (ngModelChange)="updateNewGuestField('allergies', $event)" name="allergies"
+                            placeholder="Ej: No puede comer marisco..."></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Notas</label>
+                        <textarea [ngModel]="newGuest().notes" (ngModelChange)="updateNewGuestField('notes', $event)"
+                            name="notes" placeholder="Ej: me hace mucha ilusion vuestra boda..."></textarea>
+                    </div>
+
+                    <div class="form-check full-width">
+                        <input type="checkbox" id="transport" [ngModel]="newGuest().needsTransport"
+                            (ngModelChange)="updateNewGuestField('needsTransport', $event)" name="needsTransport">
+                        <label for="transport">Necesita Transporte 🚌</label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" (click)="closeAddModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary" [disabled]="isLoading()">
+                        @if (isLoading()) { Guardando... }
+                        @else { {{ isEditingGuest() ? 'Actualizar Invitado' : 'Guardar Invitado' }} }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
+
+    <!-- Modal para Confirmar Eliminación de Mesa -->
+    @if (showDeleteConfirm()) {
+    <div class="modal-backdrop" (click)="cancelDeleteTable()">
+        <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Eliminar {{ getTableNameToDelete() }}</h3>
+                <button class="close-btn" (click)="cancelDeleteTable()">×</button>
+            </div>
+            <div class="modal-body warning-theme">
+                <div class="warning-visual">
+                    <span class="confirm-icon">🗑️</span>
+                </div>
+                <p>¿Seguro que quieres eliminar esta mesa?</p>
+                <p class="secondary-text">Los invitados asignados volverán a la lista de "Por asignar".</p>
+
+                <div class="modal-actions full-width-btns">
+                    <button class="btn-danger" (click)="confirmDeleteTable()">Sí, eliminar mesa</button>
+                    <button class="btn-secondary-modal" (click)="cancelDeleteTable()">No, mantener mesa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Modal para Confirmar Eliminación de Invitado -->
+    @if (showGuestDeleteConfirm()) {
+    <div class="modal-backdrop" (click)="cancelDeleteGuest()">
+        <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Eliminar Invitado</h3>
+                <button class="close-btn" (click)="cancelDeleteGuest()">×</button>
+            </div>
+            <div class="modal-body warning-theme">
+                <div class="warning-visual">
+                    <span class="confirm-icon">👤❌</span>
+                </div>
+                <p>¿Seguro que quieres eliminar a {{ guestToDelete()?.name }}?</p>
+                <p class="secondary-text">Esta acción no se puede deshacer y el invitado será borrado permanentemente.
+                </p>
+
+                <div class="modal-actions full-width-btns">
+                    <button class="btn-danger" (click)="confirmDeleteGuest()">Sí, eliminar invitado</button>
+                    <button class="btn-secondary-modal" (click)="cancelDeleteGuest()">No, mantener invitado</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Modal para Mesa Completa -->
+    @if (showFullTableModal()) {
+    <div class="modal-backdrop" (click)="closeFullTableModal()">
+        <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Mesa Completa</h3>
+                <button class="close-btn" (click)="closeFullTableModal()">×</button>
+            </div>
+            <div class="modal-body warning-theme">
+                <div class="warning-visual info-theme">
+                    <span class="confirm-icon">🛑</span>
+                </div>
+                <p>La mesa "{{ fullTableName() }}" está llena</p>
+                <p class="secondary-text">La capacidad máxima es de {{ fullTableCapacity() }} personas. Por favor,
+                    amplía la capacidad o elige otra mesa.</p>
+
+                <div class="modal-actions full-width-btns">
+                    <button class="btn-primary" (click)="closeFullTableModal()">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Modal Genérico de Alerta -->
+    @if (showGenericModal()) {
+    <div class="modal-backdrop" (click)="closeGenericModal()">
+        <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>{{ genericModalTitle() }}</h3>
+                <button class="close-btn" (click)="closeGenericModal()">×</button>
+            </div>
+            <div class="modal-body warning-theme">
+                <div class="warning-visual info-theme">
+                    <span class="confirm-icon">⚠️</span>
+                </div>
+                <p>{{ genericModalMessage() }}</p>
+
+                <div class="modal-actions full-width-btns">
+                    <button class="btn-primary" (click)="closeGenericModal()">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+</div>

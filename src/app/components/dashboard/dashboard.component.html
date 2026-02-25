@@ -1,0 +1,117 @@
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span class="logo">💍</span>
+            <h2>Admin Panel</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-item" [class.active]="currentView() === 'stats'" (click)="setView('stats')">
+                <span class="icon">📊</span> Resumen
+            </a>
+            <a class="nav-item" [class.active]="currentView() === 'tables'" (click)="setView('tables')">
+                <span class="icon">🪑</span> Mesas
+            </a>
+            <a class="nav-item" (click)="loadStats()">
+                <span class="icon">🔄</span> Actualizar
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button (click)="logout()" class="logout-btn">
+                <span class="icon">🚪</span> Cerrar Sesión
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        @if (currentView() === 'stats') {
+        <header class="content-header">
+            <h1>Panel de Estadísticas</h1>
+            <div class="user-info">
+                <span>Bienvenido, Admin 👋</span>
+            </div>
+        </header>
+
+        @if (isLoading()) {
+        <div class="loading-state">
+            <div class="loader"></div>
+            <p>Cargando estadísticas...</p>
+        </div>
+        }
+
+        @if (error()) {
+        <div class="error-state">
+            {{ error() }}
+            <button (click)="loadStats()">Reintentar</button>
+        </div>
+        }
+
+        @if (!isLoading() && stats()) {
+        <div class="stats-grid animate-fade-in">
+            <!-- Total Guests Card -->
+            <div class="stats-card total">
+                <div class="card-icon">👥</div>
+                <div class="card-info">
+                    <h3>Total Invitados</h3>
+                    <p class="value">{{ stats()?.total }}</p>
+                </div>
+            </div>
+
+            <!-- Attendance Breakdown -->
+            <div class="stats-card attendance">
+                <h3>Estado de Asistencia</h3>
+                <div class="attendance-summary">
+                    <div class="stat-item confirmed">
+                        <span class="label">Confirmados</span>
+                        <span class="count">{{ stats()?.confirmed }}</span>
+                    </div>
+                    <div class="stat-item pending">
+                        <span class="label">Pendientes</span>
+                        <span class="count">{{ stats()?.pending }}</span>
+                    </div>
+                    <div class="stat-item declined" *ngIf="stats()?.declined !== undefined">
+                        <span class="label">No asisten</span>
+                        <span class="count">{{ stats()?.declined }}</span>
+                    </div>
+                    <div class="stat-item unassigned" *ngIf="unassignedGuestsCount() !== null">
+                        <span class="label">Sin mesa</span>
+                        <span class="count">{{ unassignedGuestsCount() }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transportation Card -->
+            <div class="stats-card transport">
+                <h3>Transporte</h3>
+                <div class="transport-info">
+                    <div class="transport-item">
+                        <span class="icon">🚌</span>
+                        <div class="details">
+                            <span class="label">Necesitan Bus</span>
+                            <span class="count">{{ stats()?.needTransport }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Allergies Card -->
+            <div class="stats-card allergies" *ngIf="allergiesCount() !== null">
+                <div class="card-icon">🥗</div>
+                <div class="card-info">
+                    <h3>Con Alergias / Intolerancias</h3>
+                    <p class="value">{{ allergiesCount() }}</p>
+                </div>
+            </div>
+        </div>
+        }
+
+        }
+
+        @if (currentView() === 'tables') {
+        <app-tables></app-tables>
+        }
+
+        <footer class="content-footer">
+            <p>© 2026 Admin Dashboard - Judith & Jesús</p>
+        </footer>
+    </main>
+</div>

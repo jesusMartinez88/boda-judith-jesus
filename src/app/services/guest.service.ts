@@ -1,10 +1,11 @@
-import { inject, Injectable, resource } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import confetti from 'canvas-confetti';
 
 export interface Guest {
+  id?: string;
   name: string;
   email: string;
   phone: string;
@@ -12,6 +13,7 @@ export interface Guest {
   mealType: string;
   needsTransport: boolean;
   isSavedInBbdd: boolean;
+  tableNumber?: number;
   allergies?: string;
   notes?: string;
 }
@@ -24,34 +26,41 @@ declare var window: any;
 export class GuestService {
   private apiUrl = environment.apiUrl;
   private sheetUrl = (window as any).NG_APP_SHEETURL || process.env['NG_APP_SHEETURL'] || null;
-  private _guestsResource: any | undefined;
   private _cachedGuests: Guest[] | undefined;
 
   private http = inject(HttpClient);
 
-  // Crear el recurso de invitados perezosamente (no se crea ni carga en la inicialización)
-  private createGuestsResource() {
-    if (!this._guestsResource) {
-      this._guestsResource = resource<Guest[], void>({
-        loader: async () => {
-          const list = await firstValueFrom(this.http.get<Guest[]>(this.apiUrl));
-          this._cachedGuests = list;
-          return list;
-        }
-      });
-    }
-    return this._guestsResource;
-  }
-
-  // Método público para forzar la carga de invitados cuando el componente lo solicite
+  // Método público para cargar invitados
   async loadGuests(): Promise<Guest[]> {
-    const r = this.createGuestsResource();
-    if (r && typeof r.read === 'function') {
-      return r.read();
+    try {
+      const response = await firstValueFrom(this.http.get<any>(this.apiUrl));
+
+      // Unwrapping flexible de la respuesta
+      let list = null;
+
+      if (Array.isArray(response)) {
+        list = response;
+      } else if (response && typeof response === 'object') {
+        // Buscar en propiedades comunes
+        list = response.data || response.guests || response.items || response.rows || response.list;
+
+        // Si no se encuentra en las comunes, buscar el primer array que aparezca en el objeto
+        if (!list || !Array.isArray(list)) {
+          const firstArrayKey = Object.keys(response).find(key => Array.isArray(response[key]));
+          if (firstArrayKey) {
+            list = response[firstArrayKey];
+          }
+        }
+      }
+
+      const finalItems = Array.isArray(list) ? list : [];
+
+      this._cachedGuests = finalItems;
+      return finalItems;
+    } catch (error) {
+      console.error('Error in loadGuests:', error);
+      return [];
     }
-    const list = await firstValueFrom(this.http.get<Guest[]>(this.apiUrl));
-    this._cachedGuests = list;
-    return list;
   }
 
   // Registra un invitado y recarga el recurso de lista
@@ -84,7 +93,6 @@ export class GuestService {
       // Si falla el servidor, intentar guardar en Google Sheets vía JSONP
       try {
         const sheetResult = await this.addToGoogleSheetsJsonp(guest);
-        console.log('Guest saved to Google Sheets backup (JSONP)');
         confetti({
           particleCount: 150,
           spread: 70,
@@ -155,5 +163,17 @@ export class GuestService {
   getCachedGuests(): Guest[] | undefined {
     // Retornar únicamente la caché local sin invocar ninguna carga
     return this._cachedGuests;
+  }
+
+  async updateGuest(guestId: string, guestData: Partial<Guest>): Promise<any> {
+    return firstValueFrom(this.http.patch(`${this.apiUrl}/${guestId}`, guestData));
+  }
+
+  async updateGuestTable(guestId: string, tableNumber: number | null): Promise<any> {
+    return firstValueFrom(this.http.patch(`${this.apiUrl}/${guestId}`, { tableNumber }));
+  }
+
+  async deleteGuest(guestId: string): Promise<any> {
+    return firstValueFrom(this.http.delete(`${this.apiUrl}/${guestId}`));
   }
 }

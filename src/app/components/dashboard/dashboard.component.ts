@@ -1,0 +1,97 @@
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { StatsService, WeddingStats } from '../../services/stats.service';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
+import { TablesComponent } from './tables/tables.component';
+
+@Component({
+    selector: 'app-dashboard',
+    standalone: true,
+    imports: [CommonModule, TablesComponent],
+    templateUrl: './dashboard.component.html',
+    styleUrl: './dashboard.component.css'
+})
+export class DashboardComponent implements OnInit {
+    private statsService = inject(StatsService);
+    private authService = inject(AuthService);
+    private router = inject(Router);
+
+    stats = signal<WeddingStats | null>(null);
+    allergiesCount = signal<number | null>(null);
+    unassignedGuestsCount = signal<number | null>(null);
+    isLoading = signal(true);
+    error = signal<string | null>(null);
+    currentView = signal<'stats' | 'tables'>('stats');
+
+    ngOnInit() {
+        this.loadStats();
+    }
+
+    loadStats() {
+        this.isLoading.set(true);
+        this.statsService.getStats().subscribe({
+            next: (data) => {
+                // Soporte para respuestas envueltas en un objeto 'data'
+                const finalData = (data as any).data || data;
+                this.stats.set(finalData);
+
+                // Cargar también las alergias
+                this.statsService.getAllergiesStats().subscribe({
+                    next: (res: any) => {
+                        // Soporte para datos envueltos en 'data'
+                        const items = res.data || res;
+                        let totalAllergies = 0;
+
+                        if (Array.isArray(items)) {
+                            // Sumar el atributo 'count' de cada item si existe, sino contar el item
+                            items.forEach((item: any) => {
+                                if (item && typeof item.count === 'number') {
+                                    totalAllergies += item.count;
+                                } else {
+                                    // Fallback: si no tiene count pero es un item de la lista, contar como 1
+                                    totalAllergies += 1;
+                                }
+                            });
+                        } else if (items && typeof items.count === 'number') {
+                            totalAllergies = items.count;
+                        }
+
+                        this.allergiesCount.set(totalAllergies);
+
+                        // Cargar también invitados para contar los sin mesa
+                        this.statsService.getGuests().subscribe({
+                            next: (guestsRes: any) => {
+                                const guests = (guestsRes.data || guestsRes) as any[];
+                                if (Array.isArray(guests)) {
+                                    const unassigned = guests.filter(g => !g.tableNumber || g.tableNumber === 0).length;
+                                    this.unassignedGuestsCount.set(unassigned);
+                                }
+                                this.isLoading.set(false);
+                            },
+                            error: () => {
+                                this.isLoading.set(false);
+                            }
+                        });
+                    },
+                    error: () => {
+                        this.isLoading.set(false);
+                    }
+                });
+            },
+            error: (err) => {
+                console.error('Error fetching stats:', err);
+                this.error.set('No se pudieron cargar las estadísticas.');
+                this.isLoading.set(false);
+            }
+        });
+    }
+
+    setView(view: 'stats' | 'tables') {
+        this.currentView.set(view);
+    }
+
+    logout() {
+        this.authService.logout();
+    }
+}
