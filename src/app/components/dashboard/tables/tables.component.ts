@@ -104,11 +104,6 @@ export class TablesComponent implements OnInit {
         this.isLoading.set(true);
         try {
             const list = await this.guestService.loadGuests();
-            console.log('📋 Guest List Received:', list);
-
-            if (list.length > 0) {
-                console.log('🔍 Sample Guest:', list[0]);
-            }
 
             this.guests.set(list);
 
