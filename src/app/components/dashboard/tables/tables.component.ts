@@ -18,7 +18,7 @@ export class TablesComponent implements OnInit {
     private settingsService = inject(SettingsService);
     private tableService = inject(TableService);
 
-    guests = signal<Guest[]>([]);
+    guests = this.guestService.guests;
     maxGuests = computed(() => this.settingsService.settings().max_guests_per_table);
 
     isLoading = signal(true);
@@ -73,27 +73,36 @@ export class TablesComponent implements OnInit {
         const guestList = this.guests();
         const configs = this.tableService.tables();
 
-        if (!Array.isArray(configs)) return [];
+        if (!Array.isArray(configs) || configs.length === 0) return [];
 
-        return configs.map(config => ({
-            id: config.id,
-            name: config.name,
-            capacity: config.capacity || this.maxGuests(),
-            shape: config.shape || 'round',
-            guests: guestList.filter(g => Number(g.tableNumber) === Number(config.id))
-        })).sort((a, b) => a.id - b.id);
+        return configs.map(config => {
+            const tableId = Number(config.id);
+            return {
+                id: tableId,
+                name: config.name,
+                capacity: config.capacity || this.maxGuests(),
+                shape: config.shape || 'round',
+                guests: guestList.filter(g => {
+                    const guestTableId = Number(g.tableId || 0);
+                    return guestTableId === tableId && guestTableId !== 0;
+                })
+            };
+        }).sort((a, b) => a.id - b.id);
     });
 
     unassignedGuests = computed(() => {
         const guestList = this.guests();
         const tableConfigs = this.tableService.tables();
-        const validTableIds = new Set(Array.isArray(tableConfigs) ? tableConfigs.map(t => Number(t.id)) : []);
 
-        return guestList.filter(g =>
-            !g.tableNumber ||
-            g.tableNumber === 0 ||
-            !validTableIds.has(Number(g.tableNumber))
-        );
+        // Si no hay mesas cargadas aún, todos se ven como sin asignar (o esperamos)
+        if (!tableConfigs || tableConfigs.length === 0) return guestList;
+
+        const validTableIds = new Set(tableConfigs.map(t => Number(t.id)));
+
+        return guestList.filter(g => {
+            const tableId = Number(g.tableId || 0);
+            return tableId === 0 || !validTableIds.has(tableId);
+        });
     });
 
     ngOnInit() {
@@ -103,9 +112,7 @@ export class TablesComponent implements OnInit {
     async loadData() {
         this.isLoading.set(true);
         try {
-            const list = await this.guestService.loadGuests();
-
-            this.guests.set(list);
+            await this.guestService.loadGuests();
 
             this.settingsService.loadSettings().subscribe();
             this.tableService.loadTables().subscribe();
@@ -130,16 +137,16 @@ export class TablesComponent implements OnInit {
         event.preventDefault();
     }
 
-    async onDrop(tableNumber: number | null) {
+    async onDrop(tableId: number | null) {
         if (!this.draggedGuest) return;
 
         // Validar capacidad de la mesa destino
-        if (tableNumber !== null) {
-            const targetTable = this.tables().find(t => t.id === tableNumber);
+        if (tableId !== null) {
+            const targetTable = this.tables().find(t => t.id === tableId);
             if (targetTable && targetTable.guests.length >= targetTable.capacity) {
                 // Solo bloqueamos si el invitado NO estaba ya en esta mesa
-                if (this.draggedGuest.tableNumber !== tableNumber) {
-                    this.fullTableName.set(targetTable.name || `Mesa ${tableNumber}`);
+                if (this.draggedGuest.tableId !== tableId) {
+                    this.fullTableName.set(targetTable.name || `Mesa ${tableId}`);
                     this.fullTableCapacity.set(targetTable.capacity);
                     this.showFullTableModal.set(true);
                     this.draggedGuest = null;
@@ -153,13 +160,10 @@ export class TablesComponent implements OnInit {
 
         if (!guestId) return;
 
-        // Actualización optimista
-        this.guests.update(list =>
-            list.map(g => (g === guest ? { ...g, tableNumber: tableNumber || 0 } : g))
-        );
+        // No necesitamos actualización local, GuestService la hace optimista
 
         try {
-            await this.guestService.updateGuestTable(guestId, tableNumber);
+            await this.guestService.updateGuestTable(guestId, tableId);
         } catch (error) {
             console.error('Error updating guest table:', error);
             // Revertir si falla (opcional, para simpleza no lo haremos aquí si no hay ID real)
@@ -181,7 +185,6 @@ export class TablesComponent implements OnInit {
         try {
             this.showGuestDeleteConfirm.set(false);
             await this.guestService.deleteGuest(guestId);
-            this.guests.update(list => list.filter(g => g.id !== guestId));
         } catch (error) {
             console.error('Error deleting guest:', error);
             this.triggerAlert('Error', 'No se pudo eliminar al invitado. Por favor, inténtalo de nuevo.');
@@ -243,9 +246,7 @@ export class TablesComponent implements OnInit {
                 await this.guestService.registerGuest(guestData);
             }
 
-            // Recargar datos para ver los cambios
-            const updatedList = await this.guestService.loadGuests();
-            this.guests.set(updatedList);
+            // Al guardar, el servicio ya actualiza la señal
 
             this.closeAddModal();
         } catch (error) {
@@ -267,10 +268,10 @@ export class TablesComponent implements OnInit {
     }
     openCreateTableModal() {
         const currentTables = this.tableService.tables();
-        const nextId = currentTables.length > 0 ? Math.max(...currentTables.map(t => t.id)) + 1 : 1;
+        const suggestedName = `Mesa ${currentTables.length + 1}`;
 
         this.newTableData.set({
-            name: `Mesa ${nextId}`,
+            name: suggestedName,
             capacity: this.maxGuests() || 10,
             shape: 'round'
         });
@@ -294,7 +295,7 @@ export class TablesComponent implements OnInit {
             this.isLoading.set(true);
             await firstValueFrom(this.tableService.addTable({
                 id: nextId,
-                name: data.name,
+                name: data.name || `Mesa ${currentTables.length + 1}`,
                 capacity: data.capacity,
                 shape: data.shape
             }));
@@ -377,8 +378,8 @@ export class TablesComponent implements OnInit {
         // Actualización optimista local
         this.tableService.tables.update(current => current.filter(t => t.id !== id));
 
-        // Actualizar invitados localmente para que no parezca que siguen en la mesa eliminada
-        this.guests.update(list => list.map(g => g.tableNumber === id ? { ...g, tableNumber: 0 } : g));
+        // Actualizar invitados localmente (se podría mover al servicio pero aquí es mesa-específico)
+        this.guestService.guests.update(list => list.map(g => g.tableId === id ? { ...g, tableId: null } : g));
 
         try {
             this.showDeleteConfirm.set(false);

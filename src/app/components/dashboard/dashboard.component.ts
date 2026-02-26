@@ -1,9 +1,10 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StatsService, WeddingStats } from '../../services/stats.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { TablesComponent } from './tables/tables.component';
+import { GuestService } from '../../services/guest.service';
 
 @Component({
     selector: 'app-dashboard',
@@ -14,12 +15,19 @@ import { TablesComponent } from './tables/tables.component';
 })
 export class DashboardComponent implements OnInit {
     private statsService = inject(StatsService);
+    private guestService = inject(GuestService);
     private authService = inject(AuthService);
     private router = inject(Router);
 
     stats = signal<WeddingStats | null>(null);
     allergiesCount = signal<number | null>(null);
-    unassignedGuestsCount = signal<number | null>(null);
+
+    // Automatic count based on the shared signal in GuestService
+    unassignedGuestsCount = computed(() => {
+        const guests = this.guestService.guests();
+        return guests.filter(g => !g.tableId || g.tableId === 0).length;
+    });
+
     isLoading = signal(true);
     error = signal<string | null>(null);
     currentView = signal<'stats' | 'tables'>('stats');
@@ -59,19 +67,9 @@ export class DashboardComponent implements OnInit {
 
                         this.allergiesCount.set(totalAllergies);
 
-                        // Cargar también invitados para contar los sin mesa
-                        this.statsService.getGuests().subscribe({
-                            next: (guestsRes: any) => {
-                                const guests = (guestsRes.data || guestsRes) as any[];
-                                if (Array.isArray(guests)) {
-                                    const unassigned = guests.filter(g => !g.tableNumber || g.tableNumber === 0).length;
-                                    this.unassignedGuestsCount.set(unassigned);
-                                }
-                                this.isLoading.set(false);
-                            },
-                            error: () => {
-                                this.isLoading.set(false);
-                            }
+                        // Simplemente cargar para disparar la actualización de la señal en el servicio
+                        this.guestService.loadGuests().finally(() => {
+                            this.isLoading.set(false);
                         });
                     },
                     error: () => {

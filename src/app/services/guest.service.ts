@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -13,7 +13,8 @@ export interface Guest {
   mealType: string;
   needsTransport: boolean;
   isSavedInBbdd: boolean;
-  tableNumber?: number;
+  tableId?: number | null; // Primary field for backend assignment
+  tableName?: string | number; // Fallback field
   allergies?: string;
   notes?: string;
 }
@@ -26,7 +27,9 @@ declare var window: any;
 export class GuestService {
   private apiUrl = environment.apiUrl;
   private sheetUrl = (window as any).NG_APP_SHEETURL || process.env['NG_APP_SHEETURL'] || null;
-  private _cachedGuests: Guest[] | undefined;
+
+  // Master signal for all guests in the app
+  guests = signal<Guest[]>([]);
 
   private http = inject(HttpClient);
 
@@ -53,9 +56,27 @@ export class GuestService {
         }
       }
 
-      const finalItems = Array.isArray(list) ? list : [];
+      const finalItems = (Array.isArray(list) ? list : []).map((guest: any) => {
+        // Normalización progresiva: tableId > tableName
+        let idVal = guest.tableId ?? guest.tableName;
 
-      this._cachedGuests = finalItems;
+        // Si idVal es un string (ej: "Mesa 1", "Mesa1", "1"), extraer el primer número que aparezca
+        if (typeof idVal === 'string') {
+          const match = idVal.match(/\d+/);
+          if (match) idVal = Number(match[0]);
+        }
+
+        const numericId = Number(idVal);
+
+        if (idVal !== undefined && idVal !== null && !isNaN(numericId) && numericId !== 0) {
+          guest.tableId = numericId;
+        } else {
+          guest.tableId = null;
+        }
+        return guest;
+      });
+
+      this.guests.set(finalItems);
       return finalItems;
     } catch (error) {
       console.error('Error in loadGuests:', error);
@@ -66,15 +87,11 @@ export class GuestService {
   // Registra un invitado y recarga el recurso de lista
   async registerGuest(guest: Guest): Promise<any> {
     try {
+      // Actualización optimista
+      this.guests.update((current: Guest[]) => [...current, guest]);
+
       const result = await firstValueFrom(this.http.post(this.apiUrl, guest));
-      // Actualiza la cache local de invitados (si existe la caché, refrescarla)
-      try {
-        const fresh = await this.getAllGuests();
-        this._cachedGuests = fresh;
-        guest.isSavedInBbdd = true;
-      } catch (e) {
-        // Ignorar error de refresco; no queremos bloquear el registro
-      }
+      guest.isSavedInBbdd = true;
 
       // Enviar también a Google Sheets como backup (JSONP para evitar CORS)
       this.addToGoogleSheetsJsonp(guest).catch(error => {
@@ -160,20 +177,33 @@ export class GuestService {
   }
 
   // Devuelve el valor cacheado del recurso (si ya fue cargado)
-  getCachedGuests(): Guest[] | undefined {
-    // Retornar únicamente la caché local sin invocar ninguna carga
-    return this._cachedGuests;
+  getCachedGuests(): Guest[] {
+    return this.guests();
   }
 
   async updateGuest(guestId: string, guestData: Partial<Guest>): Promise<any> {
+    // Optimístico
+    this.guests.update((current: Guest[]) =>
+      current.map(g => g.id === guestId ? { ...g, ...guestData } : g)
+    );
     return firstValueFrom(this.http.patch(`${this.apiUrl}/${guestId}`, guestData));
   }
 
-  async updateGuestTable(guestId: string, tableNumber: number | null): Promise<any> {
-    return firstValueFrom(this.http.patch(`${this.apiUrl}/${guestId}`, { tableNumber }));
+  async updateGuestTable(guestId: string, tableId: number | null): Promise<any> {
+    // Optimístico
+    this.guests.update((current: Guest[]) =>
+      current.map(g => g.id === guestId ? { ...g, tableId } : g)
+    );
+
+    // El backend espera el campo 'tableId' con el ID numérico o null
+    return firstValueFrom(this.http.patch(`${this.apiUrl}/${guestId}`, {
+      tableId
+    }));
   }
 
   async deleteGuest(guestId: string): Promise<any> {
+    // Optimístico
+    this.guests.update((current: Guest[]) => current.filter(g => g.id !== guestId));
     return firstValueFrom(this.http.delete(`${this.apiUrl}/${guestId}`));
   }
 }

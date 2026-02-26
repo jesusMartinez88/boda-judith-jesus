@@ -21,15 +21,15 @@ export class TableService {
 
     private normalizeTable(item: any): TableConfig | null {
         if (!item) return null;
-        // El id puede venir como id, number o tableNumber
-        const id = Number(item.id ?? item.number ?? item.tableNumber);
+        // El id puede venir como id
+        const id = Number(item.id);
         if (isNaN(id)) return null;
 
         return {
             ...item,
             id,
-            // Prioridad: name > number > tableNumber
-            name: item.name || (item.number !== undefined ? String(item.number) : undefined) || (item.tableNumber !== undefined ? String(item.tableNumber) : undefined),
+            // Prioridad: name > number
+            name: item.name || (item.number !== undefined ? String(item.number) : "Mesa X"),
             shape: item.shape || 'round',
             capacity: item.capacity || undefined
         };
@@ -61,7 +61,7 @@ export class TableService {
 
     addTable(table: TableConfig) {
         // Enviamos el objeto tal cual, dejando que el backend decida qué campos usar.
-        // Quitamos la redundancia de tableNumber si queremos que el 'name' sea el protagonista.
+        // Quitamos la redundancia si queremos que el 'name' sea el protagonista.
         const payload = { ...table };
         return this.http.post<any>(`${this.baseUrl}/api/tables`, payload).pipe(
             tap(response => {
