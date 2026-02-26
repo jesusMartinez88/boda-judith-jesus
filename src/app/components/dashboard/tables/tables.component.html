@@ -64,18 +64,24 @@
     }
 
     <div class="tables-layout">
-        <!-- Panel Izquierdo: Invitados sin asignar -->
-        <aside class="guest-pool" (dragover)="onDragOver($event)" (drop)="onDrop(null)">
+        <!-- Panel Izquierdo: Cola de Recepción -->
+        <aside class="reception-queue" (dragover)="onDragOver($event)" (drop)="onDrop(null)">
             <div class="pool-header">
-                <h3>Por asignar ({{ unassignedGuests().length }})</h3>
+                <h3>Cola de Recepción</h3>
                 <button class="add-guest-btn" (click)="openAddModal()" title="Añadir invitado manual">
-                    <span class="icon">+</span>
+                    <span>+</span>
                 </button>
             </div>
+            <span class="badge" style="display:block;text-align:center;margin-bottom:0.8rem;">{{
+                unassignedGuests().length }} invitados esperando</span>
 
             <div class="guest-list">
                 @for (guest of unassignedGuests(); track guest.id) {
-                <div class="guest-item" draggable="true" (dragstart)="onDragStart(guest)">
+                <div class="guest-item" draggable="true" (dragstart)="onDragStart(guest, $event)"
+                    (dragend)="onDragEnd()" [class.is-dragging]="draggingGuestId() === guestKey(guest)">
+                    <div class="guest-avatar">
+                        {{ guest.name.charAt(0).toUpperCase() }}
+                    </div>
                     <div class="guest-info">
                         <span class="guest-name">{{ guest.name }}</span>
                         <span class="guest-meta">{{ guest.mealType }}</span>
@@ -83,91 +89,105 @@
                     <div class="guest-actions">
                         <button class="edit-btn" (click)="openEditModal(guest); $event.stopPropagation()"
                             title="Editar invitado">
-                            <span class="icon">📝</span>
+                            <span>📝</span>
                         </button>
                         <button class="delete-btn" (click)="deleteGuest(guest); $event.stopPropagation()"
                             title="Eliminar invitado">
-                            <span class="icon">🗑️</span>
+                            <span>🗑️</span>
                         </button>
                     </div>
                 </div>
                 }
                 @if (unassignedGuests().length === 0) {
-                <p class="empty-msg">Todos los invitados tienen mesa ✨</p>
+                <div class="empty-msg-container">
+                    <span>✨</span>
+                    <p>¡Todos están acomodados!</p>
+                </div>
                 }
             </div>
         </aside>
 
-        <!-- Panel Central: Plano de Mesas -->
-        <main class="tables-grid">
-            @for (table of tables(); track table.id) {
-            <div class="table-container" [class.full]="table.guests.length >= table.capacity"
-                [class.square]="table.shape === 'square'" (dragover)="onDragOver($event)" (drop)="onDrop(table.id)">
+        <!-- Panel Central: Salón de Celebración -->
+        <div class="celebration-hall">
+            <!-- Decoración floral en esquinas -->
+            <span class="hall-corner hall-corner--tl">🌸🌿</span>
+            <span class="hall-corner hall-corner--tr">🌿🌸</span>
+            <span class="hall-corner hall-corner--bl">🌺🌿</span>
+            <span class="hall-corner hall-corner--br">🌿🌺</span>
 
-                <!-- Controles de Mesa -->
-                <div class="table-config-overlay">
-                    <button class="config-btn shape" (click)="toggleTableShape(table.id, table.shape)"
-                        [title]="'Cambiar a ' + (table.shape === 'round' ? 'cuadrada' : 'redonda')">
-                        {{ table.shape === 'round' ? '🟦' : '⭕' }}
-                    </button>
-                    <div class="capacity-field">
-                        <input type="number" [ngModel]="table.capacity"
-                            (ngModelChange)="updateTableCapacity(table.id, $event)" min="1" max="20"
-                            title="Capacidad de esta mesa">
+            <main class="tables-grid">
+                @for (table of tables(); track table.id) {
+                <div class="table-container" [class.full]="table.guests.length >= table.capacity"
+                    [class.square]="table.shape === 'square'" (dragover)="onDragOver($event)" (drop)="onDrop(table.id)">
+
+                    <!-- Controles de Mesa (Overlay) -->
+                    <div class="table-config-overlay">
+                        <button class="config-btn shape" (click)="toggleTableShape(table.id, table.shape)"
+                            [title]="'Cambiar a ' + (table.shape === 'round' ? 'cuadrada' : 'redonda')">
+                            {{ table.shape === 'round' ? '🟦' : '⭕' }}
+                        </button>
+                        <div class="capacity-field">
+                            <input type="number" [ngModel]="table.capacity"
+                                (ngModelChange)="updateTableCapacity(table.id, $event)" min="1" max="20"
+                                title="Capacidad de esta mesa">
+                        </div>
+                        <button class="config-btn delete" (click)="deleteTable(table.id)" title="Eliminar mesa">
+                            🗑️
+                        </button>
                     </div>
-                    <button class="config-btn delete" (click)="deleteTable(table.id)" title="Eliminar mesa">
-                        🗑️
-                    </button>
-                </div>
 
-                <div class="table-surface">
-                    <div class="table-info">
-                        @if (editingTableId() === table.id) {
-                        <input type="text" class="edit-table-input" [ngModel]="editingName()"
-                            (ngModelChange)="editingName.set($event)" (blur)="saveTableName(table.id)"
-                            (keyup.enter)="saveTableName(table.id)" autofocus (click)="$event.stopPropagation()">
+                    <div class="table-surface">
+                        <div class="table-info">
+                            @if (editingTableId() === table.id) {
+                            <input type="text" class="edit-table-input" [ngModel]="editingName()"
+                                (ngModelChange)="editingName.set($event)" (blur)="saveTableName(table.id)"
+                                (keyup.enter)="saveTableName(table.id)" autofocus (click)="$event.stopPropagation()">
+                            } @else {
+                            <span class="table-num" (click)="startEditingTable(table.id, table.name)"
+                                title="Haz clic para renombrar">
+                                {{ table.name || 'Mesa ' + table.id }}
+                            </span>
+                            }
+                            <div class="table-stats">
+                                <span class="count">{{ table.guests.length }}/{{ table.capacity }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Anillo de progreso / Decoración -->
+                        @if (table.shape === 'round') {
+                        <svg class="progress-ring" viewBox="0 0 100 100">
+                            <circle class="ring-bg" cx="50" cy="50" r="48"></circle>
+                            <circle class="ring-fill" cx="50" cy="50" r="48"
+                                [style.stroke-dashoffset]="301 - (301 * (table.guests.length / table.capacity))"
+                                stroke-dasharray="301">
+                            </circle>
+                        </svg>
                         } @else {
-                        <span class="table-num" (click)="startEditingTable(table.id, table.name)"
-                            title="Haz clic para renombrar">
-                            {{ table.name || 'Mesa ' + table.id }}
-                        </span>
+                        <div class="square-border" [style.--progress]="(table.guests.length / table.capacity) * 100">
+                        </div>
                         }
-                        <div class="table-stats">
-                            <span class="count">{{ table.guests.length }}/{{ table.capacity }}</span>
-                        </div>
                     </div>
 
-                    <!-- Anillo de progreso (solo para mesas redondas) -->
-                    @if (table.shape === 'round') {
-                    <svg class="progress-ring" viewBox="0 0 100 100">
-                        <circle class="ring-bg" cx="50" cy="50" r="45"></circle>
-                        <circle class="ring-fill" cx="50" cy="50" r="45"
-                            [style.stroke-dashoffset]="283 - (283 * (table.guests.length / table.capacity))">
-                        </circle>
-                    </svg>
-                    } @else {
-                    <!-- Marco para mesa cuadrada -->
-                    <div class="square-border" [style.--progress]="(table.guests.length / table.capacity) * 100"></div>
-                    }
-                </div>
-
-                <div class="seats-layout" [class.square-grid]="table.shape === 'square'">
-                    @for (guest of table.guests; track guest.id; let idx = $index) {
-                    <div class="guest-seat" draggable="true" (dragstart)="onDragStart(guest)" [style.--seat-index]="idx"
-                        [style.--total-seats]="table.guests.length" [title]="guest.name">
-                        <div class="seat-marker">
-                            <span class="seat-icon">👤</span>
+                    <div class="seats-layout" [class.square-grid]="table.shape === 'square'">
+                        @for (guest of table.guests; track guest.id; let idx = $index) {
+                        <div class="guest-seat" draggable="true" (dragstart)="onDragStart(guest, $event)"
+                            (dragend)="onDragEnd()" [style.--seat-index]="idx"
+                            [style.--total-seats]="table.guests.length" [title]="guest.name"
+                            [class.just-seated]="newlySeatedIds().has(guestKey(guest))">
+                            <div class="seat-marker">
+                                <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
+                            </div>
+                            <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
                         </div>
-                        <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
+                        }
+                        @if (table.guests.length === 0) {
+                        <div class="empty-table-msg">Mesa disponible</div>
+                        }
                     </div>
-                    }
-                    @if (table.guests.length === 0) {
-                    <div class="empty-table-msg">Vacía</div>
-                    }
                 </div>
-            </div>
-            }
-        </main>
+                }
+            </main>
+        </div>
     </div>
 
     <!-- Modal para Añadir/Editar Invitado -->

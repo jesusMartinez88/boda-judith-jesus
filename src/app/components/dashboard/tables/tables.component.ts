@@ -24,6 +24,10 @@ export class TablesComponent implements OnInit {
     isLoading = signal(true);
     draggedGuest: Guest | null = null;
 
+    // Drag animation state
+    draggingGuestId = signal<string | undefined>(undefined);
+    newlySeatedIds = signal<Set<string>>(new Set());
+
     // Modal para nuevo/editar invitado
     showAddModal = signal(false);
     isEditingGuest = signal(false);
@@ -127,10 +131,41 @@ export class TablesComponent implements OnInit {
         this.settingsService.updateMaxGuests(val).subscribe();
     }
 
+    /** Returns the best available unique key for a guest (used in templates). */
+    guestKey(guest: Guest): string {
+        return guest.id ?? guest.email ?? guest.phone ?? '';
+    }
+
     // --- HTML5 Drag & Drop Handlers ---
 
-    onDragStart(guest: Guest) {
+    onDragStart(guest: Guest, event?: DragEvent) {
         this.draggedGuest = guest;
+        const gid = guest.id ?? guest.email ?? guest.phone;
+        this.draggingGuestId.set(gid);
+
+        // Custom drag ghost: a small person emoji card
+        if (event?.dataTransfer) {
+            const ghost = document.createElement('div');
+            ghost.style.cssText = [
+                'position:fixed', 'top:-200px', 'left:-200px',
+                'width:56px', 'height:56px',
+                'background:white',
+                'border-radius:50%',
+                'display:flex', 'align-items:center', 'justify-content:center',
+                'font-size:1.8rem',
+                'box-shadow:0 4px 16px rgba(236,72,153,0.4)',
+                'border:2px solid #ec4899'
+            ].join(';');
+            ghost.textContent = '🧍';
+            document.body.appendChild(ghost);
+            event.dataTransfer.setDragImage(ghost, 28, 28);
+            // Clean up the ghost after drag ends
+            setTimeout(() => document.body.removeChild(ghost), 0);
+        }
+    }
+
+    onDragEnd() {
+        this.draggingGuestId.set(undefined);
     }
 
     onDragOver(event: DragEvent) {
@@ -156,20 +191,28 @@ export class TablesComponent implements OnInit {
         }
 
         const guest = this.draggedGuest;
-        const guestId = guest.id || guest.email || guest.phone; // Fallback a email/phone si no hay ID
+        const guestId = guest.id || guest.email || guest.phone;
 
         if (!guestId) return;
 
-        // No necesitamos actualización local, GuestService la hace optimista
-
         try {
             await this.guestService.updateGuestTable(guestId, tableId);
+            // Trigger sit-down animation for this guest
+            if (tableId !== null) {
+                const sid = guest.id ?? guest.email ?? guest.phone;
+                if (sid) {
+                    this.newlySeatedIds.update(s => new Set([...s, sid]));
+                    setTimeout(() => {
+                        this.newlySeatedIds.update(s => { const n = new Set(s); n.delete(sid); return n; });
+                    }, 900);
+                }
+            }
         } catch (error) {
             console.error('Error updating guest table:', error);
-            // Revertir si falla (opcional, para simpleza no lo haremos aquí si no hay ID real)
         }
 
         this.draggedGuest = null;
+        this.draggingGuestId.set(undefined);
     }
 
     deleteGuest(guest: Guest) {
