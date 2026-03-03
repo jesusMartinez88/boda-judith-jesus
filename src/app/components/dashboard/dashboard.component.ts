@@ -5,12 +5,13 @@ import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { TablesComponent } from './tables/tables.component';
 import { SettingsComponent } from '../settings/settings.component';
+import { FinancesComponent } from './finances/finances.component';
 import { Guest, GuestService } from '../../services/guest.service';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [CommonModule, TablesComponent, SettingsComponent],
+    imports: [CommonModule, TablesComponent, SettingsComponent, FinancesComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })
@@ -47,10 +48,19 @@ export class DashboardComponent implements OnInit {
 
     isLoading = signal(true);
     error = signal<string | null>(null);
-    currentView = signal<'stats' | 'tables' | 'settings'>('stats');
+    currentView = signal<'stats' | 'tables' | 'settings' | 'finances'>('stats');
+    isMenuOpen = signal(false);
 
     ngOnInit() {
         this.loadStats();
+    }
+
+    toggleMenu() {
+        this.isMenuOpen.update(v => !v);
+    }
+
+    closeMenu() {
+        this.isMenuOpen.set(false);
     }
 
     loadStats() {
@@ -102,8 +112,9 @@ export class DashboardComponent implements OnInit {
         });
     }
 
-    setView(view: 'stats' | 'tables' | 'settings') {
+    setView(view: 'stats' | 'tables' | 'settings' | 'finances') {
         this.currentView.set(view);
+        this.closeMenu();
     }
 
     logout() {

@@ -1,5 +1,17 @@
 <div class="dashboard-container">
-    <aside class="sidebar">
+    <!-- Hamburguer Button (Mobile) -->
+    <button class="menu-toggle" [class.open]="isMenuOpen()" (click)="toggleMenu()" aria-label="Menu Toggle">
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </button>
+
+    <!-- Overlay Backdrop -->
+    <div class="sidebar-overlay" [class.show]="isMenuOpen()" (click)="closeMenu()"></div>
+
+    <aside class="sidebar" [class.open]="isMenuOpen()">
         <div class="sidebar-header">
             <span class="logo">💍</span>
             <h2>Admin Panel</h2>
@@ -11,7 +23,10 @@
             <a class="nav-item" [class.active]="currentView() === 'tables'" (click)="setView('tables')">
                 <span class="icon">🪑</span> Mesas
             </a>
-            <a class="nav-item" (click)="setView('settings')">
+            <a class="nav-item" [class.active]="currentView() === 'finances'" (click)="setView('finances')">
+                <span class="icon">💰</span> Control de Gastos
+            </a>
+            <a class="nav-item" [class.active]="currentView() === 'settings'" (click)="setView('settings')">
                 <span class="icon">⚙️</span> Configuración
             </a>
             <a class="nav-item" (click)="loadStats()">
@@ -150,6 +165,10 @@
 
         @if (currentView() === 'settings') {
         <app-settings></app-settings>
+        }
+
+        @if (currentView() === 'finances') {
+        <app-finances></app-finances>
         }
 
         <footer class="content-footer">

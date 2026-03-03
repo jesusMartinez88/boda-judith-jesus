@@ -1,0 +1,155 @@
+<div class="finances-container animate-fade-in">
+    <header class="section-header">
+        <h1>Control de Gastos 💰</h1>
+        <p>Gestiona los ingresos y gastos de la boda</p>
+    </header>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+        <div class="summary-card income">
+            <div class="card-icon">📈</div>
+            <div class="card-info">
+                <h3>Total Ingresos</h3>
+                <p class="value">{{ totalIncome() | currency:'EUR' }}</p>
+            </div>
+        </div>
+        <div class="summary-card expense">
+            <div class="card-icon">📉</div>
+            <div class="card-info">
+                <h3>Total Gastos</h3>
+                <p class="value">{{ totalExpense() | currency:'EUR' }}</p>
+            </div>
+        </div>
+        <div class="summary-card balance" [class.negative]="balance() < 0">
+            <div class="card-icon">⚖️</div>
+            <div class="card-info">
+                <h3>Balance Actual</h3>
+                <p class="value">{{ balance() | currency:'EUR' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <!-- Form Section -->
+        <section class="form-section">
+            <div class="card">
+                <h3>{{ editingRecordId() ? 'Editar Registro' : 'Nuevo Registro' }}</h3>
+                <form [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="finance-form">
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <input type="text" formControlName="description" placeholder="Ej: Pago Fotógrafo"
+                            [class.error]="financeForm.get('description')?.invalid && financeForm.get('description')?.touched">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Importe (€)</label>
+                            <input type="number" formControlName="amount" step="0.01"
+                                [class.error]="financeForm.get('amount')?.invalid && financeForm.get('amount')?.touched">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo</label>
+                            <div class="segmented-control">
+                                <button type="button" [class.active]="financeForm.get('type')?.value === 'expense'"
+                                    (click)="financeForm.patchValue({type: 'expense'})">
+                                    Gasto
+                                </button>
+                                <button type="button" [class.active]="financeForm.get('type')?.value === 'income'"
+                                    (click)="financeForm.patchValue({type: 'income'})">
+                                    Ingreso
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select formControlName="category">
+                            <option value="Celebración">Celebración</option>
+                            <option value="Vestuario">Vestuario</option>
+                            <option value="Fotografía/Video">Fotografía/Video</option>
+                            <option value="Música/Animación">Música/Animación</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Regalos/Detalles">Regalos/Detalles</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+                            {{ isSubmitting() ? 'Guardando...' : (editingRecordId() ? 'Guardar Cambios' : 'Añadir
+                            Registro') }}
+                        </button>
+                        @if (editingRecordId()) {
+                        <button type="button" class="cancel-btn" (click)="cancelEdit()">Cancelar</button>
+                        }
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- List Section -->
+        <section class="list-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Movimientos Recientes</h3>
+                    <button class="refresh-btn" (click)="loadData()" [disabled]="isLoading()">
+                        <span [class.spinning]="isLoading()">🔄</span>
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    @if (records().length === 0 && !isLoading()) {
+                    <div class="empty-state">
+                        <p>No hay movimientos registrados.</p>
+                    </div>
+                    } @else {
+                    <table class="finances-table">
+                        <thead>
+                            <tr>
+                                <th class="hide-mobile">Fecha</th>
+                                <th>Descripción</th>
+                                <th class="hide-mobile">Categoría</th>
+                                <th>Importe</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (record of records(); track record.id) {
+                            <tr class="record-row">
+                                <td class="date-cell hide-mobile">{{ (record.date || record.createdAt) |
+                                    date:'dd/MM/yyyy' }}</td>
+                                <td class="desc-cell">
+                                    <div class="desc-content">
+                                        <span class="type-indicator" [class]="getBadgeClass(record.type)"></span>
+                                        <div class="desc-text-wrapper">
+                                            <span class="main-desc">{{ record.description }}</span>
+                                            <span class="sub-desc show-mobile">{{ record.category }} • {{ (record.date
+                                                || record.createdAt) | date:'dd/MM' }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="hide-mobile"><span class="category-badge">{{ record.category }}</span></td>
+                                <td class="amount-cell" [class.income]="record.type === 'income'"
+                                    [class.expense]="record.type === 'expense'">
+                                    {{ record.type === 'expense' ? '-' : '+' }}{{ record.amount | currency:'EUR' }}
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="action-btn edit-btn" (click)="editRecord(record)" title="Editar">
+                                        ✏️
+                                    </button>
+                                    <button class="action-btn delete-btn" (click)="deleteRecord(record.id)"
+                                        title="Eliminar">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
