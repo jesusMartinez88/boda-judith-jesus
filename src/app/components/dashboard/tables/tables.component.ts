@@ -446,4 +446,16 @@ export class TablesComponent implements OnInit {
     closeFullTableModal() {
         this.showFullTableModal.set(false);
     }
+
+    getMenuClass(mealType?: string): string {
+        if (!mealType) return 'menu-normal';
+        const type = mealType.toLowerCase();
+        if (type.includes('vege')) return 'menu-vegetarian';
+        if (type.includes('vegan')) return 'menu-vegan';
+        if (type.includes('celia') || type.includes('gluten')) return 'menu-celiac';
+        if (type.includes('lacto')) return 'menu-lactose';
+        if (type.includes('fruto')) return 'menu-nuts';
+        if (type.includes('kid') || type.includes('infant')) return 'menu-kid';
+        return 'menu-normal';
+    }
 }

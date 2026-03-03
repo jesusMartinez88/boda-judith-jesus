@@ -72,8 +72,9 @@
 
             <div class="guest-list">
                 @for (guest of unassignedGuests(); track guest.id) {
-                <div class="guest-item" draggable="true" (dragstart)="onDragStart(guest, $event)"
-                    (dragend)="onDragEnd()" [class.is-dragging]="draggingGuestId() === guestKey(guest)">
+                <div class="guest-item" [class]="getMenuClass(guest.mealType)" draggable="true"
+                    (dragstart)="onDragStart(guest, $event)" (dragend)="onDragEnd()"
+                    [class.is-dragging]="draggingGuestId() === guestKey(guest)">
                     <div class="guest-avatar">
                         {{ guest.name.charAt(0).toUpperCase() }}
                     </div>
@@ -169,7 +170,7 @@
                             (dragend)="onDragEnd()" [style.--seat-index]="idx"
                             [style.--total-seats]="table.guests.length" [title]="guest.name"
                             [class.just-seated]="newlySeatedIds().has(guestKey(guest))">
-                            <div class="seat-marker">
+                            <div class="seat-marker" [class]="getMenuClass(guest.mealType)">
                                 <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
                             </div>
                             <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
@@ -358,4 +359,40 @@
         </div>
     </div>
     }
+    <!-- Leyenda de Colores -->
+    <footer class="tables-legend">
+        <div class="legend-header">
+            <h4>Leyenda de Menús</h4>
+        </div>
+        <div class="legend-grid">
+            <div class="legend-item menu-normal">
+                <span class="legend-color"></span>
+                <span class="legend-label">Normal</span>
+            </div>
+            <div class="legend-item menu-vegetarian">
+                <span class="legend-color"></span>
+                <span class="legend-label">Vegetariano</span>
+            </div>
+            <div class="legend-item menu-vegan">
+                <span class="legend-color"></span>
+                <span class="legend-label">Vegano</span>
+            </div>
+            <div class="legend-item menu-celiac">
+                <span class="legend-color"></span>
+                <span class="legend-label">Celiaco / Sin Gluten</span>
+            </div>
+            <div class="legend-item menu-lactose">
+                <span class="legend-color"></span>
+                <span class="legend-label">Sin Lactosa</span>
+            </div>
+            <div class="legend-item menu-nuts">
+                <span class="legend-color"></span>
+                <span class="legend-label">Frutos Secos</span>
+            </div>
+            <div class="legend-item menu-kid">
+                <span class="legend-color"></span>
+                <span class="legend-label">Infantil</span>
+            </div>
+        </div>
+    </footer>
 </div>

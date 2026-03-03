@@ -30,6 +30,11 @@ export class DashboardComponent implements OnInit {
         return guests.filter(g => !g.tableId || g.tableId === 0).length;
     });
 
+    sentGuestsCount = computed(() => {
+        const guests = this.guestService.guests();
+        return guests.filter(g => g.tableId && g.tableId !== 0).length;
+    });
+
     childrenCount = computed(() => {
         const guests = this.guestService.guests();
         return guests.reduce((total, guest: Guest) => {

@@ -116,14 +116,18 @@
                         <span class="label">Confirmados</span>
                         <span class="count">{{ stats()?.confirmed }}</span>
                     </div>
-                    <div class="stat-item pending">
+                    <div class="stat-item pending" *ngIf="sentGuestsCount() !== null">
+                        <span class="label">Sentados</span>
+                        <span class="count">{{ sentGuestsCount() }}</span>
+                    </div>
+                    <!-- <div class="stat-item pending">
                         <span class="label">Pendientes</span>
                         <span class="count">{{ stats()?.pending }}</span>
                     </div>
                     <div class="stat-item declined" *ngIf="stats()?.declined !== undefined">
                         <span class="label">No asisten</span>
                         <span class="count">{{ stats()?.declined }}</span>
-                    </div>
+                    </div> -->
                     <div class="stat-item unassigned" *ngIf="unassignedGuestsCount() !== null">
                         <span class="label">Sin mesa</span>
                         <span class="count">{{ unassignedGuestsCount() }}</span>
