@@ -5,11 +5,12 @@ import { SettingsService } from '../../../services/settings.service';
 import { TableService, TableConfig } from '../../../services/table.service';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
+import { TablesLegendComponent } from './tables-legend/tables-legend.component';
 
 @Component({
     selector: 'app-tables',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, TablesLegendComponent],
     templateUrl: './tables.component.html',
     styleUrl: './tables.component.css'
 })
