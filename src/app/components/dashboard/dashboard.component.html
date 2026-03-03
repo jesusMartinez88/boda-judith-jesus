@@ -11,6 +11,9 @@
             <a class="nav-item" [class.active]="currentView() === 'tables'" (click)="setView('tables')">
                 <span class="icon">🪑</span> Mesas
             </a>
+            <a class="nav-item" (click)="setView('settings')">
+                <span class="icon">⚙️</span> Configuración
+            </a>
             <a class="nav-item" (click)="loadStats()">
                 <span class="icon">🔄</span> Actualizar
             </a>
@@ -69,11 +72,24 @@
         @if (!isLoading() && stats()) {
         <div class="stats-grid animate-fade-in">
             <!-- Total Guests Card -->
-            <div class="stats-card total">
-                <div class="card-icon">👥</div>
-                <div class="card-info">
-                    <h3>Total Invitados</h3>
-                    <p class="value">{{ stats()?.total }}</p>
+            <div class="stats-card total" style="flex-direction: column; align-items: stretch;">
+                <div style="display: flex; align-items: center; gap: 2rem;">
+                    <div class="card-icon">👥</div>
+                    <div class="card-info">
+                        <h3>Total Invitados</h3>
+                        <p class="value">{{ stats()?.total }}</p>
+                    </div>
+                </div>
+                <!-- Adults and Children Counters inside Total -->
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <div class="stat-item adults" style="flex: 1;">
+                        <span class="label">Adultos</span>
+                        <span class="count" style="font-size: 1.5rem;">{{ adultsCount() }}</span>
+                    </div>
+                    <div class="stat-item children" style="flex: 1;">
+                        <span class="label">Niños</span>
+                        <span class="count" style="font-size: 1.5rem;">{{ childrenCount() }}</span>
+                    </div>
                 </div>
             </div>
 
@@ -100,6 +116,7 @@
                 </div>
             </div>
 
+            <!-- Transportation and Children Cards -->
             <!-- Transportation Card -->
             <div class="stats-card transport">
                 <h3>Transporte</h3>
@@ -129,6 +146,10 @@
 
         @if (currentView() === 'tables') {
         <app-tables></app-tables>
+        }
+
+        @if (currentView() === 'settings') {
+        <app-settings></app-settings>
         }
 
         <footer class="content-footer">

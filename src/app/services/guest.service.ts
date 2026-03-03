@@ -10,6 +10,9 @@ export interface Guest {
   email: string;
   phone: string;
   attending: number;
+  adults?: number;
+  children?: number;
+  isAdult?: number;
   mealType: string;
   needsTransport: boolean;
   isSavedInBbdd: boolean;
@@ -142,6 +145,8 @@ export class GuestService {
       params.set('email', guest.email || '');
       params.set('phone', guest.phone || '');
       params.set('attending', String(guest.attending ?? ''));
+      params.set('adults', String(guest.adults ?? '0'));
+      params.set('children', String(guest.children ?? '0'));
       params.set('mealType', guest.mealType || '');
       params.set('needsTransport', String(guest.needsTransport ?? ''));
       params.set('isSavedInBbdd', String(guest.isSavedInBbdd ?? ''));

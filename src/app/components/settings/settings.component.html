@@ -1,0 +1,13 @@
+<div class="settings-container">
+    <header class="settings-header">
+        <h1>Configuración de la App</h1>
+        <p>Ajusta parámetros de la aplicación</p>
+    </header>
+
+    <div class="setting-item">
+        <label for="maxGuests">Capacidad maxima de mesas</label>
+        <input type="number" id="maxGuests" [ngModel]="maxGuests()" (ngModelChange)="updateMaxGuests($event)" min="1" max="20" />
+    </div>
+
+    <!-- más opciones vendrán aquí -->
+</div>

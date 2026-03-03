@@ -39,32 +39,6 @@
     align-items: center;
 }
 
-.settings-card {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 0.7rem 1rem;
-    background: #f1f5f9;
-    border-radius: 12px;
-}
-
-.settings-card label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #475569;
-}
-
-.settings-card input {
-    width: 55px;
-    padding: 0.3rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: 700;
-    font-size: 0.95rem;
-    background: white;
-}
-
 .btn-add-table {
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     color: white;

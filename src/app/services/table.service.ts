@@ -36,9 +36,9 @@ export class TableService {
     }
 
     loadTables() {
-        return this.http.get<any>(`${this.baseUrl}/api/tables`).pipe(
+        return this.http.get<{ data: TableConfig[] }>(`${this.baseUrl}/api/tables`).pipe(
             tap(response => {
-                let list = response.data || response.tables || response;
+                let list = response.data;
 
                 if (!Array.isArray(list)) {
                     list = [];

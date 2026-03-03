@@ -24,7 +24,8 @@ export class RsvpFormComponent {
       //email: ['', [Validators.required, Validators.email]],
       email: [''],
       phone: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
-      attending: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
+      adults: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
+      children: [0, [Validators.required, Validators.min(0), Validators.max(10)]],
       mealType: ['normal', Validators.required],
       needsTransport: [false, Validators.required],
       isSavedInBbdd: [false, Validators.required],
@@ -46,7 +47,8 @@ export class RsvpFormComponent {
     this.submitSuccess.set(false);
 
     try {
-      let guestData: Guest = this.form.value;
+      let guestData: Guest = { ...this.form.value };
+      guestData.attending = Number(guestData.adults || 0) + Number(guestData.children || 0);
       await this.guestService.registerGuest(guestData);
 
       this.submitSuccess.set(true);
@@ -58,7 +60,7 @@ export class RsvpFormComponent {
         colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff']
       });
 
-      this.form.reset({ attending: 1, mealType: 'normal', needsTransport: false, isSavedInBbdd: false });
+      this.form.reset({ adults: 1, children: 0, mealType: 'normal', needsTransport: false, isSavedInBbdd: false });
 
       // Esperar 2 segundos usando requestAnimationFrame para máxima eficiencia
       const startTime = performance.now();

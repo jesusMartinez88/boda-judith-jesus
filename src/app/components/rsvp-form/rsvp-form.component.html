@@ -77,29 +77,57 @@
       }
     </div>
 
-    <!-- Number of Guests (Attending) -->
-    <div class="form-group">
-      <label for="attending" class="form-label">Número de Asistentes</label>
-      <div class="input-icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        <select id="attending" formControlName="attending" class="form-input">
-          <option value="1">1 persona</option>
-          <option value="2">2 personas</option>
-          <option value="3">3 personas</option>
-          <option value="4">4 personas</option>
-          <option value="5">5 personas</option>
-          <option value="6">6 personas</option>
-          <option value="7">7 personas</option>
-          <option value="8">8 personas</option>
-          <option value="9">9 personas</option>
-          <option value="10">10 personas</option>
-        </select>
+    <!-- Number of Guests (Adults & Children) -->
+    <div class="form-group flex-group">
+      <!-- Adults -->
+      <div class="flex-1">
+        <label for="adults" class="form-label">Adultos *</label>
+        <div class="input-icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <select id="adults" formControlName="adults" class="form-input">
+            <option value="1">1 adulto</option>
+            <option value="2">2 adultos</option>
+            <option value="3">3 adultos</option>
+            <option value="4">4 adultos</option>
+            <option value="5">5 adultos</option>
+            <option value="6">6 adultos</option>
+            <option value="7">7 adultos</option>
+            <option value="8">8 adultos</option>
+            <option value="9">9 adultos</option>
+            <option value="10">10 adultos</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Children -->
+      <div class="flex-1">
+        <label for="children" class="form-label">Niños</label>
+        <div class="input-icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <select id="children" formControlName="children" class="form-input">
+            <option value="0">0 niños</option>
+            <option value="1">1 niño</option>
+            <option value="2">2 niños</option>
+            <option value="3">3 niños</option>
+            <option value="4">4 niños</option>
+            <option value="5">5 niños</option>
+            <option value="6">6 niños</option>
+            <option value="7">7 niños</option>
+            <option value="8">8 niños</option>
+            <option value="9">9 niños</option>
+            <option value="10">10 niños</option>
+          </select>
+        </div>
       </div>
     </div>
 

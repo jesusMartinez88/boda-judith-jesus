@@ -240,6 +240,16 @@
     color: #166534;
 }
 
+.stat-item.adults {
+    background: #eff6ff;
+    color: #1e40af;
+}
+
+.stat-item.children {
+    background: #fdf4ff;
+    color: #86198f;
+}
+
 .stat-item.pending {
     background: #fffbeb;
     color: #92400e;

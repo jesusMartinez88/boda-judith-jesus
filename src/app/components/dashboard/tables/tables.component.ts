@@ -127,9 +127,6 @@ export class TablesComponent implements OnInit {
         }
     }
 
-    updateMaxGuests(val: number) {
-        this.settingsService.updateMaxGuests(val).subscribe();
-    }
 
     /** Returns the best available unique key for a guest (used in templates). */
     guestKey(guest: Guest): string {

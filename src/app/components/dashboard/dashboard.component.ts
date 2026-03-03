@@ -4,12 +4,13 @@ import { StatsService, WeddingStats } from '../../services/stats.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { TablesComponent } from './tables/tables.component';
-import { GuestService } from '../../services/guest.service';
+import { SettingsComponent } from '../settings/settings.component';
+import { Guest, GuestService } from '../../services/guest.service';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [CommonModule, TablesComponent],
+    imports: [CommonModule, TablesComponent, SettingsComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })
@@ -28,9 +29,25 @@ export class DashboardComponent implements OnInit {
         return guests.filter(g => !g.tableId || g.tableId === 0).length;
     });
 
+    childrenCount = computed(() => {
+        const guests = this.guestService.guests();
+        return guests.reduce((total, guest: Guest) => {
+            const childrenFromRsvp = Number(guest.children) || 0;
+            return total + (childrenFromRsvp > 0 ? childrenFromRsvp : guest.isAdult === 1 ? 0 : 1);
+        }, 0);
+    });
+
+    adultsCount = computed(() => {
+        const guests = this.guestService.guests();
+        return guests.reduce((total, guest: Guest) => {
+            const adultsFromRsvp = Number(guest.adults) || 0;
+            return total + (adultsFromRsvp > 0 ? adultsFromRsvp : guest.isAdult === 1 ? 1 : 0);
+        }, 0);
+    });
+
     isLoading = signal(true);
     error = signal<string | null>(null);
-    currentView = signal<'stats' | 'tables'>('stats');
+    currentView = signal<'stats' | 'tables' | 'settings'>('stats');
 
     ngOnInit() {
         this.loadStats();
@@ -85,7 +102,7 @@ export class DashboardComponent implements OnInit {
         });
     }
 
-    setView(view: 'stats' | 'tables') {
+    setView(view: 'stats' | 'tables' | 'settings') {
         this.currentView.set(view);
     }
 

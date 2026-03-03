@@ -112,6 +112,24 @@
   gap: 0.5rem;
 }
 
+.flex-group {
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.flex-1 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .flex-group {
+    flex-direction: column;
+  }
+}
+
 .form-label {
   font-weight: 600;
   color: #1f2937;

@@ -1,0 +1,39 @@
+.settings-container {
+    padding: 1.5rem 2rem;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.settings-header h2 {
+    margin: 0;
+    font-family: 'Playfair Display', serif;
+    color: #1e293b;
+}
+
+.settings-header p {
+    margin: 0.3rem 0 1rem 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.setting-item {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 320px;
+}
+
+.setting-item label {
+    font-weight: 600;
+    color: #475569;
+}
+
+.setting-item input {
+    width: 60px;
+    padding: 0.3rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 700;
+    background: white;
+}
