@@ -6,11 +6,12 @@ import { TableService, TableConfig } from '../../../services/table.service';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { TablesLegendComponent } from './tables-legend/tables-legend.component';
+import { TablesHeaderComponent } from './tables-header/tables-header.component';
 
 @Component({
     selector: 'app-tables',
     standalone: true,
-    imports: [CommonModule, FormsModule, TablesLegendComponent],
+    imports: [CommonModule, FormsModule, TablesLegendComponent, TablesHeaderComponent],
     templateUrl: './tables.component.html',
     styleUrl: './tables.component.css'
 })

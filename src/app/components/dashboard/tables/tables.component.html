@@ -1,16 +1,5 @@
 <div class="tables-view">
-    <header class="tables-header">
-        <div class="title-group">
-            <h2>Gestión de Mesas</h2>
-            <p>Organiza a los invitados y personaliza tus mesas</p>
-        </div>
-
-        <div class="header-actions">
-            <button class="btn-add-table" (click)="openCreateTableModal()">
-                <span class="icon">➕</span> Nueva Mesa
-            </button>
-        </div>
-    </header>
+    <app-tables-header (addTable)="openCreateTableModal()"></app-tables-header>
 
     <!-- Modal para Añadir Mesa -->
     @if (showCreateTableModal()) {
