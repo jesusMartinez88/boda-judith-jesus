@@ -6,12 +6,14 @@ import { Router } from '@angular/router';
 import { TablesComponent } from './tables/tables.component';
 import { SettingsComponent } from '../settings/settings.component';
 import { FinancesComponent } from './finances/finances.component';
+import { AttendanceProgressComponent } from './attendance-progress/attendance-progress.component';
 import { Guest, GuestService } from '../../services/guest.service';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [CommonModule, TablesComponent, SettingsComponent, FinancesComponent],
+    imports: [CommonModule, TablesComponent, SettingsComponent, FinancesComponent, AttendanceProgressComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })
@@ -19,6 +21,7 @@ export class DashboardComponent implements OnInit {
     private statsService = inject(StatsService);
     private guestService = inject(GuestService);
     private authService = inject(AuthService);
+    private settingsService = inject(SettingsService);
     private router = inject(Router);
 
     stats = signal<WeddingStats | null>(null);
@@ -51,6 +54,8 @@ export class DashboardComponent implements OnInit {
         }, 0);
     });
 
+    pendings = computed(() => (this.settingsService.settings().total_estimated_guests || 0) - (this.stats()?.confirmed || 0));
+
     isLoading = signal(true);
     error = signal<string | null>(null);
     currentView = signal<'stats' | 'tables' | 'settings' | 'finances'>('stats');
@@ -58,6 +63,7 @@ export class DashboardComponent implements OnInit {
 
     ngOnInit() {
         this.loadStats();
+        this.settingsService.loadSettings().subscribe();
     }
 
     toggleMenu() {
