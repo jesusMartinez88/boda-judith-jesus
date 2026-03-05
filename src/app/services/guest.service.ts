@@ -18,6 +18,7 @@ export interface Guest {
   isSavedInBbdd: boolean;
   tableId?: number | null; // Primary field for backend assignment
   tableName?: string | number; // Fallback field
+  seatNumber?: number | null; // Position in the table
   allergies?: string;
   notes?: string;
 }
@@ -60,23 +61,44 @@ export class GuestService {
       }
 
       const finalItems = (Array.isArray(list) ? list : []).map((guest: any) => {
-        // Normalización progresiva: tableId > tableName
-        let idVal = guest.tableId ?? guest.tableName;
+        // Asegurar mapeo de ID (servidor suele devolver _id o id)
+        if (guest._id && !guest.id) guest.id = guest._id;
 
-        // Si idVal es un string (ej: "Mesa 1", "Mesa1", "1"), extraer el primer número que aparezca
-        if (typeof idVal === 'string') {
-          const match = idVal.match(/\d+/);
-          if (match) idVal = Number(match[0]);
+        // Normalización de tableId (Prioridad camelCase del servidor)
+        let tVal = guest.tableId ?? guest.table_id ?? guest.tableName ?? guest.table_name;
+        if (typeof tVal === 'string') {
+          const match = tVal.match(/\d+/);
+          if (match) tVal = Number(match[0]);
         }
+        guest.tableId = (tVal !== undefined && tVal !== null && !isNaN(Number(tVal)) && Number(tVal) !== 0) ? Number(tVal) : null;
 
-        const numericId = Number(idVal);
+        // Normalización de seatNumber (Prioridad camelCase del servidor)
+        let sVal = guest.seatNumber ?? guest.seat_number;
+        guest.seatNumber = (sVal !== undefined && sVal !== null) ? Number(sVal) : null;
 
-        if (idVal !== undefined && idVal !== null && !isNaN(numericId) && numericId !== 0) {
-          guest.tableId = numericId;
-        } else {
-          guest.tableId = null;
-        }
         return guest;
+      });
+
+      // --- AUTO-ASIGNACIÓN DE ASIENTOS FALTANTES ---
+      // Si un invitado tiene mesa pero no asiento (ej: datos antiguos), le asignamos uno libre
+      // para que no "desaparezca" de la vista de mesas.
+      const tablesWithGuests = new Set(finalItems.filter(g => g.tableId).map(g => g.tableId));
+
+      tablesWithGuests.forEach(tId => {
+        const tableId = Number(tId);
+        const tableGuests = finalItems.filter(g => g.tableId === tableId);
+        const guestsWithoutSeat = tableGuests.filter(g => g.seatNumber === null);
+
+        if (guestsWithoutSeat.length > 0) {
+          let nextAvailableSeat = 0;
+          guestsWithoutSeat.forEach(guest => {
+            while (tableGuests.some(other => other.seatNumber === nextAvailableSeat)) {
+              nextAvailableSeat++;
+            }
+            guest.seatNumber = nextAvailableSeat;
+            nextAvailableSeat++;
+          });
+        }
       });
 
       this.guests.set(finalItems);
@@ -191,18 +213,23 @@ export class GuestService {
     this.guests.update((current: Guest[]) =>
       current.map(g => g.id === guestId ? { ...g, ...guestData } : g)
     );
+
     return firstValueFrom(this.http.patch(`${this.apiUrl}/${guestId}`, guestData));
   }
 
-  async updateGuestTable(guestId: string, tableId: number | null): Promise<any> {
+  async updateGuestTable(guestId: string, tableId: number | null, seatNumber: number | null = null): Promise<any> {
+    if (!guestId) return Promise.reject('No guest ID provided');
+
     // Optimístico
     this.guests.update((current: Guest[]) =>
-      current.map(g => g.id === guestId ? { ...g, tableId } : g)
+      current.map(g => (g.id === guestId || g.email === guestId || g.phone === guestId) ? { ...g, tableId, seatNumber } : g)
     );
 
-    // El backend espera el campo 'tableId' con el ID numérico o null
+    // Enviamos solo los campos especificados por el usuario (camelCase)
+    // tableId y seatNumber
     return firstValueFrom(this.http.patch(`${this.apiUrl}/${guestId}`, {
-      tableId
+      tableId,
+      seatNumber
     }));
   }
 

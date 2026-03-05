@@ -597,6 +597,23 @@
     font-weight: 800;
     color: #475569;
     transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 2;
+}
+
+.seat-marker.empty {
+    background: rgba(248, 250, 252, 0.5);
+    border: 2px dashed #cbd5e1;
+    color: #94a3b8;
+    box-shadow: none;
+}
+
+.guest-seat-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .seat-icon {

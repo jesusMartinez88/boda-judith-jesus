@@ -61,7 +61,8 @@
 
             <div class="guest-list">
                 @for (guest of unassignedGuests(); track guest.id) {
-                <div class="guest-item" [class]="getMenuClass(guest.mealType)" cdkDrag [cdkDragData]="guest">
+                <div class="guest-item" [class]="getMenuClass(guest.mealType)"
+                    [title]="guest.name + ' (' + guest.mealType + ')'" cdkDrag [cdkDragData]="guest">
                     <!-- Preview while dragging -->
                     <div *cdkDragPreview class="guest-drag-preview">
                         <svg class="kicking-person" viewBox="0 0 24 48">
@@ -124,8 +125,7 @@
             <main class="tables-grid">
                 @for (table of tables(); track table.id) {
                 <div class="table-container" [class.full]="table.guests.length >= table.capacity"
-                    [class.square]="table.shape === 'square'" cdkDropList [cdkDropListData]="table.id"
-                    [cdkDropListSortingDisabled]="true" (cdkDropListDropped)="onDrop($event)">
+                    [class.square]="table.shape === 'square'">
 
                     <!-- Controles de Mesa (Overlay) -->
                     <div class="table-config-overlay">
@@ -143,7 +143,8 @@
                         </button>
                     </div>
 
-                    <div class="table-surface">
+                    <div class="table-surface" cdkDropList [cdkDropListData]="table.id"
+                        [cdkDropListSortingDisabled]="true" (cdkDropListDropped)="onDrop($event)">
                         <div class="table-info">
                             @if (editingTableId() === table.id) {
                             <input type="text" class="edit-table-input" [ngModel]="editingName()"
@@ -176,44 +177,52 @@
                     </div>
 
                     <div class="seats-layout" [class.square-grid]="table.shape === 'square'">
-                        @for (guest of table.guests; track guest.id; let idx = $index) {
-                        <div class="guest-seat" cdkDrag [cdkDragData]="guest" [style.--seat-index]="idx"
-                            [style.--total-seats]="table.guests.length"
-                            [title]="guest.name + ' (' + guest.mealType + ')'"
-                            [class.just-seated]="newlySeatedIds().has(guestKey(guest))"
-                            [class.bottom-seat]="isBottomSeat(idx, table.guests.length)">
+                        @for (seatIdx of getSequence(table.capacity); track $index) {
+                        @let guest = getGuestAtSeat(table.id, seatIdx);
+                        <div class="guest-seat" [style.--seat-index]="seatIdx" [style.--total-seats]="table.capacity"
+                            [class.bottom-seat]="isBottomSeat(seatIdx, table.capacity)" cdkDropList
+                            [cdkDropListData]="{tableId: table.id, seatIndex: seatIdx}"
+                            (cdkDropListDropped)="onDrop($event)">
 
-                            <!-- Preview while dragging -->
-                            <div *cdkDragPreview class="guest-drag-preview">
-                                <svg class="kicking-person" viewBox="0 0 24 48">
-                                    <!-- Cabeza -->
-                                    <circle cx="12" cy="7" r="4.5" fill="#ec4899" />
-                                    <!-- Cuerpo/Torso -->
-                                    <path d="M8,13 Q12,12 16,13 L15,27 Q12,28 9,27 Z" fill="#ec4899" />
-                                    <!-- Brazos -->
-                                    <path class="arm left" d="M6,14 Q3,19 5,25" fill="none" stroke="#ec4899"
-                                        stroke-width="3" stroke-linecap="round" />
-                                    <path class="arm right" d="M18,14 Q21,19 19,25" fill="none" stroke="#ec4899"
-                                        stroke-width="3" stroke-linecap="round" />
-                                    <!-- Piernas -->
-                                    <path class="leg left" d="M9,27 Q7,35 9,43" fill="none" stroke="#ec4899"
-                                        stroke-width="3.5" stroke-linecap="round" />
-                                    <path class="leg right" d="M15,27 Q17,35 15,43" fill="none" stroke="#ec4899"
-                                        stroke-width="3.5" stroke-linecap="round" />
-                                </svg>
+                            @if (guest) {
+                            <div class="guest-seat-inner" cdkDrag [cdkDragData]="guest"
+                                [class.just-seated]="newlySeatedIds().has(guestKey(guest))"
+                                [title]="guest.name + ' (' + guest.mealType + ')'">
+
+                                <!-- Preview while dragging -->
+                                <div *cdkDragPreview class="guest-drag-preview">
+                                    <svg class="kicking-person" viewBox="0 0 24 48">
+                                        <!-- Cabeza -->
+                                        <circle cx="12" cy="7" r="4.5" fill="#ec4899" />
+                                        <!-- Cuerpo/Torso -->
+                                        <path d="M8,13 Q12,12 16,13 L15,27 Q12,28 9,27 Z" fill="#ec4899" />
+                                        <!-- Brazos -->
+                                        <path class="arm left" d="M6,14 Q3,19 5,25" fill="none" stroke="#ec4899"
+                                            stroke-width="3" stroke-linecap="round" />
+                                        <path class="arm right" d="M18,14 Q21,19 19,25" fill="none" stroke="#ec4899"
+                                            stroke-width="3" stroke-linecap="round" />
+                                        <!-- Piernas -->
+                                        <path class="leg left" d="M9,27 Q7,35 9,43" fill="none" stroke="#ec4899"
+                                            stroke-width="3.5" stroke-linecap="round" />
+                                        <path class="leg right" d="M15,27 Q17,35 15,43" fill="none" stroke="#ec4899"
+                                            stroke-width="3.5" stroke-linecap="round" />
+                                    </svg>
+                                </div>
+
+                                <!-- Placeholder while dragging -->
+                                <div *cdkDragPlaceholder class="guest-seat-placeholder"></div>
+
+                                <div class="seat-marker" [class]="getMenuClass(guest.mealType)">
+                                    <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
+                                </div>
+                                <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
                             </div>
-
-                            <!-- Placeholder while dragging -->
-                            <div *cdkDragPlaceholder class="guest-seat-placeholder"></div>
-
-                            <div class="seat-marker" [class]="getMenuClass(guest.mealType)">
-                                <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
+                            } @else {
+                            <div class="seat-marker empty">
+                                <span class="seat-icon">+</span>
                             </div>
-                            <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
+                            }
                         </div>
-                        }
-                        @if (table.guests.length === 0) {
-                        <div class="empty-table-msg">Mesa disponible</div>
                         }
                     </div>
                 </div>

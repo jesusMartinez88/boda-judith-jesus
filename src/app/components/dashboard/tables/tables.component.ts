@@ -138,47 +138,78 @@ export class TablesComponent implements OnInit {
 
     // --- HTML5 Drag & Drop Handlers ---
 
+    /** Returns the guest at a specific seat of a table */
+    getGuestAtSeat(tableId: number, seatIndex: number): Guest | undefined {
+        return this.guests().find(g => Number(g.tableId) === tableId && g.seatNumber === seatIndex);
+    }
+
     async onDrop(event: CdkDragDrop<any>) {
         const guest = event.item.data as Guest;
-        let tableId = event.container.data;
+        let targetData = event.container.data;
 
-        // Normalizar undefined (cola de recepción) a null
-        if (tableId === undefined) tableId = null;
+        // Normalizar destino
+        let tableId: number | null = null;
+        let seatNumber: number | null = null;
+
+        if (targetData === undefined) {
+            // Cola de recepción
+            tableId = null;
+            seatNumber = null;
+        } else if (typeof targetData === 'number') {
+            // Dropped on the table background (auto-assign seat)
+            tableId = targetData;
+            const table = this.tables().find(t => t.id === tableId);
+            if (table) {
+                const currentGuestId = this.guestKey(guest);
+                // Find first free seat (excluding the dragged guest's current position)
+                for (let i = 0; i < table.capacity; i++) {
+                    const occupant = this.getGuestAtSeat(tableId, i);
+                    if (!occupant || this.guestKey(occupant) === currentGuestId) {
+                        seatNumber = i;
+                        break;
+                    }
+                }
+            }
+        } else if (targetData && typeof targetData === 'object') {
+            // Dropped on a specific seat
+            tableId = targetData.tableId;
+            seatNumber = targetData.seatIndex;
+        }
 
         if (!guest) return;
 
-        // Validar capacidad de la mesa destino
-        if (tableId !== null) {
-            const targetTable = this.tables().find(t => t.id === tableId);
-            if (targetTable && targetTable.guests.length >= targetTable.capacity) {
-                // Solo bloqueamos si el invitado NO estaba ya en esta mesa
-                if (guest.tableId !== tableId) {
-                    this.fullTableName.set(targetTable.name || `Mesa ${tableId}`);
-                    this.fullTableCapacity.set(targetTable.capacity);
-                    this.showFullTableModal.set(true);
-                    return;
-                }
+        const guestId = guest.id || guest.email || guest.phone;
+        if (!guestId) return;
+
+        // Si ya hay alguien en ese asiento de esa mesa, y venimos de otro sitio, swap
+        if (tableId !== null && seatNumber !== null) {
+            const existingGuest = this.getGuestAtSeat(tableId, seatNumber);
+            if (existingGuest && this.guestKey(existingGuest) !== guestId) {
+                // Swap: move the existing guest to the previous seat of the dragged guest
+                const prevTableId = (guest.tableId !== undefined && guest.tableId !== 0) ? Number(guest.tableId) : null;
+                const prevSeatNumber = (guest.seatNumber !== undefined && guest.seatNumber !== null) ? Number(guest.seatNumber) : null;
+                const existingGuestId = this.guestKey(existingGuest);
+
+                // Mover al que ya estaba de forma asíncrona pero sin bloquear el flujo principal
+                this.guestService.updateGuestTable(existingGuestId, prevTableId, prevSeatNumber);
             }
         }
 
-        const guestId = guest.id || guest.email || guest.phone;
-
-        if (!guestId) return;
-
         try {
-            await this.guestService.updateGuestTable(guestId, tableId);
-            // Trigger sit-down animation for this guest
+            await this.guestService.updateGuestTable(guestId, tableId, seatNumber);
+
+            // Trigger sit-down animation
             if (tableId !== null) {
                 const sid = guest.id ?? guest.email ?? guest.phone;
                 if (sid) {
                     this.newlySeatedIds.update(s => new Set([...s, sid]));
                     setTimeout(() => {
                         this.newlySeatedIds.update(s => { const n = new Set(s); n.delete(sid); return n; });
-                    }, 1500); // Un poco más de tiempo para que se aprecie el "aterrizaje"
+                    }, 1500);
                 }
             }
         } catch (error) {
-            console.error('Error updating guest table:', error);
+            console.error('Error updating guest table/seat:', error);
         }
     }
 
@@ -433,5 +464,9 @@ export class TablesComponent implements OnInit {
         if (total === 0) return false;
         const angle = (360 / total) * index;
         return angle > 45 && angle < 135;
+    }
+
+    getSequence(n: number): number[] {
+        return Array.from({ length: n }, (_, i) => i);
     }
 }
