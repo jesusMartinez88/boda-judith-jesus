@@ -4,6 +4,7 @@ import { GuestService, Guest } from '../../../services/guest.service';
 import { SettingsService } from '../../../services/settings.service';
 import { TableService, TableConfig } from '../../../services/table.service';
 import { FormsModule } from '@angular/forms';
+import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { firstValueFrom } from 'rxjs';
 import { TablesLegendComponent } from './tables-legend/tables-legend.component';
 import { TablesHeaderComponent } from './tables-header/tables-header.component';
@@ -11,7 +12,7 @@ import { TablesHeaderComponent } from './tables-header/tables-header.component';
 @Component({
     selector: 'app-tables',
     standalone: true,
-    imports: [CommonModule, FormsModule, TablesLegendComponent, TablesHeaderComponent],
+    imports: [CommonModule, FormsModule, TablesLegendComponent, TablesHeaderComponent, DragDropModule],
     templateUrl: './tables.component.html',
     styleUrl: './tables.component.css'
 })
@@ -137,59 +138,29 @@ export class TablesComponent implements OnInit {
 
     // --- HTML5 Drag & Drop Handlers ---
 
-    onDragStart(guest: Guest, event?: DragEvent) {
-        this.draggedGuest = guest;
-        const gid = guest.id ?? guest.email ?? guest.phone;
-        this.draggingGuestId.set(gid);
+    async onDrop(event: CdkDragDrop<any>) {
+        const guest = event.item.data as Guest;
+        let tableId = event.container.data;
 
-        // Custom drag ghost: a small person emoji card
-        if (event?.dataTransfer) {
-            const ghost = document.createElement('div');
-            ghost.style.cssText = [
-                'position:fixed', 'top:-200px', 'left:-200px',
-                'width:56px', 'height:56px',
-                'background:white',
-                'border-radius:50%',
-                'display:flex', 'align-items:center', 'justify-content:center',
-                'font-size:1.8rem',
-                'box-shadow:0 4px 16px rgba(236,72,153,0.4)',
-                'border:2px solid #ec4899'
-            ].join(';');
-            ghost.textContent = '🧍';
-            document.body.appendChild(ghost);
-            event.dataTransfer.setDragImage(ghost, 28, 28);
-            // Clean up the ghost after drag ends
-            setTimeout(() => document.body.removeChild(ghost), 0);
-        }
-    }
+        // Normalizar undefined (cola de recepción) a null
+        if (tableId === undefined) tableId = null;
 
-    onDragEnd() {
-        this.draggingGuestId.set(undefined);
-    }
-
-    onDragOver(event: DragEvent) {
-        event.preventDefault();
-    }
-
-    async onDrop(tableId: number | null) {
-        if (!this.draggedGuest) return;
+        if (!guest) return;
 
         // Validar capacidad de la mesa destino
         if (tableId !== null) {
             const targetTable = this.tables().find(t => t.id === tableId);
             if (targetTable && targetTable.guests.length >= targetTable.capacity) {
                 // Solo bloqueamos si el invitado NO estaba ya en esta mesa
-                if (this.draggedGuest.tableId !== tableId) {
+                if (guest.tableId !== tableId) {
                     this.fullTableName.set(targetTable.name || `Mesa ${tableId}`);
                     this.fullTableCapacity.set(targetTable.capacity);
                     this.showFullTableModal.set(true);
-                    this.draggedGuest = null;
                     return;
                 }
             }
         }
 
-        const guest = this.draggedGuest;
         const guestId = guest.id || guest.email || guest.phone;
 
         if (!guestId) return;
@@ -203,15 +174,12 @@ export class TablesComponent implements OnInit {
                     this.newlySeatedIds.update(s => new Set([...s, sid]));
                     setTimeout(() => {
                         this.newlySeatedIds.update(s => { const n = new Set(s); n.delete(sid); return n; });
-                    }, 900);
+                    }, 1500); // Un poco más de tiempo para que se aprecie el "aterrizaje"
                 }
             }
         } catch (error) {
             console.error('Error updating guest table:', error);
         }
-
-        this.draggedGuest = null;
-        this.draggingGuestId.set(undefined);
     }
 
     deleteGuest(guest: Guest) {
@@ -459,5 +427,11 @@ export class TablesComponent implements OnInit {
         if (type.includes('fruto')) return 'menu-nuts';
         if (type.includes('kid') || type.includes('infant')) return 'menu-kid';
         return 'menu-normal';
+    }
+
+    isBottomSeat(index: number, total: number): boolean {
+        if (total === 0) return false;
+        const angle = (360 / total) * index;
+        return angle > 45 && angle < 135;
     }
 }

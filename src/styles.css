@@ -86,7 +86,11 @@ body {
 }
 
 /* Smooth transitions */
-a, button, input, textarea, select {
+a,
+button,
+input,
+textarea,
+select {
   transition: all 0.3s ease;
 }
 
@@ -105,6 +109,7 @@ select:focus {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -116,6 +121,7 @@ select:focus {
     opacity: 0;
     transform: translateY(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -127,6 +133,7 @@ select:focus {
     opacity: 0;
     transform: translateX(-50px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -138,6 +145,7 @@ select:focus {
     opacity: 0;
     transform: translateX(50px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -145,9 +153,12 @@ select:focus {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -175,3 +186,94 @@ select:focus {
   }
 }
 
+/* ===== CDK DRAG & DROP GLOBAL STYLES ===== */
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4),
+    0 15px 35px rgba(0, 0, 0, 0.1) !important;
+  background: white !important;
+  width: 64px !important;
+  height: 64px !important;
+  font-size: 2.2rem !important;
+  border: 3px solid #ec4899 !important;
+  color: #ec4899 !important;
+  z-index: 9999 !important;
+  pointer-events: none !important;
+  /* Efecto de flotación */
+  transform: translateY(-20px) scale(1.1);
+  transition: transform 0.2s ease-out;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.1 !important;
+  filter: grayscale(1);
+}
+
+.cdk-drag-animating {
+  transition: transform 300ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* PERSONA SVG ANIMADA (PATALEO) */
+.guest-drag-preview {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 60px !important;
+  height: 60px !important;
+  background: white !important;
+  border-radius: 50% !important;
+  border: 2px solid #ec4899 !important;
+  box-shadow: 0 8px 16px rgba(236, 72, 153, 0.3) !important;
+  z-index: 9999 !important;
+  pointer-events: none !important;
+  transform: translateY(-15px) scale(1.1);
+}
+
+.kicking-person {
+  width: 30px;
+  height: 45px;
+  filter: drop-shadow(0 1px 2px rgba(236, 72, 153, 0.2));
+}
+
+.kicking-person .leg {
+  transform-origin: 50% 30px;
+  animation: svg-kick 0.25s infinite alternate ease-in-out;
+}
+
+.kicking-person .leg.right {
+  animation-delay: 0.12s;
+}
+
+.kicking-person .arm {
+  transform-origin: 50% 15px;
+  animation: svg-wave 0.5s infinite alternate ease-in-out;
+}
+
+.kicking-person .arm.right {
+  animation-delay: 0.25s;
+}
+
+@keyframes svg-kick {
+  0% {
+    transform: rotate(-15deg) translateY(0);
+  }
+
+  100% {
+    transform: rotate(15deg) translateY(-2px);
+  }
+}
+
+@keyframes svg-wave {
+  0% {
+    transform: rotate(-5deg);
+  }
+
+  100% {
+    transform: rotate(5deg);
+  }
+}

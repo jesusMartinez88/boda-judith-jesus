@@ -9,11 +9,12 @@ import { FinancesComponent } from './finances/finances.component';
 import { AttendanceProgressComponent } from './attendance-progress/attendance-progress.component';
 import { Guest, GuestService } from '../../services/guest.service';
 import { SettingsService } from '../../services/settings.service';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [CommonModule, TablesComponent, SettingsComponent, FinancesComponent, AttendanceProgressComponent],
+    imports: [CommonModule, TablesComponent, SettingsComponent, FinancesComponent, AttendanceProgressComponent, DragDropModule],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })
@@ -54,7 +55,11 @@ export class DashboardComponent implements OnInit {
         }, 0);
     });
 
-    pendings = computed(() => (this.settingsService.settings().total_estimated_guests || 0) - (this.stats()?.confirmed || 0));
+    pendings = computed(() => {
+        const estimated = this.settingsService.settings().total_estimated_guests || 0;
+        const confirmed = this.stats()?.confirmed || 0;
+        return estimated - confirmed;
+    });
 
     isLoading = signal(true);
     error = signal<string | null>(null);

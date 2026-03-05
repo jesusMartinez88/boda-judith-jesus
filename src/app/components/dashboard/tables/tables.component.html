@@ -47,9 +47,9 @@
     </div>
     }
 
-    <div class="tables-layout">
+    <div class="tables-layout" cdkDropListGroup>
         <!-- Panel Izquierdo: Cola de Recepción -->
-        <aside class="reception-queue" (dragover)="onDragOver($event)" (drop)="onDrop(null)">
+        <aside class="reception-queue" cdkDropList [cdkDropListData]="undefined" (cdkDropListDropped)="onDrop($event)">
             <div class="pool-header">
                 <h3>Cola de Recepción</h3>
                 <button class="add-guest-btn" (click)="openAddModal()" title="Añadir invitado manual">
@@ -61,9 +61,30 @@
 
             <div class="guest-list">
                 @for (guest of unassignedGuests(); track guest.id) {
-                <div class="guest-item" [class]="getMenuClass(guest.mealType)" draggable="true"
-                    (dragstart)="onDragStart(guest, $event)" (dragend)="onDragEnd()"
-                    [class.is-dragging]="draggingGuestId() === guestKey(guest)">
+                <div class="guest-item" [class]="getMenuClass(guest.mealType)" cdkDrag [cdkDragData]="guest">
+                    <!-- Preview while dragging -->
+                    <div *cdkDragPreview class="guest-drag-preview">
+                        <svg class="kicking-person" viewBox="0 0 24 48">
+                            <!-- Cabeza -->
+                            <circle cx="12" cy="7" r="4.5" fill="#ec4899" />
+                            <!-- Cuerpo/Torso -->
+                            <path d="M8,13 Q12,12 16,13 L15,27 Q12,28 9,27 Z" fill="#ec4899" />
+                            <!-- Brazos -->
+                            <path class="arm left" d="M6,14 Q3,19 5,25" fill="none" stroke="#ec4899" stroke-width="3"
+                                stroke-linecap="round" />
+                            <path class="arm right" d="M18,14 Q21,19 19,25" fill="none" stroke="#ec4899"
+                                stroke-width="3" stroke-linecap="round" />
+                            <!-- Piernas -->
+                            <path class="leg left" d="M9,27 Q7,35 9,43" fill="none" stroke="#ec4899" stroke-width="3.5"
+                                stroke-linecap="round" />
+                            <path class="leg right" d="M15,27 Q17,35 15,43" fill="none" stroke="#ec4899"
+                                stroke-width="3.5" stroke-linecap="round" />
+                        </svg>
+                    </div>
+
+                    <!-- Placeholder while dragging -->
+                    <div *cdkDragPlaceholder class="guest-item-placeholder"></div>
+
                     <div class="guest-avatar">
                         {{ guest.name.charAt(0).toUpperCase() }}
                     </div>
@@ -103,7 +124,8 @@
             <main class="tables-grid">
                 @for (table of tables(); track table.id) {
                 <div class="table-container" [class.full]="table.guests.length >= table.capacity"
-                    [class.square]="table.shape === 'square'" (dragover)="onDragOver($event)" (drop)="onDrop(table.id)">
+                    [class.square]="table.shape === 'square'" cdkDropList [cdkDropListData]="table.id"
+                    [cdkDropListSortingDisabled]="true" (cdkDropListDropped)="onDrop($event)">
 
                     <!-- Controles de Mesa (Overlay) -->
                     <div class="table-config-overlay">
@@ -155,11 +177,35 @@
 
                     <div class="seats-layout" [class.square-grid]="table.shape === 'square'">
                         @for (guest of table.guests; track guest.id; let idx = $index) {
-                        <div class="guest-seat" draggable="true" (dragstart)="onDragStart(guest, $event)"
-                            (dragend)="onDragEnd()" [style.--seat-index]="idx"
+                        <div class="guest-seat" cdkDrag [cdkDragData]="guest" [style.--seat-index]="idx"
                             [style.--total-seats]="table.guests.length"
                             [title]="guest.name + ' (' + guest.mealType + ')'"
-                            [class.just-seated]="newlySeatedIds().has(guestKey(guest))">
+                            [class.just-seated]="newlySeatedIds().has(guestKey(guest))"
+                            [class.bottom-seat]="isBottomSeat(idx, table.guests.length)">
+
+                            <!-- Preview while dragging -->
+                            <div *cdkDragPreview class="guest-drag-preview">
+                                <svg class="kicking-person" viewBox="0 0 24 48">
+                                    <!-- Cabeza -->
+                                    <circle cx="12" cy="7" r="4.5" fill="#ec4899" />
+                                    <!-- Cuerpo/Torso -->
+                                    <path d="M8,13 Q12,12 16,13 L15,27 Q12,28 9,27 Z" fill="#ec4899" />
+                                    <!-- Brazos -->
+                                    <path class="arm left" d="M6,14 Q3,19 5,25" fill="none" stroke="#ec4899"
+                                        stroke-width="3" stroke-linecap="round" />
+                                    <path class="arm right" d="M18,14 Q21,19 19,25" fill="none" stroke="#ec4899"
+                                        stroke-width="3" stroke-linecap="round" />
+                                    <!-- Piernas -->
+                                    <path class="leg left" d="M9,27 Q7,35 9,43" fill="none" stroke="#ec4899"
+                                        stroke-width="3.5" stroke-linecap="round" />
+                                    <path class="leg right" d="M15,27 Q17,35 15,43" fill="none" stroke="#ec4899"
+                                        stroke-width="3.5" stroke-linecap="round" />
+                                </svg>
+                            </div>
+
+                            <!-- Placeholder while dragging -->
+                            <div *cdkDragPlaceholder class="guest-seat-placeholder"></div>
+
                             <div class="seat-marker" [class]="getMenuClass(guest.mealType)">
                                 <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
                             </div>

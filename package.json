@@ -1,6 +1,6 @@
 {
   "name": "boda-judith-jesus",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --configuration production",
@@ -26,6 +26,7 @@
   "private": true,
   "packageManager": "npm@8.3.0",
   "dependencies": {
+    "@angular/cdk": "^21.1.0",
     "@angular/common": "^21.1.0",
     "@angular/compiler": "^21.1.0",
     "@angular/core": "^21.1.0",

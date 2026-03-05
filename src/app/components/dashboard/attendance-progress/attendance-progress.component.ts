@@ -1,4 +1,4 @@
-import { Component, Input, computed, inject } from '@angular/core';
+import { Component, Input, computed, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WeddingStats } from '../../../services/stats.service';
 import { SettingsService } from '../../../services/settings.service';
@@ -13,14 +13,14 @@ import { SettingsService } from '../../../services/settings.service';
 export class AttendanceProgressComponent {
     private settingsService = inject(SettingsService);
 
-    @Input({ required: true }) stats: WeddingStats | null = null;
+    stats = input.required<WeddingStats | null>();
 
     totalEstimatedGuests = computed(() => this.settingsService.settings().total_estimated_guests || 0);
 
     attendancePercentage = computed(() => {
         const estimated = this.totalEstimatedGuests();
         if (estimated === 0) return 0;
-        const stats = this.stats;
+        const stats = this.stats();
         if (!stats) return 0;
 
         // Total responses (confirmed + pending)
@@ -31,7 +31,7 @@ export class AttendanceProgressComponent {
     confirmedPercentage = computed(() => {
         const estimated = this.totalEstimatedGuests();
         if (estimated === 0) return 0;
-        const stats = this.stats;
+        const stats = this.stats();
         if (!stats) return 0;
 
         const confirmed = stats.confirmed || 0;

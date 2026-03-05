@@ -25,24 +25,19 @@ export class SettingsService {
 
                 // Si es un array (común en algunas APIs de configuración)
                 if (Array.isArray(data)) {
-                    const maxGuestSetting = data.find((item: any) =>
-                        item.key === 'max_guests_per_table' || item.name === 'max_guests_per_table'
-                    );
-                    if (maxGuestSetting) {
-                        newSettings.max_guests_per_table = Number(maxGuestSetting.value);
-                    }
-
-                    const estimatedGuestsSetting = data.find((item: any) =>
-                        item.key === 'total_estimated_guests' || item.name === 'total_estimated_guests'
-                    );
-                    if (estimatedGuestsSetting) {
-                        newSettings.total_estimated_guests = Number(estimatedGuestsSetting.value);
-                    }
-                } else {
-                    if (typeof data.max_guests_per_table !== 'undefined') {
+                    data.forEach((item: any) => {
+                        const key = item.key || item.name;
+                        if (key === 'max_guests_per_table') {
+                            newSettings.max_guests_per_table = Number(item.value);
+                        } else if (key === 'total_estimated_guests') {
+                            newSettings.total_estimated_guests = Number(item.value);
+                        }
+                    });
+                } else if (data && typeof data === 'object') {
+                    if (data.max_guests_per_table !== undefined) {
                         newSettings.max_guests_per_table = Number(data.max_guests_per_table);
                     }
-                    if (typeof data.total_estimated_guests !== 'undefined') {
+                    if (data.total_estimated_guests !== undefined) {
                         newSettings.total_estimated_guests = Number(data.total_estimated_guests);
                     }
                 }

@@ -122,13 +122,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-width: 0;
+  /* Prevents overflow in narrow flex containers */
 }
 
-@media (max-width: 640px) {
-  .flex-group {
-    flex-direction: column;
-  }
-}
+/* Mantener adultos y niños en la misma fila en móvil */
+/* .flex-group is globally row-based, so no change needed here to prevent stacking */
+
 
 .form-label {
   font-weight: 600;

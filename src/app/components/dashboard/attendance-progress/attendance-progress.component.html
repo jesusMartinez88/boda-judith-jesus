@@ -1,7 +1,7 @@
 <div class="stats-card progress-card" *ngIf="totalEstimatedGuests() > 0">
     <div class="progress-info">
         <h3>Progreso de Confirmación</h3>
-        <p class="progress-value">{{ stats?.confirmed || 0 }} / {{ totalEstimatedGuests() }}</p>
+        <p class="progress-value">{{ stats()?.confirmed || 0 }} / {{ totalEstimatedGuests() }}</p>
         <div class="progress-legend">
             <span><span class="legend-dot dot-total"></span>Total RSVP</span>
             <span><span class="legend-dot dot-confirmed"></span>Confirmados</span>
