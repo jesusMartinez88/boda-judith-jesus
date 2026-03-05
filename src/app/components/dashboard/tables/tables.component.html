@@ -51,16 +51,30 @@
         <!-- Panel Izquierdo: Cola de Recepción -->
         <aside class="reception-queue" cdkDropList [cdkDropListData]="undefined" (cdkDropListDropped)="onDrop($event)">
             <div class="pool-header">
-                <h3>Cola de Recepción</h3>
-                <button class="add-guest-btn" (click)="openAddModal()" title="Añadir invitado manual">
-                    <span>+</span>
-                </button>
+                <div class="header-main">
+                    <h3>Cola de Recepción</h3>
+                    <button class="add-guest-btn" (click)="openAddModal()" title="Añadir invitado manual">
+                        <span>+</span>
+                    </button>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+                        placeholder="Buscar invitado..." class="search-input">
+                    <span class="search-icon">🔍</span>
+                </div>
             </div>
-            <span class="badge" style="display:block;text-align:center;margin-bottom:0.8rem;">{{
-                unassignedGuests().length }} invitados esperando</span>
+
+            <span class="badge" style="display:block;text-align:center;margin-bottom:0.8rem;">
+                @if (searchTerm()) {
+                {{ filteredUnassignedGuests().length }} encotrados
+                } @else {
+                {{ unassignedGuests().length }} invitados esperando
+                }
+            </span>
 
             <div class="guest-list">
-                @for (guest of unassignedGuests(); track guest.id) {
+                @for (guest of filteredUnassignedGuests(); track guest.id) {
                 <div class="guest-item" [class]="getMenuClass(guest.mealType)"
                     [title]="guest.name + ' (' + guest.mealType + ')'" cdkDrag [cdkDragData]="guest">
                     <!-- Preview while dragging -->
@@ -105,10 +119,15 @@
                     </div>
                 </div>
                 }
-                @if (unassignedGuests().length === 0) {
+                @if (filteredUnassignedGuests().length === 0) {
                 <div class="empty-msg-container">
+                    @if (searchTerm()) {
+                    <span>🔍</span>
+                    <p>No hay coincidencias para "{{searchTerm()}}"</p>
+                    } @else {
                     <span>✨</span>
                     <p>¡Todos están acomodados!</p>
+                    }
                 </div>
                 }
             </div>

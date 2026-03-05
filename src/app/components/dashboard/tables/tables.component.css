@@ -53,27 +53,67 @@
 
 .pool-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 0.8rem;
     margin-bottom: 1rem;
-    padding-bottom: 0.8rem;
+    padding-bottom: 1rem;
     border-bottom: 1px solid #e2e8f0;
     flex-shrink: 0;
 }
 
+.header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
 .pool-header h3 {
     margin: 0;
-    font-size: 1rem;
-    color: #334155;
+    font-size: 1.1rem;
+    color: #1e293b;
+    font-family: 'Playfair Display', serif;
     font-weight: 700;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.5rem 2rem 0.5rem 0.8rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    font-size: 0.85rem;
+    color: #475569;
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #ec4899;
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 .add-guest-btn {
     background: #ec4899;
     color: white;
     border: none;
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;

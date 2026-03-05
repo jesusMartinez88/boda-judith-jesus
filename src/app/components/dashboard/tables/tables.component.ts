@@ -75,6 +75,8 @@ export class TablesComponent implements OnInit {
     editingTableId = signal<number | null>(null);
     editingName = signal<string>('');
 
+    searchTerm = signal<string>('');
+
     // Organizar invitados por mesa siguiendo ESTRICTAMENTE la configuración
     tables = computed(() => {
         const guestList = this.guests();
@@ -110,6 +112,19 @@ export class TablesComponent implements OnInit {
             const tableId = Number(g.tableId || 0);
             return tableId === 0 || !validTableIds.has(tableId);
         });
+    });
+
+    filteredUnassignedGuests = computed(() => {
+        const guests = this.unassignedGuests();
+        const term = this.searchTerm().toLowerCase().trim();
+
+        if (!term) return guests;
+
+        return guests.filter(g =>
+            g.name.toLowerCase().includes(term) ||
+            (g.email && g.email.toLowerCase().includes(term)) ||
+            (g.phone && g.phone.includes(term))
+        );
     });
 
     ngOnInit() {
