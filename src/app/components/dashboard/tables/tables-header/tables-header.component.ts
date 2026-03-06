@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,9 +9,15 @@ import { CommonModule } from '@angular/common';
     styleUrl: './tables-header.component.css'
 })
 export class TablesHeaderComponent {
+    @Input() isEditMode = false;
     @Output() addTable = new EventEmitter<void>();
+    @Output() toggleEditMode = new EventEmitter<void>();
 
     onAddTable() {
         this.addTable.emit();
+    }
+
+    onToggleEditMode() {
+        this.toggleEditMode.emit();
     }
 }

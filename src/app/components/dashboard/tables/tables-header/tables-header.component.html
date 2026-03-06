@@ -5,6 +5,11 @@
     </div>
 
     <div class="header-actions">
+        <button class="btn-toggle-layout" [class.active]="isEditMode" (click)="onToggleEditMode()">
+            <span class="icon">{{ isEditMode ? '💾' : '📐' }}</span>
+            {{ isEditMode ? 'Guardar Diseño' : 'Editar Diseño' }}
+        </button>
+
         <button class="btn-add-table" (click)="onAddTable()">
             <span class="icon">➕</span> Nueva Mesa
         </button>

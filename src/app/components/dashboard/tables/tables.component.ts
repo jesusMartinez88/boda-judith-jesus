@@ -50,7 +50,7 @@ export class TablesComponent implements OnInit {
     newTableData = signal({
         name: '',
         capacity: 10,
-        shape: 'round' as 'round' | 'square'
+        shape: 'round' as 'round' | 'square' | 'rectangular' | 'presidential'
     });
 
     // Modal para confirmar borrado de mesa
@@ -76,6 +76,7 @@ export class TablesComponent implements OnInit {
     editingName = signal<string>('');
 
     searchTerm = signal<string>('');
+    isEditLayoutMode = signal<boolean>(false);
 
     // Organizar invitados por mesa siguiendo ESTRICTAMENTE la configuración
     tables = computed(() => {
@@ -91,6 +92,8 @@ export class TablesComponent implements OnInit {
                 name: config.name,
                 capacity: config.capacity || this.maxGuests(),
                 shape: config.shape || 'round',
+                posX: config.posX,
+                posY: config.posY,
                 guests: guestList.filter(g => {
                     const guestTableId = Number(g.tableId || 0);
                     return guestTableId === tableId && guestTableId !== 0;
@@ -125,6 +128,38 @@ export class TablesComponent implements OnInit {
             (g.email && g.email.toLowerCase().includes(term)) ||
             (g.phone && g.phone.includes(term))
         );
+    });
+
+    hallHeight = computed(() => {
+        const currentTables = this.tables();
+        if (currentTables.length === 0) return 1200;
+
+        let maxBottom = 0;
+        currentTables.forEach(t => {
+            if (t.posX !== undefined && t.posY !== undefined) {
+                // Cada mesa ocupa unos 340px + margen, usamos 450 para aire inferior
+                const bottom = t.posY + 450;
+                if (bottom > maxBottom) maxBottom = bottom;
+            }
+        });
+
+        return Math.max(1200, maxBottom);
+    });
+
+    hallWidth = computed(() => {
+        const currentTables = this.tables();
+        if (currentTables.length === 0) return 1000;
+
+        let maxRight = 0;
+        currentTables.forEach(t => {
+            if (t.posX !== undefined && t.posY !== undefined) {
+                // Cada mesa ocupa unos 340px + margen, usamos 450 para aire lateral
+                const right = t.posX + 450;
+                if (right > maxRight) maxRight = right;
+            }
+        });
+
+        return Math.max(1000, maxRight);
     });
 
     ngOnInit() {
@@ -345,6 +380,14 @@ export class TablesComponent implements OnInit {
     async confirmAddTable() {
         const data = this.newTableData();
         const currentTables = this.tableService.tables();
+
+        // Validación: Nombre duplicado
+        const duplicate = currentTables.find(t => (t.name || '').toLowerCase() === data.name.trim().toLowerCase());
+        if (duplicate) {
+            this.triggerAlert('Nombre Duplicado', `Ya existe una mesa con el nombre "${data.name}". Por favor, elige uno diferente.`);
+            return;
+        }
+
         const nextId = currentTables.length > 0 ? Math.max(...currentTables.map(t => t.id)) + 1 : 1;
 
         try {
@@ -353,7 +396,7 @@ export class TablesComponent implements OnInit {
                 id: nextId,
                 name: data.name || `Mesa ${currentTables.length + 1}`,
                 capacity: data.capacity,
-                shape: data.shape
+                shape: data.shape as any
             }));
             this.closeCreateTableModal();
         } catch (error) {
@@ -362,7 +405,7 @@ export class TablesComponent implements OnInit {
             this.tableService.tables.update(t => [...t, {
                 id: nextId,
                 name: data.name,
-                shape: data.shape,
+                shape: data.shape as any,
                 capacity: data.capacity
             }]);
             this.closeCreateTableModal();
@@ -371,8 +414,12 @@ export class TablesComponent implements OnInit {
         }
     }
 
-    async toggleTableShape(id: number, currentShape: 'round' | 'square') {
-        const newShape = currentShape === 'round' ? 'square' : 'round';
+    async toggleTableShape(id: number, currentShape: string) {
+        const shapes: ('round' | 'square' | 'rectangular' | 'presidential')[] =
+            ['round', 'square', 'rectangular', 'presidential'];
+        const nextIndex = (shapes.indexOf(currentShape as any) + 1) % shapes.length;
+        const newShape = shapes[nextIndex];
+
         // Actualización optimista local
         this.tableService.tables.update(current =>
             current.map(t => t.id === id ? { ...t, shape: newShape } : t)
@@ -382,12 +429,97 @@ export class TablesComponent implements OnInit {
             await firstValueFrom(this.tableService.updateTable(id, { shape: newShape }));
         } catch (error) {
             console.error('Error updating table shape:', error);
-            // Si falla la API y no tenemos modo offline real, el usuario al menos vio el cambio.
         }
     }
 
+    onTableDragEnded(event: any, tableId: number) {
+        if (!this.isEditLayoutMode()) return;
+
+        const element = event.source.getRootElement();
+        const parentElement = document.querySelector('.tables-grid');
+
+        if (!parentElement) return;
+
+        const parentRect = parentElement.getBoundingClientRect();
+        const elementRect = element.getBoundingClientRect();
+
+        // Calcular posición exacta relativa al contenedor padre (.tables-grid)
+        const posX = Math.round(elementRect.left - parentRect.left);
+        const posY = Math.round(elementRect.top - parentRect.top);
+
+        // Actualización optimista local en el servicio
+        this.tableService.tables.update(current =>
+            current.map(t => t.id === tableId ? { ...t, posX, posY } : t)
+        );
+
+        // Resetear la transformación del CDK para que el elemento se posicione puramente por style.left/top
+        event.source.reset();
+
+        // Persistir en servidor con los valores exactos calculados
+        this.tableService.updateTable(tableId, { posX, posY }).subscribe({
+            error: (err) => console.error('Error saving table position:', err)
+        });
+    }
+
+    toggleEditLayout() {
+        const enteringEditMode = !this.isEditLayoutMode();
+
+        if (enteringEditMode) {
+            // CAPTURA: Antes de activar el modo absoluto, guardamos dónde están las mesas en el grid
+            const grid = document.querySelector('.tables-grid');
+            if (grid) {
+                const containers = grid.querySelectorAll('.table-container') as NodeListOf<HTMLElement>;
+                const updates: any[] = [];
+
+                containers.forEach(container => {
+                    const id = Number(container.getAttribute('data-table-id'));
+                    if (id) {
+                        // Capturamos el offset respecto al grid
+                        updates.push({
+                            id,
+                            posX: container.offsetLeft,
+                            posY: container.offsetTop
+                        });
+                    }
+                });
+
+                if (updates.length > 0) {
+                    this.tableService.tables.update(current =>
+                        current.map(t => {
+                            const match = updates.find(u => u.id === t.id);
+                            return match ? { ...t, posX: match.posX, posY: match.posY } : t;
+                        })
+                    );
+                }
+            }
+        }
+
+        this.isEditLayoutMode.set(enteringEditMode);
+    }
+
     async updateTableCapacity(id: number, newCapacity: number) {
-        // Actualización optimista local
+        const table = this.tables().find(t => t.id === id);
+        if (!table) return;
+
+        // Identificar invitados que están en asientos que van a desaparecer
+        const guestsInRemovedSeats = table.guests.filter(g =>
+            g.seatNumber !== undefined && g.seatNumber !== null && g.seatNumber >= newCapacity
+        );
+
+        // Si quedan más invitados que la nueva capacidad (ej. invitados sin asiento específico), también los sacamos
+        const validGuests = table.guests.filter(g => !guestsInRemovedSeats.includes(g));
+        const extraGuestsToUnassign = validGuests.length > newCapacity ? validGuests.slice(newCapacity) : [];
+
+        const overflowingGuests = [...guestsInRemovedSeats, ...extraGuestsToUnassign];
+
+        // Unassign overflowing guests
+        for (const guest of overflowingGuests) {
+            if (guest.id) {
+                await this.guestService.updateGuestTable(guest.id, null);
+            }
+        }
+
+        // Actualización optimista local de la mesa
         this.tableService.tables.update(current =>
             current.map(t => t.id === id ? { ...t, capacity: newCapacity } : t)
         );
@@ -406,9 +538,23 @@ export class TablesComponent implements OnInit {
 
     async saveTableName(id: number) {
         const newName = this.editingName().trim();
-        this.editingTableId.set(null);
 
-        if (!newName) return;
+        if (!newName) {
+            this.editingTableId.set(null);
+            return;
+        }
+
+        // Validación: Nombre duplicado (excluyendo la mesa actual)
+        const currentTables = this.tableService.tables();
+        const duplicate = currentTables.find(t => t.id !== id && (t.name || '').toLowerCase() === newName.toLowerCase());
+
+        if (duplicate) {
+            this.triggerAlert('Nombre Duplicado', `Ya existe otra mesa con el nombre "${newName}".`);
+            this.editingTableId.set(null);
+            return;
+        }
+
+        this.editingTableId.set(null);
 
         // Actualización optimista local
         this.tableService.tables.update(current =>
@@ -483,5 +629,25 @@ export class TablesComponent implements OnInit {
 
     getSequence(n: number): number[] {
         return Array.from({ length: n }, (_, i) => i);
+    }
+
+    /**
+     * Seat spacing in px for rectangular/presidential tables.
+     * Keeps seats comfortably spaced: min 55px, max 80px.
+     */
+    getRectSeatSpacing(capacity: number, shape: string): number {
+        const seatsPerSide = shape === 'presidential' ? capacity : Math.ceil(capacity / 2);
+        // Shrink spacing a little for large tables to keep them manageable
+        if (seatsPerSide <= 4) return 75;
+        if (seatsPerSide <= 6) return 68;
+        if (seatsPerSide <= 8) return 62;
+        return 56;
+    }
+
+    /** Width of the table-surface div in px */
+    getRectTableWidth(capacity: number, shape: string): number {
+        const seatsPerSide = shape === 'presidential' ? capacity : Math.ceil(capacity / 2);
+        const spacing = this.getRectSeatSpacing(capacity, shape);
+        return seatsPerSide * spacing + 20; // 20px padding total
     }
 }

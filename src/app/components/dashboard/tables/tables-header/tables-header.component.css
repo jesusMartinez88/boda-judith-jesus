@@ -52,6 +52,34 @@
     box-shadow: 0 12px 25px -8px rgba(15, 23, 42, 0.35);
 }
 
+.btn-toggle-layout {
+    background: white;
+    color: #475569;
+    padding: 0.75rem 1.4rem;
+    border-radius: 14px;
+    border: 2px solid #e2e8f0;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    max-height: 44px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-toggle-layout:hover {
+    border-color: #ec4899;
+    color: #ec4899;
+}
+
+.btn-toggle-layout.active {
+    background: #fdf2f8;
+    border-color: #ec4899;
+    color: #db2777;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.1);
+}
+
 @media (max-width: 640px) {
     .tables-header {
         flex-direction: column;

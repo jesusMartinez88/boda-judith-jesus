@@ -6,8 +6,10 @@ import { tap } from 'rxjs';
 export interface TableConfig {
     id: number;
     name?: string;
-    capacity?: number; // Si es undefined, usa el global
-    shape: 'round' | 'square';
+    capacity?: number;
+    shape: 'round' | 'square' | 'rectangular' | 'presidential';
+    posX?: number;
+    posY?: number;
 }
 
 @Injectable({
@@ -21,17 +23,23 @@ export class TableService {
 
     private normalizeTable(item: any): TableConfig | null {
         if (!item) return null;
-        // El id puede venir como id
         const id = Number(item.id);
         if (isNaN(id)) return null;
+
+        // Mapeo de shapes: consolidamos layout 'one-side' -> 'presidential'
+        let shape = item.shape || 'round';
+        if (shape === 'rectangular' && item.layout === 'one-side') {
+            shape = 'presidential';
+        }
 
         return {
             ...item,
             id,
-            // Prioridad: name > number
             name: item.name || (item.number !== undefined ? String(item.number) : "Mesa X"),
-            shape: item.shape || 'round',
-            capacity: item.capacity || undefined
+            shape: shape as any,
+            capacity: item.capacity || undefined,
+            posX: item.posX !== undefined ? Number(item.posX) : undefined,
+            posY: item.posY !== undefined ? Number(item.posY) : undefined
         };
     }
 

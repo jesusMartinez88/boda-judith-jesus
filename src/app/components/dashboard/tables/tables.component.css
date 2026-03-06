@@ -10,12 +10,22 @@
 /* ===== MAIN LAYOUT ===== */
 .tables-layout {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 320px 1fr;
     gap: 2rem;
     align-items: start;
+    max-width: 100%;
 }
 
-/* ===== RECEPTION QUEUE ===== */
+.hall-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 24px;
+    background: transparent;
+    padding-bottom: 1rem;
+    /* Espacio para la barra de scroll */
+}
+
+/* ===== CELEBRATION HALL — Soft Wood + Flowers ===== */
 .reception-queue {
     background: #f8fafc;
     padding: 1.5rem;
@@ -104,8 +114,43 @@
     top: 50%;
     transform: translateY(-50%);
     font-size: 0.9rem;
-    opacity: 0.5;
+    color: #94a3b8;
     pointer-events: none;
+}
+
+.shape-selector.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+}
+
+.shape-selector button {
+    padding: 0.75rem 0.5rem;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    color: #475569;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.shape-selector button:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.shape-selector button.active {
+    border-color: #ec4899;
+    background: #fdf2f8;
+    color: #be185d;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.15);
 }
 
 .add-guest-btn {
@@ -278,6 +323,7 @@
 
 /* ===== CELEBRATION HALL — Soft Wood + Flowers ===== */
 .celebration-hall {
+    flex: 1;
     background-color: #eedfc4;
     background-image:
         repeating-linear-gradient(90deg,
@@ -290,15 +336,24 @@
             #eedabf 30%,
             #f2e4cc 60%,
             #e9d5b5 100%);
-    border-radius: 32px;
+    border-radius: 24px;
     padding: 3rem 2rem;
-    min-height: 500px;
     box-shadow:
-        0 4px 20px -6px rgba(140, 90, 30, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        0 10px 30px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
     border: 2px solid #d8bc90;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
+    transition: all 0.5s ease;
+}
+
+.celebration-hall.edit-mode {
+    background-color: #f8fafc;
+    background-image:
+        linear-gradient(rgba(236, 72, 153, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(236, 72, 153, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    border-color: #ec4899;
 }
 
 /* Very soft vignette */
@@ -368,7 +423,14 @@
     gap: 4rem 2rem;
     position: relative;
     z-index: 1;
-    padding: 1rem 0;
+    padding: 0;
+    /* Sin padding para que el origen 0,0 sea exacto */
+}
+
+.tables-grid.edit-mode {
+    display: block;
+    padding: 0;
+    overflow: visible;
 }
 
 /* ===== TABLE CONTAINER ===== */
@@ -380,7 +442,38 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: width 0.4s ease, left 0.4s ease, top 0.4s ease;
+    z-index: 10;
 }
+
+/* Las mesas con posición guardada o en modo edición deben ser absolutas */
+.table-container.positioned,
+.edit-mode .table-container {
+    position: absolute !important;
+    margin: 0 !important;
+}
+
+/* En modo edición, desactivar la transición de movimiento para evitar el salto al arrastrar y soltar */
+.edit-mode .table-container {
+    transition: width 0.4s ease;
+}
+
+.table-container.cdk-drag-dragging {
+    z-index: 1000 !important;
+    transition: none;
+    cursor: grabbing !important;
+}
+
+.table-container.dragging-table {
+    cursor: grab;
+}
+
+.table-container.dragging-table:hover {
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.3);
+    border-radius: 20px;
+}
+
+/* .table-container width for rectangular/presidential set dynamically via Angular binding */
 
 .table-config-overlay {
     position: absolute;
@@ -465,8 +558,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow:
-        0 10px 30px -5px rgba(0, 0, 0, 0.12),
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.12),
         0 4px 8px -2px rgba(0, 0, 0, 0.06),
         inset 0 -3px 8px rgba(0, 0, 0, 0.04);
     z-index: 10;
@@ -477,6 +569,13 @@
 
 .table-container.square .table-surface {
     border-radius: 16px;
+}
+
+.table-container.rectangular .table-surface,
+.table-container.presidential .table-surface {
+    height: 120px;
+    border-radius: 12px;
+    transition: width 0.3s ease;
 }
 
 .table-container:hover .table-surface {
@@ -577,6 +676,30 @@
     border-color: #ef4444;
 }
 
+/* ===== RECTANGULAR BORDER ===== */
+.rectangular-border {
+    position: absolute;
+    inset: -10px;
+    border: 3px solid #f1f5f9;
+    border-radius: 18px;
+    pointer-events: none;
+    display: none;
+}
+
+.table-container.rectangular .rectangular-border,
+.table-container.presidential .rectangular-border {
+    display: block;
+    position: absolute;
+    inset: -10px;
+    border: 3px solid #f1f5f9;
+    border-radius: 18px;
+    pointer-events: none;
+}
+
+.table-container.rectangular.full .rectangular-border {
+    border-color: #fee2e2;
+}
+
 /* ===== GUEST SEATS ===== */
 .seats-layout {
     position: absolute;
@@ -603,6 +726,23 @@
     --radius: 108px;
     --angle: calc((360deg / var(--total-seats)) * var(--seat-index));
     transform: rotate(var(--angle)) translate(var(--radius)) rotate(calc(-1 * var(--angle)));
+}
+
+/* Mesas Rectangulares (Dos caras) */
+.table-container.rectangular .guest-seat {
+    --total-on-side: calc(var(--total-seats) / 2);
+    /* --is-bottom, --side-index, --seat-spacing inyectados desde Angular */
+    --offset-y: calc(var(--is-bottom) * 100px + (1 - var(--is-bottom)) * -100px);
+    transform: translate(calc((var(--side-index) - (var(--total-on-side) - 1) / 2) * var(--seat-spacing)), var(--offset-y));
+}
+
+/* Mesas Presidenciales (Una cara) */
+.table-container.presidential .guest-seat {
+    --total-on-side: var(--total-seats);
+    --side-index: var(--seat-index);
+    --offset-y: 90px;
+    /* --seat-spacing inyectado desde Angular */
+    transform: translate(calc((var(--side-index) - (var(--total-on-side) - 1) / 2) * var(--seat-spacing)), var(--offset-y));
 }
 
 .table-container.square .guest-seat {

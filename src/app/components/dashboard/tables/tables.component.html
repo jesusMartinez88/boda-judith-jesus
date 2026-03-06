@@ -1,5 +1,7 @@
 <div class="tables-view">
-    <app-tables-header (addTable)="openCreateTableModal()"></app-tables-header>
+    <app-tables-header [isEditMode]="isEditLayoutMode()" (toggleEditMode)="toggleEditLayout()"
+        (addTable)="openCreateTableModal()">
+    </app-tables-header>
 
     <!-- Modal para Añadir Mesa -->
     @if (showCreateTableModal()) {
@@ -26,13 +28,18 @@
                             max="25" required>
                     </div>
 
-                    <div class="form-group">
-                        <label>Forma</label>
-                        <select [ngModel]="newTableData().shape" (ngModelChange)="updateNewTableField('shape', $event)"
-                            name="tableShape">
-                            <option value="round">Redonda ⭕</option>
-                            <option value="square">Cuadrada 🟦</option>
-                        </select>
+                    <div class="form-group full-width">
+                        <label>Tipo / Forma de Mesa</label>
+                        <div class="shape-selector grid-4">
+                            <button type="button" [class.active]="newTableData().shape === 'round'"
+                                (click)="updateNewTableField('shape', 'round')">⭕ Redonda</button>
+                            <button type="button" [class.active]="newTableData().shape === 'square'"
+                                (click)="updateNewTableField('shape', 'square')">🟦 Cuadrada</button>
+                            <button type="button" [class.active]="newTableData().shape === 'rectangular'"
+                                (click)="updateNewTableField('shape', 'rectangular')">👥 Rectangular</button>
+                            <button type="button" [class.active]="newTableData().shape === 'presidential'"
+                                (click)="updateNewTableField('shape', 'presidential')">👑 Presidencial</button>
+                        </div>
                     </div>
                 </div>
 
@@ -133,296 +140,327 @@
             </div>
         </aside>
 
-        <!-- Panel Central: Salón de Celebración -->
-        <div class="celebration-hall">
-            <!-- Decoración floral en esquinas -->
-            <span class="hall-corner hall-corner--tl">🌸🌿</span>
-            <span class="hall-corner hall-corner--tr">🌿🌸</span>
-            <span class="hall-corner hall-corner--bl">🌺🌿</span>
-            <span class="hall-corner hall-corner--br">🌿🌺</span>
+        <div class="hall-scroll-container">
+            <div class="celebration-hall" #hall [class.edit-mode]="isEditLayoutMode()"
+                [style.min-height.px]="hallHeight()" [style.min-width.px]="hallWidth()">
+                <!-- Decoración floral en esquinas -->
+                <span class="hall-corner hall-corner--tl">🌸🌿</span>
+                <span class="hall-corner hall-corner--tr">🌿🌸</span>
+                <span class="hall-corner hall-corner--bl">🌺🌿</span>
+                <span class="hall-corner hall-corner--br">🌿🌺</span>
 
-            <main class="tables-grid">
-                @for (table of tables(); track table.id) {
-                <div class="table-container" [class.full]="table.guests.length >= table.capacity"
-                    [class.square]="table.shape === 'square'">
+                <main class="tables-grid" [class.edit-mode]="isEditLayoutMode()" [style.min-height.px]="hallHeight()"
+                    [style.min-width.px]="hallWidth()">
+                    @for (table of tables(); track table.id) {
+                    <div class="table-container" [attr.data-table-id]="table.id"
+                        [class.full]="table.guests.length >= table.capacity" [class.round]="table.shape === 'round'"
+                        [class.square]="table.shape === 'square'" [class.rectangular]="table.shape === 'rectangular'"
+                        [class.presidential]="table.shape === 'presidential'"
+                        [class.dragging-table]="isEditLayoutMode()"
+                        [class.positioned]="table.posX !== undefined && table.posY !== undefined" cdkDrag
+                        [cdkDragBoundary]="hall" [cdkDragDisabled]="!isEditLayoutMode()"
+                        (cdkDragEnded)="onTableDragEnded($event, table.id)"
+                        [style.left.px]="(table.posX !== undefined) ? table.posX : null"
+                        [style.top.px]="(table.posY !== undefined) ? table.posY : null"
+                        [style.width.px]="(table.shape === 'rectangular' || table.shape === 'presidential') ? getRectTableWidth(table.capacity, table.shape) + 60 : null"
+                        [style.height.px]="table.shape === 'rectangular' ? 340 : table.shape === 'presidential' ? 240 : null"
+                        [style.--seat-spacing.px]="(table.shape === 'rectangular' || table.shape === 'presidential') ? getRectSeatSpacing(table.capacity, table.shape) : null">
 
-                    <!-- Controles de Mesa (Overlay) -->
-                    <div class="table-config-overlay">
-                        <button class="config-btn shape" (click)="toggleTableShape(table.id, table.shape)"
-                            [title]="'Cambiar a ' + (table.shape === 'round' ? 'cuadrada' : 'redonda')">
-                            {{ table.shape === 'round' ? '🟦' : '⭕' }}
-                        </button>
-                        <div class="capacity-field">
-                            <input type="number" [ngModel]="table.capacity"
-                                (ngModelChange)="updateTableCapacity(table.id, $event)" min="1" max="20"
-                                title="Capacidad de esta mesa">
+                        <!-- Controles de Mesa (Overlay) -->
+                        <div class="table-config-overlay">
+                            <button class="config-btn shape" (click)="toggleTableShape(table.id, table.shape)"
+                                [title]="'Cambiar tipo: ' + table.shape">
+                                {{ table.shape === 'round' ? '⭕' : table.shape === 'square' ? '🟦' : table.shape ===
+                                'presidential' ? '🤵' : '👥' }}
+                            </button>
+                            <div class="capacity-field">
+                                <input type="number" [ngModel]="table.capacity"
+                                    (ngModelChange)="updateTableCapacity(table.id, $event)" min="1" max="20"
+                                    title="Capacidad de esta mesa">
+                            </div>
+                            <button class="config-btn delete" (click)="deleteTable(table.id)" title="Eliminar mesa">
+                                🗑️
+                            </button>
                         </div>
-                        <button class="config-btn delete" (click)="deleteTable(table.id)" title="Eliminar mesa">
-                            🗑️
-                        </button>
-                    </div>
 
-                    <div class="table-surface" cdkDropList [cdkDropListData]="table.id"
-                        [cdkDropListSortingDisabled]="true" (cdkDropListDropped)="onDrop($event)">
-                        <div class="table-info">
-                            @if (editingTableId() === table.id) {
-                            <input type="text" class="edit-table-input" [ngModel]="editingName()"
-                                (ngModelChange)="editingName.set($event)" (blur)="saveTableName(table.id)"
-                                (keyup.enter)="saveTableName(table.id)" autofocus (click)="$event.stopPropagation()">
-                            } @else {
-                            <span class="table-num" (click)="startEditingTable(table.id, table.name)"
-                                title="Haz clic para renombrar">
-                                {{ table.name || 'Mesa ' + table.id }}
-                            </span>
+                        <div class="table-surface" cdkDropList [cdkDropListData]="table.id"
+                            [cdkDropListSortingDisabled]="true" (cdkDropListDropped)="onDrop($event)"
+                            [style.width.px]="(table.shape === 'rectangular' || table.shape === 'presidential') ? getRectTableWidth(table.capacity, table.shape) : null"
+                            [style.height.px]="table.shape === 'presidential' ? 80 : null">
+
+                            @if (table.shape === 'square') {
+                            <div class="square-border"></div>
                             }
-                            <div class="table-stats">
-                                <span class="count">{{ table.guests.length }}/{{ table.capacity }}</span>
-                            </div>
-                        </div>
+                            @if (table.shape === 'rectangular' || table.shape === 'presidential') {
+                            <div class="rectangular-border"></div>
+                            }
 
-                        <!-- Anillo de progreso / Decoración -->
-                        @if (table.shape === 'round') {
-                        <svg class="progress-ring" viewBox="0 0 100 100">
-                            <circle class="ring-bg" cx="50" cy="50" r="48"></circle>
-                            <circle class="ring-fill" cx="50" cy="50" r="48"
-                                [style.stroke-dashoffset]="301 - (301 * (table.guests.length / table.capacity))"
-                                stroke-dasharray="301">
-                            </circle>
-                        </svg>
-                        } @else {
-                        <div class="square-border" [style.--progress]="(table.guests.length / table.capacity) * 100">
-                        </div>
-                        }
-                    </div>
-
-                    <div class="seats-layout" [class.square-grid]="table.shape === 'square'">
-                        @for (seatIdx of getSequence(table.capacity); track $index) {
-                        @let guest = getGuestAtSeat(table.id, seatIdx);
-                        <div class="guest-seat" [style.--seat-index]="seatIdx" [style.--total-seats]="table.capacity"
-                            [class.bottom-seat]="isBottomSeat(seatIdx, table.capacity)" cdkDropList
-                            [cdkDropListData]="{tableId: table.id, seatIndex: seatIdx}"
-                            (cdkDropListDropped)="onDrop($event)">
-
-                            @if (guest) {
-                            <div class="guest-seat-inner" cdkDrag [cdkDragData]="guest"
-                                [class.just-seated]="newlySeatedIds().has(guestKey(guest))"
-                                [title]="guest.name + ' (' + guest.mealType + ')'">
-
-                                <!-- Preview while dragging -->
-                                <div *cdkDragPreview class="guest-drag-preview">
-                                    <svg class="kicking-person" viewBox="0 0 24 48">
-                                        <!-- Cabeza -->
-                                        <circle cx="12" cy="7" r="4.5" fill="#ec4899" />
-                                        <!-- Cuerpo/Torso -->
-                                        <path d="M8,13 Q12,12 16,13 L15,27 Q12,28 9,27 Z" fill="#ec4899" />
-                                        <!-- Brazos -->
-                                        <path class="arm left" d="M6,14 Q3,19 5,25" fill="none" stroke="#ec4899"
-                                            stroke-width="3" stroke-linecap="round" />
-                                        <path class="arm right" d="M18,14 Q21,19 19,25" fill="none" stroke="#ec4899"
-                                            stroke-width="3" stroke-linecap="round" />
-                                        <!-- Piernas -->
-                                        <path class="leg left" d="M9,27 Q7,35 9,43" fill="none" stroke="#ec4899"
-                                            stroke-width="3.5" stroke-linecap="round" />
-                                        <path class="leg right" d="M15,27 Q17,35 15,43" fill="none" stroke="#ec4899"
-                                            stroke-width="3.5" stroke-linecap="round" />
-                                    </svg>
+                            <div class="table-info">
+                                @if (editingTableId() === table.id) {
+                                <input type="text" class="edit-table-input" [ngModel]="editingName()"
+                                    (ngModelChange)="editingName.set($event)" (blur)="saveTableName(table.id)"
+                                    (keyup.enter)="saveTableName(table.id)" autofocus
+                                    (click)="$event.stopPropagation()">
+                                } @else {
+                                <span class="table-num" (click)="startEditingTable(table.id, table.name)"
+                                    title="Haz clic para renombrar">
+                                    {{ table.name || 'Mesa ' + table.id }}
+                                </span>
+                                }
+                                <div class="table-stats">
+                                    <span class="count">{{ table.guests.length }}/{{ table.capacity }}</span>
                                 </div>
-
-                                <!-- Placeholder while dragging -->
-                                <div *cdkDragPlaceholder class="guest-seat-placeholder"></div>
-
-                                <div class="seat-marker" [class]="getMenuClass(guest.mealType)">
-                                    <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
-                                </div>
-                                <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
                             </div>
+
+                            <!-- Anillo de progreso / Decoración -->
+                            @if (table.shape === 'round') {
+                            <svg class="progress-ring" viewBox="0 0 100 100">
+                                <circle class="ring-bg" cx="50" cy="50" r="48"></circle>
+                                <circle class="ring-fill" cx="50" cy="50" r="48"
+                                    [style.stroke-dashoffset]="301 - (301 * (table.guests.length / table.capacity))"
+                                    stroke-dasharray="301">
+                                </circle>
+                            </svg>
                             } @else {
-                            <div class="seat-marker empty">
-                                <span class="seat-icon">+</span>
+                            <div class="square-border"
+                                [style.--progress]="(table.guests.length / table.capacity) * 100">
                             </div>
                             }
                         </div>
-                        }
+
+                        <div class="seats-layout">
+                            @for (seatIdx of getSequence(table.capacity); track seatIdx) {
+                            @let guest = getGuestAtSeat(table.id, seatIdx);
+                            <div class="guest-seat" [style.--seat-index]="seatIdx"
+                                [style.--total-seats]="table.capacity"
+                                [style.--is-bottom]="table.shape === 'rectangular' && seatIdx >= (table.capacity / 2) ? 1 : 0"
+                                [style.--side-index]="table.shape === 'rectangular' ? (seatIdx % (table.capacity / 2)) : seatIdx"
+                                [class.bottom-seat]="isBottomSeat(seatIdx, table.capacity)" cdkDropList
+                                [cdkDropListData]="{tableId: table.id, seatIndex: seatIdx}"
+                                (cdkDropListDropped)="onDrop($event)">
+
+                                @if (guest) {
+                                <div class="guest-seat-inner" cdkDrag [cdkDragData]="guest"
+                                    [class.just-seated]="newlySeatedIds().has(guestKey(guest))"
+                                    [title]="guest.name + ' (' + guest.mealType + ')'">
+
+                                    <!-- Preview while dragging -->
+                                    <div *cdkDragPreview class="guest-drag-preview">
+                                        <svg class="kicking-person" viewBox="0 0 24 48">
+                                            <!-- Cabeza -->
+                                            <circle cx="12" cy="7" r="4.5" fill="#ec4899" />
+                                            <!-- Cuerpo/Torso -->
+                                            <path d="M8,13 Q12,12 16,13 L15,27 Q12,28 9,27 Z" fill="#ec4899" />
+                                            <!-- Brazos -->
+                                            <path class="arm left" d="M6,14 Q3,19 5,25" fill="none" stroke="#ec4899"
+                                                stroke-width="3" stroke-linecap="round" />
+                                            <path class="arm right" d="M18,14 Q21,19 19,25" fill="none" stroke="#ec4899"
+                                                stroke-width="3" stroke-linecap="round" />
+                                            <!-- Piernas -->
+                                            <path class="leg left" d="M9,27 Q7,35 9,43" fill="none" stroke="#ec4899"
+                                                stroke-width="3.5" stroke-linecap="round" />
+                                            <path class="leg right" d="M15,27 Q17,35 15,43" fill="none" stroke="#ec4899"
+                                                stroke-width="3.5" stroke-linecap="round" />
+                                        </svg>
+                                    </div>
+
+                                    <!-- Placeholder while dragging -->
+                                    <div *cdkDragPlaceholder class="guest-seat-placeholder"></div>
+
+                                    <div class="seat-marker" [class]="getMenuClass(guest.mealType)">
+                                        <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
+                                    </div>
+                                    <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
+                                </div>
+                                } @else {
+                                <div class="seat-marker empty">
+                                    <span class="seat-icon">+</span>
+                                </div>
+                                }
+                            </div>
+                            }
+                        </div>
                     </div>
+                    }
+                </main>
+            </div> <!-- .celebration-hall -->
+        </div> <!-- .hall-scroll-container -->
+
+        <!-- Modal para Añadir/Editar Invitado -->
+        @if (showAddModal()) {
+        <div class="modal-backdrop" (click)="closeAddModal()">
+            <div class="modal-container" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>{{ isEditingGuest() ? 'Editar Invitado' : 'Nuevo Invitado' }}</h3>
+                    <button class="close-btn" (click)="closeAddModal()">×</button>
                 </div>
-                }
-            </main>
-        </div>
-    </div>
 
-    <!-- Modal para Añadir/Editar Invitado -->
-    @if (showAddModal()) {
-    <div class="modal-backdrop" (click)="closeAddModal()">
-        <div class="modal-container" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-                <h3>{{ isEditingGuest() ? 'Editar Invitado' : 'Nuevo Invitado' }}</h3>
-                <button class="close-btn" (click)="closeAddModal()">×</button>
-            </div>
+                <form class="modal-form" (submit)="$event.preventDefault(); saveGuest()">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nombre Completo</label>
+                            <input type="text" [ngModel]="newGuest().name"
+                                (ngModelChange)="updateNewGuestField('name', $event)" name="name"
+                                placeholder="Ej: Juan Pérez" required>
+                        </div>
 
-            <form class="modal-form" (submit)="$event.preventDefault(); saveGuest()">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Nombre Completo</label>
-                        <input type="text" [ngModel]="newGuest().name"
-                            (ngModelChange)="updateNewGuestField('name', $event)" name="name"
-                            placeholder="Ej: Juan Pérez" required>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" [ngModel]="newGuest().email"
+                                (ngModelChange)="updateNewGuestField('email', $event)" name="email"
+                                placeholder="email@ejemplo.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="tel" [ngModel]="newGuest().phone"
+                                (ngModelChange)="updateNewGuestField('phone', $event)" name="phone"
+                                placeholder="600 000 000">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tipo de Menú</label>
+                            <select [ngModel]="newGuest().mealType"
+                                (ngModelChange)="updateNewGuestField('mealType', $event)" name="mealType">
+                                <option value="normal">Normal</option>
+                                <option value="vegetariano">Vegetariano</option>
+                                <option value="vegano">Vegano</option>
+                                <option value="celiaco">Celiaco</option>
+                                <option value="sin_gluten">Sin Gluten</option>
+                                <option value="intolerante_lactosa">Intolerante a la lactosa</option>
+                                <option value="intolerante_frutos_secos">Intolerante a los frutos secos</option>
+                                <option value="kid">Infantil</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>Alergias</label>
+                            <textarea [ngModel]="newGuest().allergies"
+                                (ngModelChange)="updateNewGuestField('allergies', $event)" name="allergies"
+                                placeholder="Ej: No puede comer marisco..."></textarea>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>Notas</label>
+                            <textarea [ngModel]="newGuest().notes"
+                                (ngModelChange)="updateNewGuestField('notes', $event)" name="notes"
+                                placeholder="Ej: me hace mucha ilusion vuestra boda..."></textarea>
+                        </div>
+
+                        <div class="form-check full-width">
+                            <input type="checkbox" id="transport" [ngModel]="newGuest().needsTransport"
+                                (ngModelChange)="updateNewGuestField('needsTransport', $event)" name="needsTransport">
+                            <label for="transport">Necesita Transporte 🚌</label>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" [ngModel]="newGuest().email"
-                            (ngModelChange)="updateNewGuestField('email', $event)" name="email"
-                            placeholder="email@ejemplo.com" required>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" (click)="closeAddModal()">Cancelar</button>
+                        <button type="submit" class="btn-primary" [disabled]="isLoading()">
+                            @if (isLoading()) { Guardando... }
+                            @else { {{ isEditingGuest() ? 'Actualizar Invitado' : 'Guardar Invitado' }} }
+                        </button>
                     </div>
-
-                    <div class="form-group">
-                        <label>Teléfono</label>
-                        <input type="tel" [ngModel]="newGuest().phone"
-                            (ngModelChange)="updateNewGuestField('phone', $event)" name="phone"
-                            placeholder="600 000 000">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Tipo de Menú</label>
-                        <select [ngModel]="newGuest().mealType"
-                            (ngModelChange)="updateNewGuestField('mealType', $event)" name="mealType">
-                            <option value="normal">Normal</option>
-                            <option value="vegetariano">Vegetariano</option>
-                            <option value="vegano">Vegano</option>
-                            <option value="celiaco">Celiaco</option>
-                            <option value="sin_gluten">Sin Gluten</option>
-                            <option value="intolerante_lactosa">Intolerante a la lactosa</option>
-                            <option value="intolerante_frutos_secos">Intolerante a los frutos secos</option>
-                            <option value="kid">Infantil</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label>Alergias</label>
-                        <textarea [ngModel]="newGuest().allergies"
-                            (ngModelChange)="updateNewGuestField('allergies', $event)" name="allergies"
-                            placeholder="Ej: No puede comer marisco..."></textarea>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label>Notas</label>
-                        <textarea [ngModel]="newGuest().notes" (ngModelChange)="updateNewGuestField('notes', $event)"
-                            name="notes" placeholder="Ej: me hace mucha ilusion vuestra boda..."></textarea>
-                    </div>
-
-                    <div class="form-check full-width">
-                        <input type="checkbox" id="transport" [ngModel]="newGuest().needsTransport"
-                            (ngModelChange)="updateNewGuestField('needsTransport', $event)" name="needsTransport">
-                        <label for="transport">Necesita Transporte 🚌</label>
-                    </div>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn-secondary" (click)="closeAddModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary" [disabled]="isLoading()">
-                        @if (isLoading()) { Guardando... }
-                        @else { {{ isEditingGuest() ? 'Actualizar Invitado' : 'Guardar Invitado' }} }
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    }
-
-    <!-- Modal para Confirmar Eliminación de Mesa -->
-    @if (showDeleteConfirm()) {
-    <div class="modal-backdrop" (click)="cancelDeleteTable()">
-        <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-                <h3>Eliminar {{ getTableNameToDelete() }}</h3>
-                <button class="close-btn" (click)="cancelDeleteTable()">×</button>
-            </div>
-            <div class="modal-body warning-theme">
-                <div class="warning-visual">
-                    <span class="confirm-icon">🗑️</span>
-                </div>
-                <p>¿Seguro que quieres eliminar esta mesa?</p>
-                <p class="secondary-text">Los invitados asignados volverán a la lista de "Por asignar".</p>
-
-                <div class="modal-actions full-width-btns">
-                    <button class="btn-danger" (click)="confirmDeleteTable()">Sí, eliminar mesa</button>
-                    <button class="btn-secondary-modal" (click)="cancelDeleteTable()">No, mantener mesa</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    }
-
-    <!-- Modal para Confirmar Eliminación de Invitado -->
-    @if (showGuestDeleteConfirm()) {
-    <div class="modal-backdrop" (click)="cancelDeleteGuest()">
-        <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-                <h3>Eliminar Invitado</h3>
-                <button class="close-btn" (click)="cancelDeleteGuest()">×</button>
-            </div>
-            <div class="modal-body warning-theme">
-                <div class="warning-visual">
-                    <span class="confirm-icon">👤❌</span>
-                </div>
-                <p>¿Seguro que quieres eliminar a {{ guestToDelete()?.name }}?</p>
-                <p class="secondary-text">Esta acción no se puede deshacer y el invitado será borrado permanentemente.
-                </p>
-
-                <div class="modal-actions full-width-btns">
-                    <button class="btn-danger" (click)="confirmDeleteGuest()">Sí, eliminar invitado</button>
-                    <button class="btn-secondary-modal" (click)="cancelDeleteGuest()">No, mantener invitado</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    }
-
-    <!-- Modal para Mesa Completa -->
-    @if (showFullTableModal()) {
-    <div class="modal-backdrop" (click)="closeFullTableModal()">
-        <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-                <h3>Mesa Completa</h3>
-                <button class="close-btn" (click)="closeFullTableModal()">×</button>
-            </div>
-            <div class="modal-body warning-theme">
-                <div class="warning-visual info-theme">
-                    <span class="confirm-icon">🛑</span>
-                </div>
-                <p>La mesa "{{ fullTableName() }}" está llena</p>
-                <p class="secondary-text">La capacidad máxima es de {{ fullTableCapacity() }} personas. Por favor,
-                    amplía la capacidad o elige otra mesa.</p>
-
-                <div class="modal-actions full-width-btns">
-                    <button class="btn-primary" (click)="closeFullTableModal()">Entendido</button>
-                </div>
+                </form>
             </div>
         </div>
-    </div>
-    }
+        }
 
-    <!-- Modal Genérico de Alerta -->
-    @if (showGenericModal()) {
-    <div class="modal-backdrop" (click)="closeGenericModal()">
-        <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-                <h3>{{ genericModalTitle() }}</h3>
-                <button class="close-btn" (click)="closeGenericModal()">×</button>
-            </div>
-            <div class="modal-body warning-theme">
-                <div class="warning-visual info-theme">
-                    <span class="confirm-icon">⚠️</span>
+        <!-- Modal para Confirmar Eliminación de Mesa -->
+        @if (showDeleteConfirm()) {
+        <div class="modal-backdrop" (click)="cancelDeleteTable()">
+            <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>Eliminar {{ getTableNameToDelete() }}</h3>
+                    <button class="close-btn" (click)="cancelDeleteTable()">×</button>
                 </div>
-                <p>{{ genericModalMessage() }}</p>
+                <div class="modal-body warning-theme">
+                    <div class="warning-visual">
+                        <span class="confirm-icon">🗑️</span>
+                    </div>
+                    <p>¿Seguro que quieres eliminar esta mesa?</p>
+                    <p class="secondary-text">Los invitados asignados volverán a la lista de "Por asignar".</p>
 
-                <div class="modal-actions full-width-btns">
-                    <button class="btn-primary" (click)="closeGenericModal()">Entendido</button>
+                    <div class="modal-actions full-width-btns">
+                        <button class="btn-danger" (click)="confirmDeleteTable()">Sí, eliminar mesa</button>
+                        <button class="btn-secondary-modal" (click)="cancelDeleteTable()">No, mantener mesa</button>
+                    </div>
                 </div>
             </div>
         </div>
+        }
+
+        <!-- Modal para Confirmar Eliminación de Invitado -->
+        @if (showGuestDeleteConfirm()) {
+        <div class="modal-backdrop" (click)="cancelDeleteGuest()">
+            <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>Eliminar Invitado</h3>
+                    <button class="close-btn" (click)="cancelDeleteGuest()">×</button>
+                </div>
+                <div class="modal-body warning-theme">
+                    <div class="warning-visual">
+                        <span class="confirm-icon">👤❌</span>
+                    </div>
+                    <p>¿Seguro que quieres eliminar a {{ guestToDelete()?.name }}?</p>
+                    <p class="secondary-text">Esta acción no se puede deshacer y el invitado será borrado
+                        permanentemente.
+                    </p>
+
+                    <div class="modal-actions full-width-btns">
+                        <button class="btn-danger" (click)="confirmDeleteGuest()">Sí, eliminar invitado</button>
+                        <button class="btn-secondary-modal" (click)="cancelDeleteGuest()">No, mantener invitado</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Modal para Mesa Completa -->
+        @if (showFullTableModal()) {
+        <div class="modal-backdrop" (click)="closeFullTableModal()">
+            <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>Mesa Completa</h3>
+                    <button class="close-btn" (click)="closeFullTableModal()">×</button>
+                </div>
+                <div class="modal-body warning-theme">
+                    <div class="warning-visual info-theme">
+                        <span class="confirm-icon">🛑</span>
+                    </div>
+                    <p>La mesa "{{ fullTableName() }}" está llena</p>
+                    <p class="secondary-text">La capacidad máxima es de {{ fullTableCapacity() }} personas. Por favor,
+                        amplía la capacidad o elige otra mesa.</p>
+
+                    <div class="modal-actions full-width-btns">
+                        <button class="btn-primary" (click)="closeFullTableModal()">Entendido</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Modal Genérico de Alerta -->
+        @if (showGenericModal()) {
+        <div class="modal-backdrop" (click)="closeGenericModal()">
+            <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>{{ genericModalTitle() }}</h3>
+                    <button class="close-btn" (click)="closeGenericModal()">×</button>
+                </div>
+                <div class="modal-body warning-theme">
+                    <div class="warning-visual info-theme">
+                        <span class="confirm-icon">⚠️</span>
+                    </div>
+                    <p>{{ genericModalMessage() }}</p>
+
+                    <div class="modal-actions full-width-btns">
+                        <button class="btn-primary" (click)="closeGenericModal()">Entendido</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+        <!-- Leyenda de Colores -->
+        <app-tables-legend></app-tables-legend>
     </div>
-    }
-    <!-- Leyenda de Colores -->
-    <app-tables-legend></app-tables-legend>
-</div>
