@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GuestService, Guest } from '../../../services/guest.service';
 import { SettingsService } from '../../../services/settings.service';
@@ -8,11 +8,12 @@ import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { firstValueFrom } from 'rxjs';
 import { TablesLegendComponent } from './tables-legend/tables-legend.component';
 import { TablesHeaderComponent } from './tables-header/tables-header.component';
+import { ExportPdfBtnComponent } from './export-pdf-btn/export-pdf-btn';
 
 @Component({
     selector: 'app-tables',
     standalone: true,
-    imports: [CommonModule, FormsModule, TablesLegendComponent, TablesHeaderComponent, DragDropModule],
+    imports: [CommonModule, FormsModule, TablesLegendComponent, TablesHeaderComponent, DragDropModule, ExportPdfBtnComponent],
     templateUrl: './tables.component.html',
     styleUrl: './tables.component.css'
 })
@@ -26,6 +27,8 @@ export class TablesComponent implements OnInit {
 
     isLoading = signal(true);
     draggedGuest: Guest | null = null;
+
+    @ViewChild('hall') hallElement!: ElementRef;
 
     // Drag animation state
     draggingGuestId = signal<string | undefined>(undefined);
@@ -137,8 +140,8 @@ export class TablesComponent implements OnInit {
         let maxBottom = 0;
         currentTables.forEach(t => {
             if (t.posX !== undefined && t.posY !== undefined) {
-                // Cada mesa ocupa unos 340px + margen, usamos 450 para aire inferior
-                const bottom = t.posY + 450;
+                const height = t.shape === 'rectangular' ? 340 : t.shape === 'presidential' ? 240 : 340;
+                const bottom = t.posY + height + 110; // 110px de margen
                 if (bottom > maxBottom) maxBottom = bottom;
             }
         });
@@ -153,8 +156,10 @@ export class TablesComponent implements OnInit {
         let maxRight = 0;
         currentTables.forEach(t => {
             if (t.posX !== undefined && t.posY !== undefined) {
-                // Cada mesa ocupa unos 340px + margen, usamos 450 para aire lateral
-                const right = t.posX + 450;
+                const width = (t.shape === 'rectangular' || t.shape === 'presidential')
+                    ? this.getRectTableWidth(t.capacity, t.shape) + 60
+                    : 340;
+                const right = t.posX + width + 110; // 110px de margen
                 if (right > maxRight) maxRight = right;
             }
         });
@@ -645,9 +650,58 @@ export class TablesComponent implements OnInit {
     }
 
     /** Width of the table-surface div in px */
-    getRectTableWidth(capacity: number, shape: string): number {
-        const seatsPerSide = shape === 'presidential' ? capacity : Math.ceil(capacity / 2);
-        const spacing = this.getRectSeatSpacing(capacity, shape);
-        return seatsPerSide * spacing + 20; // 20px padding total
+    getRectTableWidth(capacity: number, shape: 'rectangular' | 'presidential' | 'round' | 'square'): number {
+        if (shape !== 'rectangular' && shape !== 'presidential') return 0;
+        const layoutSeats = shape === 'presidential' ? capacity : Math.ceil(capacity / 2);
+        return (layoutSeats * 75) + 30; // 75px per seat slot + 30px padding
+    }
+
+    getSeatX(shape: string, capacity: number, seatIdx: number): number {
+        if (shape === 'round') {
+            const angle = (360 / capacity) * seatIdx;
+            const rad = angle * Math.PI / 180;
+            return 170 + (108 * Math.cos(rad));
+        } else if (shape === 'square') {
+            const radius = this.isBottomSeat(seatIdx, capacity) ? 125 : 112;
+            const angle = (360 / capacity) * seatIdx;
+            const rad = angle * Math.PI / 180;
+            return 170 + (radius * Math.cos(rad));
+        } else if (shape === 'rectangular') {
+            const totalOnSide = Math.ceil(capacity / 2);
+            const sideIndex = seatIdx % totalOnSide;
+            const width = this.getRectTableWidth(capacity, 'rectangular') + 60;
+            const seatSpacing = this.getRectSeatSpacing(capacity, shape);
+            const translateX = (sideIndex - (totalOnSide - 1) / 2) * seatSpacing;
+            return (width / 2) + translateX;
+        } else if (shape === 'presidential') {
+            const totalOnSide = capacity;
+            const sideIndex = seatIdx;
+            const width = this.getRectTableWidth(capacity, 'presidential') + 60;
+            const seatSpacing = this.getRectSeatSpacing(capacity, shape);
+            const translateX = (sideIndex - (totalOnSide - 1) / 2) * seatSpacing;
+            return (width / 2) + translateX;
+        }
+        return 0;
+    }
+
+    getSeatY(shape: string, capacity: number, seatIdx: number): number {
+        if (shape === 'round') {
+            const angle = (360 / capacity) * seatIdx;
+            const rad = angle * Math.PI / 180;
+            return 170 + (108 * Math.sin(rad));
+        } else if (shape === 'square') {
+            const radius = this.isBottomSeat(seatIdx, capacity) ? 125 : 112;
+            const angle = (360 / capacity) * seatIdx;
+            const rad = angle * Math.PI / 180;
+            return 170 + (radius * Math.sin(rad));
+        } else if (shape === 'rectangular') {
+            const totalOnSide = Math.ceil(capacity / 2);
+            const isBottom = seatIdx >= totalOnSide;
+            const offsetY = isBottom ? 100 : -100;
+            return 170 + offsetY;
+        } else if (shape === 'presidential') {
+            return 120 + 90;
+        }
+        return 0;
     }
 }

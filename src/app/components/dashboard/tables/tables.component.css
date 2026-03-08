@@ -725,34 +725,11 @@
 
     --radius: 108px;
     --angle: calc((360deg / var(--total-seats)) * var(--seat-index));
-    transform: rotate(var(--angle)) translate(var(--radius)) rotate(calc(-1 * var(--angle)));
-}
-
-/* Mesas Rectangulares (Dos caras) */
-.table-container.rectangular .guest-seat {
-    --total-on-side: calc(var(--total-seats) / 2);
-    /* --is-bottom, --side-index, --seat-spacing inyectados desde Angular */
-    --offset-y: calc(var(--is-bottom) * 100px + (1 - var(--is-bottom)) * -100px);
-    transform: translate(calc((var(--side-index) - (var(--total-on-side) - 1) / 2) * var(--seat-spacing)), var(--offset-y));
-}
-
-/* Mesas Presidenciales (Una cara) */
-.table-container.presidential .guest-seat {
-    --total-on-side: var(--total-seats);
-    --side-index: var(--seat-index);
-    --offset-y: 90px;
-    /* --seat-spacing inyectado desde Angular */
-    transform: translate(calc((var(--side-index) - (var(--total-on-side) - 1) / 2) * var(--seat-spacing)), var(--offset-y));
-}
-
-.table-container.square .guest-seat {
-    --radius: 112px;
+    /* transform handled by TS */
 }
 
 /* Offset extra para los invitados de abajo en mesas cuadradas para que no se corten */
-.table-container.square .guest-seat.bottom-seat {
-    --radius: 125px;
-}
+/*}*/
 
 .guest-seat:active {
     cursor: grabbing;

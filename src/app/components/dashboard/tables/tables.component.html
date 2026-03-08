@@ -1,6 +1,7 @@
 <div class="tables-view">
     <app-tables-header [isEditMode]="isEditLayoutMode()" (toggleEditMode)="toggleEditLayout()"
         (addTable)="openCreateTableModal()">
+        <app-export-pdf-btn [hallElement]="hall"></app-export-pdf-btn>
     </app-tables-header>
 
     <!-- Modal para Añadir Mesa -->
@@ -235,6 +236,8 @@
                                 [style.--total-seats]="table.capacity"
                                 [style.--is-bottom]="table.shape === 'rectangular' && seatIdx >= (table.capacity / 2) ? 1 : 0"
                                 [style.--side-index]="table.shape === 'rectangular' ? (seatIdx % (table.capacity / 2)) : seatIdx"
+                                [style.left.px]="getSeatX(table.shape, table.capacity, seatIdx)"
+                                [style.top.px]="getSeatY(table.shape, table.capacity, seatIdx)"
                                 [class.bottom-seat]="isBottomSeat(seatIdx, table.capacity)" cdkDropList
                                 [cdkDropListData]="{tableId: table.id, seatIndex: seatIdx}"
                                 (cdkDropListDropped)="onDrop($event)">
