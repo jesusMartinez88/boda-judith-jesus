@@ -22,7 +22,7 @@ export class TimelineComponent {
     {
       time: '18:00',
       title: 'Ceremonia',
-      description: 'Ceremonia en blanca. ¡El momento esperado!',
+      description: 'Ceremonia en Blanca. ¡El momento esperado!',
       location: 'Iglesia de Blanca',
       locationUrl: 'https://www.google.com/maps/dir/?api=1&destination=38.1804621,-1.375567',
       icon: '💍'
