@@ -14,11 +14,36 @@ export class FinancesComponent implements OnInit {
     private financesService = inject(FinancesService);
     private fb = inject(FormBuilder);
 
+    // Expose Math to template
+    Math = Math;
+
     records = this.financesService.records;
     financeForm: FormGroup;
     isSubmitting = signal(false);
     isLoading = signal(true);
     editingRecordId = signal<number | null>(null);
+
+    // Pagination
+    currentPage = signal(1);
+    pageSize = signal(10);
+    pageSizeOptions = [10, 20, 30, 50];
+
+    // Paginated records
+    paginatedRecords = computed(() => {
+        const allRecords = this.records();
+        const page = this.currentPage();
+        const size = this.pageSize();
+        const startIndex = (page - 1) * size;
+        const endIndex = startIndex + size;
+        return allRecords.slice(startIndex, endIndex);
+    });
+
+    totalPages = computed(() => {
+        return Math.ceil(this.records().length / this.pageSize());
+    });
+
+    hasNextPage = computed(() => this.currentPage() < this.totalPages());
+    hasPreviousPage = computed(() => this.currentPage() > 1);
 
     // Summary stats
     totalIncome = computed(() => {
@@ -167,5 +192,66 @@ export class FinancesComponent implements OnInit {
 
     getBadgeClass(type: string): string {
         return type === 'income' ? 'badge-income' : 'badge-expense';
+    }
+
+    // Pagination methods
+    goToPage(page: number) {
+        if (page >= 1 && page <= this.totalPages()) {
+            this.currentPage.set(page);
+        }
+    }
+
+    nextPage() {
+        if (this.hasNextPage()) {
+            this.currentPage.update(p => p + 1);
+        }
+    }
+
+    previousPage() {
+        if (this.hasPreviousPage()) {
+            this.currentPage.update(p => p - 1);
+        }
+    }
+
+    changePageSize(size: number) {
+        this.pageSize.set(size);
+        this.currentPage.set(1); // Reset to first page when changing page size
+    }
+
+    getPageNumbers(): number[] {
+        const total = this.totalPages();
+        const current = this.currentPage();
+        const pages: number[] = [];
+
+        if (total <= 7) {
+            // Show all pages if 7 or less
+            for (let i = 1; i <= total; i++) {
+                pages.push(i);
+            }
+        } else {
+            // Always show first page
+            pages.push(1);
+
+            if (current > 3) {
+                pages.push(-1); // Ellipsis
+            }
+
+            // Show pages around current
+            const start = Math.max(2, current - 1);
+            const end = Math.min(total - 1, current + 1);
+
+            for (let i = start; i <= end; i++) {
+                pages.push(i);
+            }
+
+            if (current < total - 2) {
+                pages.push(-1); // Ellipsis
+            }
+
+            // Always show last page
+            pages.push(total);
+        }
+
+        return pages;
     }
 }

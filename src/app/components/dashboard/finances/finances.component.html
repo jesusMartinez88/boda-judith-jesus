@@ -122,7 +122,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (record of records(); track record.id) {
+                            @for (record of paginatedRecords(); track record.id) {
                             <tr class="record-row">
                                 <td class="date-cell hide-mobile">{{ (record.date || record.createdAt) |
                                     date:'dd/MM/yyyy' }}</td>
@@ -165,6 +165,57 @@
                             }
                         </tbody>
                     </table>
+                    }
+
+                    <!-- Pagination Controls -->
+                    @if (records().length > 0) {
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            <span class="showing-text">
+                                Mostrando {{ (currentPage() - 1) * pageSize() + 1 }} - 
+                                {{ Math.min(currentPage() * pageSize(), records().length) }} 
+                                de {{ records().length }} registros
+                            </span>
+                            <div class="page-size-selector">
+                                <label for="pageSize">Filas por página:</label>
+                                <select id="pageSize" [value]="pageSize()" (change)="changePageSize(+$any($event.target).value)">
+                                    @for (size of pageSizeOptions; track size) {
+                                    <option [value]="size">{{ size }}</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        @if (totalPages() > 1) {
+                        <div class="pagination-controls">
+                            <button class="page-btn" 
+                                    [disabled]="!hasPreviousPage()" 
+                                    (click)="previousPage()"
+                                    title="Página anterior">
+                                ‹
+                            </button>
+
+                            @for (pageNum of getPageNumbers(); track pageNum) {
+                                @if (pageNum === -1) {
+                                <span class="page-ellipsis">...</span>
+                                } @else {
+                                <button class="page-btn" 
+                                        [class.active]="pageNum === currentPage()"
+                                        (click)="goToPage(pageNum)">
+                                    {{ pageNum }}
+                                </button>
+                                }
+                            }
+
+                            <button class="page-btn" 
+                                    [disabled]="!hasNextPage()" 
+                                    (click)="nextPage()"
+                                    title="Página siguiente">
+                                ›
+                            </button>
+                        </div>
+                        }
+                    </div>
                     }
                 </div>
             </div>
