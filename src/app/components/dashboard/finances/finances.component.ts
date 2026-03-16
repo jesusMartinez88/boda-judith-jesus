@@ -28,6 +28,22 @@ export class FinancesComponent implements OnInit {
     pageSize = signal(10);
     pageSizeOptions = [10, 20, 30, 50];
 
+    // Autocomplete for paidBy field
+    showSuggestions = signal(false);
+    filteredSuggestions = signal<string[]>([]);
+    selectedSuggestionIndex = signal(-1);
+
+    // Get unique names from all records
+    uniquePaidByNames = computed(() => {
+        const names = new Set<string>();
+        this.records().forEach(r => {
+            if (r.paidBy && r.paidBy.trim()) {
+                names.add(r.paidBy.trim());
+            }
+        });
+        return Array.from(names).sort();
+    });
+
     // Paginated records
     paginatedRecords = computed(() => {
         const allRecords = this.records();
@@ -130,6 +146,11 @@ export class FinancesComponent implements OnInit {
 
     ngOnInit() {
         this.loadData();
+        
+        // Listen to paidBy field changes for autocomplete
+        this.financeForm.get('paidBy')?.valueChanges.subscribe(value => {
+            this.onPaidByInput(value || '');
+        });
     }
 
     async loadData() {
@@ -253,5 +274,77 @@ export class FinancesComponent implements OnInit {
         }
 
         return pages;
+    }
+
+    // Autocomplete methods
+    onPaidByInput(value: string) {
+        const trimmedValue = value.trim().toLowerCase();
+        
+        if (!trimmedValue) {
+            this.showSuggestions.set(false);
+            this.filteredSuggestions.set([]);
+            return;
+        }
+
+        const filtered = this.uniquePaidByNames().filter(name => 
+            name.toLowerCase().includes(trimmedValue)
+        );
+
+        this.filteredSuggestions.set(filtered);
+        this.showSuggestions.set(filtered.length > 0);
+        this.selectedSuggestionIndex.set(-1);
+    }
+
+    selectSuggestion(name: string) {
+        this.financeForm.patchValue({ paidBy: name });
+        this.showSuggestions.set(false);
+        this.selectedSuggestionIndex.set(-1);
+    }
+
+    onPaidByKeydown(event: KeyboardEvent) {
+        const suggestions = this.filteredSuggestions();
+        
+        if (!this.showSuggestions() || suggestions.length === 0) {
+            return;
+        }
+
+        switch (event.key) {
+            case 'ArrowDown':
+                event.preventDefault();
+                this.selectedSuggestionIndex.update(i => 
+                    i < suggestions.length - 1 ? i + 1 : i
+                );
+                break;
+            case 'ArrowUp':
+                event.preventDefault();
+                this.selectedSuggestionIndex.update(i => i > 0 ? i - 1 : -1);
+                break;
+            case 'Enter':
+                event.preventDefault();
+                const index = this.selectedSuggestionIndex();
+                if (index >= 0 && index < suggestions.length) {
+                    this.selectSuggestion(suggestions[index]);
+                }
+                break;
+            case 'Escape':
+                this.showSuggestions.set(false);
+                this.selectedSuggestionIndex.set(-1);
+                break;
+        }
+    }
+
+    onPaidByBlur() {
+        // Delay to allow click on suggestion
+        setTimeout(() => {
+            this.showSuggestions.set(false);
+            this.selectedSuggestionIndex.set(-1);
+        }, 200);
+    }
+
+    onPaidByFocus() {
+        const value = this.financeForm.get('paidBy')?.value || '';
+        if (value.trim()) {
+            this.onPaidByInput(value);
+        }
     }
 }

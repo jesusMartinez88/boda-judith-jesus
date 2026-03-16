@@ -14,8 +14,6 @@ export class CalendarComponent {
         const title = encodeURIComponent('Boda de Judith & Jesús 💍');
         const details = encodeURIComponent('¡Nos encantaría que nos acompañaras en nuestro gran día!');
         const location = encodeURIComponent('Pericon Azahar, Granada, España');
-        // 2026-07-11 18:00 to 2026-07-12 04:00 (UTC+2 in July for Spain)
-        // 18:00 local = 16:00 UTC
         const dates = '20260711T160000Z/20260712T020000Z';
 
         const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;

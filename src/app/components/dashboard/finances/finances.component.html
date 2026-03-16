@@ -35,10 +35,38 @@
             <div class="card" [class.editing-mode]="editingRecordId() !== null">
                 <h3>{{ editingRecordId() ? '✏️ Editar Registro' : 'Nuevo Registro' }}</h3>
                 <form [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="finance-form">
-                  <div class="form-group">
+                  <div class="form-group autocomplete-wrapper">
                       <label>Pagado por / Recibido de</label>
-                      <input type="text" formControlName="paidBy" placeholder="Ej: Juan, María, Ambos..."
-                          [class.error]="financeForm.get('paidBy')?.invalid && financeForm.get('paidBy')?.touched">
+                      <input type="text" 
+                             formControlName="paidBy" 
+                             placeholder="Ej: Juan, María, Ambos..."
+                             [class.error]="financeForm.get('paidBy')?.invalid && financeForm.get('paidBy')?.touched"
+                             (keydown)="onPaidByKeydown($event)"
+                             (blur)="onPaidByBlur()"
+                             (focus)="onPaidByFocus()"
+                             autocomplete="off"
+                             role="combobox"
+                             [attr.aria-expanded]="showSuggestions()"
+                             [attr.aria-controls]="showSuggestions() ? 'paidby-suggestions' : null"
+                             [attr.aria-activedescendant]="selectedSuggestionIndex() >= 0 ? 'suggestion-' + selectedSuggestionIndex() : null">
+                      
+                      @if (showSuggestions() && filteredSuggestions().length > 0) {
+                      <ul class="autocomplete-suggestions" 
+                          id="paidby-suggestions" 
+                          role="listbox">
+                          @for (suggestion of filteredSuggestions(); track suggestion; let i = $index) {
+                          <li class="suggestion-item" 
+                              [class.selected]="i === selectedSuggestionIndex()"
+                              [id]="'suggestion-' + i"
+                              role="option"
+                              [attr.aria-selected]="i === selectedSuggestionIndex()"
+                              (mousedown)="selectSuggestion(suggestion)">
+                              <span class="suggestion-avatar">{{ suggestion.charAt(0).toUpperCase() }}</span>
+                              <span class="suggestion-name">{{ suggestion }}</span>
+                          </li>
+                          }
+                      </ul>
+                      }
                   </div>
                   <div class="form-group">
                       <label>Descripción</label>
