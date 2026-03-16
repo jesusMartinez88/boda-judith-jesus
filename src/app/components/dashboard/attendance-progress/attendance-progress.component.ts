@@ -1,12 +1,12 @@
 import { Component, Input, computed, inject, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { WeddingStats } from '../../../services/stats.service';
 import { SettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'app-attendance-progress',
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
     templateUrl: './attendance-progress.component.html',
     styleUrl: './attendance-progress.component.css'
 })
@@ -23,9 +23,11 @@ export class AttendanceProgressComponent {
         const stats = this.stats();
         if (!stats) return 0;
 
-        // Total responses (confirmed + pending)
-        const totalGuests = (stats.confirmed || 0) + (stats.pending || 0);
-        return Math.min(Math.round((totalGuests / estimated) * 100), 100);
+        // Total responses: confirmed + declined (pending are those who still haven't answered)
+        const confirmed = stats.confirmed || 0;
+        const declined = stats.declined || 0;
+        const totalResponses = confirmed + declined;
+        return Math.min(Math.round((totalResponses / estimated) * 100), 100);
     });
 
     confirmedPercentage = computed(() => {

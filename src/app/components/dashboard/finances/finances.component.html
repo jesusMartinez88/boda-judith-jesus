@@ -32,58 +32,64 @@
     <div class="content-grid">
         <!-- Form Section -->
         <section class="form-section">
-            <div class="card">
-                <h3>{{ editingRecordId() ? 'Editar Registro' : 'Nuevo Registro' }}</h3>
+            <div class="card" [class.editing-mode]="editingRecordId() !== null">
+                <h3>{{ editingRecordId() ? '✏️ Editar Registro' : 'Nuevo Registro' }}</h3>
                 <form [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="finance-form">
-                    <div class="form-group">
-                        <label>Descripción</label>
-                        <input type="text" formControlName="description" placeholder="Ej: Pago Fotógrafo"
-                            [class.error]="financeForm.get('description')?.invalid && financeForm.get('description')?.touched">
-                    </div>
+                  <div class="form-group">
+                      <label>Pagado por / Recibido de</label>
+                      <input type="text" formControlName="paidBy" placeholder="Ej: Juan, María, Ambos..."
+                          [class.error]="financeForm.get('paidBy')?.invalid && financeForm.get('paidBy')?.touched">
+                  </div>
+                  <div class="form-group">
+                      <label>Descripción</label>
+                      <input type="text" formControlName="description" placeholder="Ej: Pago Fotógrafo"
+                          [class.error]="financeForm.get('description')?.invalid && financeForm.get('description')?.touched">
+                  </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Importe (€)</label>
-                            <input type="number" formControlName="amount" step="0.01"
-                                [class.error]="financeForm.get('amount')?.invalid && financeForm.get('amount')?.touched">
-                        </div>
-                        <div class="form-group">
-                            <label>Tipo</label>
-                            <div class="segmented-control">
-                                <button type="button" [class.active]="financeForm.get('type')?.value === 'expense'"
-                                    (click)="financeForm.patchValue({type: 'expense'})">
-                                    Gasto
-                                </button>
-                                <button type="button" [class.active]="financeForm.get('type')?.value === 'income'"
-                                    (click)="financeForm.patchValue({type: 'income'})">
-                                    Ingreso
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Categoría</label>
-                        <select formControlName="category">
-                            <option value="Celebración">Celebración</option>
-                            <option value="Vestuario">Vestuario</option>
-                            <option value="Fotografía/Video">Fotografía/Video</option>
-                            <option value="Música/Animación">Música/Animación</option>
-                            <option value="Transporte">Transporte</option>
-                            <option value="Regalos/Detalles">Regalos/Detalles</option>
-                            <option value="Otros">Otros</option>
-                        </select>
-                    </div>
+                  <div class="form-row">
+                      <div class="form-group">
+                          <label>Importe (€)</label>
+                          <input type="number" formControlName="amount" step="0.01"
+                              [class.error]="financeForm.get('amount')?.invalid && financeForm.get('amount')?.touched">
+                      </div>
+                      <div class="form-group">
+                          <label>Tipo</label>
+                          <div class="segmented-control">
+                              <button type="button" [class.active]="financeForm.get('type')?.value === 'expense'"
+                                  (click)="financeForm.patchValue({type: 'expense'})">
+                                  Gasto
+                              </button>
+                              <button type="button" [class.active]="financeForm.get('type')?.value === 'income'"
+                                  (click)="financeForm.patchValue({type: 'income'})">
+                                  Ingreso
+                              </button>
+                          </div>
+                      </div>
+                  </div>
 
-                    <div class="form-actions">
-                        <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
-                            {{ isSubmitting() ? 'Guardando...' : (editingRecordId() ? 'Guardar Cambios' : 'Añadir
-                            Registro') }}
-                        </button>
-                        @if (editingRecordId()) {
-                        <button type="button" class="cancel-btn" (click)="cancelEdit()">Cancelar</button>
-                        }
-                    </div>
+                  <div class="form-group">
+                      <label>Categoría</label>
+                      <select formControlName="category">
+                          <option value="Celebración">Celebración</option>
+                          <option value="Vestuario">Vestuario</option>
+                          <option value="Fotografía/Video">Fotografía/Video</option>
+                          <option value="Música/Animación">Música/Animación</option>
+                          <option value="Transporte">Transporte</option>
+                          <option value="Regalos/Detalles">Regalos/Detalles</option>
+                          <option value="Otros">Otros</option>
+                      </select>
+                  </div>
+
+                  <div class="form-actions">
+                      <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+                          {{ isSubmitting() ? 'Guardando...' : (editingRecordId() ? 'Guardar Cambios' : 'Añadir
+                          Registro') }}
+                      </button>
+                      @if (editingRecordId()) {
+                      <button type="button" class="cancel-btn" (click)="cancelEdit()">Cancelar</button>
+                      }
+                  </div>
                 </form>
             </div>
         </section>
@@ -109,6 +115,7 @@
                             <tr>
                                 <th class="hide-mobile">Fecha</th>
                                 <th>Descripción</th>
+                                <th class="hide-mobile">Pagado por</th>
                                 <th class="hide-mobile">Categoría</th>
                                 <th>Importe</th>
                                 <th></th>
@@ -124,10 +131,21 @@
                                         <span class="type-indicator" [class]="getBadgeClass(record.type)"></span>
                                         <div class="desc-text-wrapper">
                                             <span class="main-desc">{{ record.description }}</span>
-                                            <span class="sub-desc show-mobile">{{ record.category }} • {{ (record.date
-                                                || record.createdAt) | date:'dd/MM' }}</span>
+                                            <span class="sub-desc show-mobile">
+                                                @if (record.paidBy) {
+                                                    {{ record.paidBy }} •
+                                                }
+                                                {{ record.category }} • {{ (record.date || record.createdAt) | date:'dd/MM' }}
+                                            </span>
                                         </div>
                                     </div>
+                                </td>
+                                <td class="hide-mobile">
+                                    @if (record.paidBy) {
+                                        <span class="paid-by-badge">👤 {{ record.paidBy }}</span>
+                                    } @else {
+                                        <span class="paid-by-badge empty">-</span>
+                                    }
                                 </td>
                                 <td class="hide-mobile"><span class="category-badge">{{ record.category }}</span></td>
                                 <td class="amount-cell" [class.income]="record.type === 'income'"
@@ -152,4 +170,57 @@
             </div>
         </section>
     </div>
+
+    <!-- Comparison by Person Card -->
+    @if (balanceByPerson().length > 0) {
+    <div class="comparison-card card">
+        <div class="comparison-header">
+            <h3>👥 Comparación de Gastos por Persona</h3>
+            <p class="comparison-subtitle">Resumen de quién ha pagado qué</p>
+        </div>
+        
+        <div class="comparison-list">
+            @for (person of balanceByPerson(); track person.name) {
+            <div class="person-item">
+                <div class="person-header">
+                    <div class="person-name">
+                        <span class="person-avatar">{{ person.name.charAt(0).toUpperCase() }}</span>
+                        <span class="name-text">{{ person.name }}</span>
+                    </div>
+                    <div class="person-total">
+                        <span class="total-label">Total gastado</span>
+                        <span class="total-amount expense-color">{{ person.expenses | currency:'EUR' }}</span>
+                    </div>
+                </div>
+                
+                <div class="person-details">
+                    <div class="detail-row">
+                        <span class="detail-label">💸 Gastos realizados</span>
+                        <span class="detail-value expense-color">{{ person.expenses | currency:'EUR' }}</span>
+                    </div>
+                    @if (person.incomes > 0) {
+                    <div class="detail-row">
+                        <span class="detail-label">💰 Ingresos aportados</span>
+                        <span class="detail-value income-color">{{ person.incomes | currency:'EUR' }}</span>
+                    </div>
+                    }
+                </div>
+
+                <!-- Progress bar showing contribution -->
+                <div class="contribution-bar">
+                    <div class="bar-fill" 
+                         [style.width.%]="(person.expenses / totalExpense()) * 100"
+                         [class.high]="(person.expenses / totalExpense()) > 0.5"
+                         [class.medium]="(person.expenses / totalExpense()) > 0.3 && (person.expenses / totalExpense()) <= 0.5"
+                         [class.low]="(person.expenses / totalExpense()) <= 0.3">
+                    </div>
+                </div>
+                <div class="contribution-percentage">
+                    {{ ((person.expenses / totalExpense()) * 100) | number:'1.1-1' }}% del total de gastos
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+    }
 </div>

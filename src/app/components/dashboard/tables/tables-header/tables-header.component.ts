@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'app-tables-header',
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
     templateUrl: './tables-header.component.html',
     styleUrl: './tables-header.component.css'
 })

@@ -9,6 +9,7 @@ export interface FinanceRecord {
     amount: number;
     type: 'income' | 'expense';
     category?: string;
+    paidBy?: string; // Nombre de quien hizo el gasto/ingreso
     date?: string;
     createdAt?: string;
     updatedAt?: string;

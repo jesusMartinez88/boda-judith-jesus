@@ -104,4 +104,19 @@ export class TableService {
             })
         );
     }
+
+    requestDeleteCode(): Promise<any> {
+        // triggers an email with a code for confirmation
+        return this.http.post(`${this.baseUrl}/api/tables/request-delete`, {}).toPromise().then(r => r!);
+    }
+
+    deleteAllTables(code?: string): Promise<any> {
+        this.tables.set([]);
+        let url = `${this.baseUrl}/api/tables`;
+        if (code) {
+            const separator = url.includes('?') ? '&' : '?';
+            url = `${url}${separator}code=${encodeURIComponent(code)}`;
+        }
+        return this.http.delete(url).toPromise().then(r => r!);
+    }
 }

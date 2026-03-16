@@ -13,33 +13,31 @@
                 <button class="close-btn" (click)="closeCreateTableModal()">×</button>
             </div>
 
-            <form class="modal-form" (submit)="$event.preventDefault(); confirmAddTable()">
+            <form class="modal-form" [formGroup]="tableForm" (ngSubmit)="confirmAddTable()">
                 <div class="form-grid">
                     <div class="form-group full-width">
                         <label>Nombre de la Mesa</label>
-                        <input type="text" [ngModel]="newTableData().name"
-                            (ngModelChange)="updateNewTableField('name', $event)" name="tableName"
+                        <input type="text" formControlName="name" name="tableName"
                             placeholder="Ej: Mesa Real o Mesa 5" required autofocus>
                     </div>
 
                     <div class="form-group">
                         <label>Capacidad</label>
-                        <input type="number" [ngModel]="newTableData().capacity"
-                            (ngModelChange)="updateNewTableField('capacity', $event)" name="tableCapacity" min="1"
+                        <input type="number" formControlName="capacity" name="tableCapacity" min="1"
                             max="25" required>
                     </div>
 
                     <div class="form-group full-width">
                         <label>Tipo / Forma de Mesa</label>
                         <div class="shape-selector grid-4">
-                            <button type="button" [class.active]="newTableData().shape === 'round'"
-                                (click)="updateNewTableField('shape', 'round')">⭕ Redonda</button>
-                            <button type="button" [class.active]="newTableData().shape === 'square'"
-                                (click)="updateNewTableField('shape', 'square')">🟦 Cuadrada</button>
-                            <button type="button" [class.active]="newTableData().shape === 'rectangular'"
-                                (click)="updateNewTableField('shape', 'rectangular')">👥 Rectangular</button>
-                            <button type="button" [class.active]="newTableData().shape === 'presidential'"
-                                (click)="updateNewTableField('shape', 'presidential')">👑 Presidencial</button>
+                            <button type="button" [class.active]="tableForm.get('shape')?.value === 'round'"
+                                (click)="tableForm.get('shape')?.setValue('round')">⭕ Redonda</button>
+                            <button type="button" [class.active]="tableForm.get('shape')?.value === 'square'"
+                                (click)="tableForm.get('shape')?.setValue('square')">🟦 Cuadrada</button>
+                            <button type="button" [class.active]="tableForm.get('shape')?.value === 'rectangular'"
+                                (click)="tableForm.get('shape')?.setValue('rectangular')">👥 Rectangular</button>
+                            <button type="button" [class.active]="tableForm.get('shape')?.value === 'presidential'"
+                                (click)="tableForm.get('shape')?.setValue('presidential')">👑 Presidencial</button>
                         </div>
                     </div>
                 </div>
@@ -57,7 +55,12 @@
 
     <div class="tables-layout" cdkDropListGroup>
         <!-- Panel Izquierdo: Cola de Recepción -->
-        <aside class="reception-queue" cdkDropList [cdkDropListData]="undefined" (cdkDropListDropped)="onDrop($event)">
+        <aside class="reception-queue" cdkDropList [cdkDropListData]="null" 
+               [cdkDropListSortingDisabled]="true"
+               (cdkDropListDropped)="onDrop($event)"
+               (cdkDropListEntered)="onReceptionQueueEntered()"
+               (cdkDropListExited)="onReceptionQueueExited()"
+               [class.receiving-guest]="isReceivingGuest()">
             <div class="pool-header">
                 <div class="header-main">
                     <h3>Cola de Recepción</h3>
@@ -67,7 +70,7 @@
                 </div>
 
                 <div class="search-container">
-                    <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+                    <input type="text" [formControl]="searchControl"
                         placeholder="Buscar invitado..." class="search-input">
                     <span class="search-icon">🔍</span>
                 </div>
@@ -82,9 +85,11 @@
             </span>
 
             <div class="guest-list">
-                @for (guest of filteredUnassignedGuests(); track guest.id) {
+                @for (guest of filteredUnassignedGuests(); track guestKey(guest)) {
                 <div class="guest-item" [class]="getMenuClass(guest.mealType)"
-                    [title]="guest.name + ' (' + guest.mealType + ')'" cdkDrag [cdkDragData]="guest">
+                    [title]="(guest.name || 'Invitado') + ' (' + guest.mealType + ')'" cdkDrag [cdkDragData]="guest"
+                    cdkDragPreviewContainer="parent"
+                    (cdkDragEnded)="onGuestDragEnded($event)">
                     <!-- Preview while dragging -->
                     <div *cdkDragPreview class="guest-drag-preview">
                         <svg class="kicking-person" viewBox="0 0 24 48">
@@ -109,10 +114,10 @@
                     <div *cdkDragPlaceholder class="guest-item-placeholder"></div>
 
                     <div class="guest-avatar">
-                        {{ guest.name.charAt(0).toUpperCase() }}
+                        {{ (guest.name.charAt(0) || '?').toUpperCase() }}
                     </div>
                     <div class="guest-info">
-                        <span class="guest-name">{{ guest.name }}</span>
+                        <span class="guest-name">{{ guest.name || 'Invitado' }}</span>
                         <span class="guest-meta">{{ guest.mealType }}</span>
                     </div>
                     <div class="guest-actions">
@@ -175,8 +180,8 @@
                                 'presidential' ? '🤵' : '👥' }}
                             </button>
                             <div class="capacity-field">
-                                <input type="number" [ngModel]="table.capacity"
-                                    (ngModelChange)="updateTableCapacity(table.id, $event)" min="1" max="20"
+                                <input type="number" [formControl]="getCapacityControl(table.id, table.capacity)"
+                                    min="1" max="20"
                                     title="Capacidad de esta mesa">
                             </div>
                             <button class="config-btn delete" (click)="deleteTable(table.id)" title="Eliminar mesa">
@@ -198,8 +203,8 @@
 
                             <div class="table-info">
                                 @if (editingTableId() === table.id) {
-                                <input type="text" class="edit-table-input" [ngModel]="editingName()"
-                                    (ngModelChange)="editingName.set($event)" (blur)="saveTableName(table.id)"
+                                <input type="text" class="edit-table-input" [formControl]="editingNameControl"
+                                    (blur)="saveTableName(table.id)"
                                     (keyup.enter)="saveTableName(table.id)" autofocus
                                     (click)="$event.stopPropagation()">
                                 } @else {
@@ -231,7 +236,8 @@
 
                         <div class="seats-layout">
                             @for (seatIdx of getSequence(table.capacity); track seatIdx) {
-                            @let guest = getGuestAtSeat(table.id, seatIdx);
+                            @let seatNumber = seatIdx + 1;
+                            @let guest = getGuestAtSeat(table.id, seatNumber);
                             <div class="guest-seat" [style.--seat-index]="seatIdx"
                                 [style.--total-seats]="table.capacity"
                                 [style.--is-bottom]="table.shape === 'rectangular' && seatIdx >= (table.capacity / 2) ? 1 : 0"
@@ -239,13 +245,16 @@
                                 [style.left.px]="getSeatX(table.shape, table.capacity, seatIdx)"
                                 [style.top.px]="getSeatY(table.shape, table.capacity, seatIdx)"
                                 [class.bottom-seat]="isBottomSeat(seatIdx, table.capacity)" cdkDropList
-                                [cdkDropListData]="{tableId: table.id, seatIndex: seatIdx}"
+                                [cdkDropListData]="{tableId: table.id, seatIndex: seatNumber}"
+                                [cdkDropListSortingDisabled]="true"
                                 (cdkDropListDropped)="onDrop($event)">
 
                                 @if (guest) {
                                 <div class="guest-seat-inner" cdkDrag [cdkDragData]="guest"
+                                    cdkDragPreviewContainer="parent"
                                     [class.just-seated]="newlySeatedIds().has(guestKey(guest))"
-                                    [title]="guest.name + ' (' + guest.mealType + ')'">
+                                    [title]="guest.name + ' (' + guest.mealType + ')'"
+                                    (cdkDragEnded)="onGuestDragEnded($event)">
 
                                     <!-- Preview while dragging -->
                                     <div *cdkDragPreview class="guest-drag-preview">
@@ -298,33 +307,37 @@
                     <button class="close-btn" (click)="closeAddModal()">×</button>
                 </div>
 
-                <form class="modal-form" (submit)="$event.preventDefault(); saveGuest()">
+                <form class="modal-form" [formGroup]="guestForm" (ngSubmit)="saveGuest()">
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Nombre Completo</label>
-                            <input type="text" [ngModel]="newGuest().name"
-                                (ngModelChange)="updateNewGuestField('name', $event)" name="name"
+                            <input type="text" formControlName="name" name="name"
                                 placeholder="Ej: Juan Pérez" required>
                         </div>
 
                         <div class="form-group">
                             <label>Email</label>
-                            <input type="email" [ngModel]="newGuest().email"
-                                (ngModelChange)="updateNewGuestField('email', $event)" name="email"
-                                placeholder="email@ejemplo.com" required>
+                            <input type="email" formControlName="email" name="email"
+                                placeholder="email@ejemplo.com">
                         </div>
 
                         <div class="form-group">
                             <label>Teléfono</label>
-                            <input type="tel" [ngModel]="newGuest().phone"
-                                (ngModelChange)="updateNewGuestField('phone', $event)" name="phone"
+                            <input type="tel" formControlName="phone" name="phone"
                                 placeholder="600 000 000">
                         </div>
 
                         <div class="form-group">
+                            <label>Tipo de invitado</label>
+                            <select formControlName="isAdult" name="isAdult">
+                                <option [ngValue]="1">Adulto</option>
+                                <option [ngValue]="0">Niño</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
                             <label>Tipo de Menú</label>
-                            <select [ngModel]="newGuest().mealType"
-                                (ngModelChange)="updateNewGuestField('mealType', $event)" name="mealType">
+                            <select formControlName="mealType" name="mealType">
                                 <option value="normal">Normal</option>
                                 <option value="vegetariano">Vegetariano</option>
                                 <option value="vegano">Vegano</option>
@@ -338,22 +351,24 @@
 
                         <div class="form-group full-width">
                             <label>Alergias</label>
-                            <textarea [ngModel]="newGuest().allergies"
-                                (ngModelChange)="updateNewGuestField('allergies', $event)" name="allergies"
+                            <textarea formControlName="allergies" name="allergies"
                                 placeholder="Ej: No puede comer marisco..."></textarea>
                         </div>
 
                         <div class="form-group full-width">
                             <label>Notas</label>
-                            <textarea [ngModel]="newGuest().notes"
-                                (ngModelChange)="updateNewGuestField('notes', $event)" name="notes"
+                            <textarea formControlName="notes" name="notes"
                                 placeholder="Ej: me hace mucha ilusion vuestra boda..."></textarea>
                         </div>
 
                         <div class="form-check full-width">
-                            <input type="checkbox" id="transport" [ngModel]="newGuest().needsTransport"
-                                (ngModelChange)="updateNewGuestField('needsTransport', $event)" name="needsTransport">
+                            <input type="checkbox" id="transport" formControlName="needsTransport" name="needsTransport">
                             <label for="transport">Necesita Transporte 🚌</label>
+                        </div>
+
+                        <div class="form-check full-width">
+                            <input type="checkbox" id="attendance" formControlName="attendance" name="attendance">
+                            <label for="attendance">Asistirá a la boda ✅</label>
                         </div>
                     </div>
 
@@ -464,6 +479,8 @@
             </div>
         </div>
         }
-        <!-- Leyenda de Colores -->
-        <app-tables-legend></app-tables-legend>
     </div>
+
+    <!-- Leyenda de Colores -->
+    <app-tables-legend></app-tables-legend>
+</div>

@@ -23,7 +23,8 @@ export class RsvpFormComponent {
       name: ['', [Validators.required, Validators.minLength(3)]],
       //email: ['', [Validators.required, Validators.email]],
       email: [''],
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
+      phone: ['', [Validators.pattern(/^[0-9]{9}$/)]],
+      attendance: [true],
       adults: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
       children: [0, [Validators.required, Validators.min(0), Validators.max(10)]],
       mealType: ['normal', Validators.required],
@@ -32,10 +33,30 @@ export class RsvpFormComponent {
       allergies: [''],
       notes: ['']
     });
+
+    // adjust validators when attendance toggles
+    this.form.get('attendance')?.valueChanges.subscribe(att => {
+      if (att) {
+        this.applyAttendanceValidators();
+      } else {
+        this.clearAttendanceValidators();
+      }
+    });
+
+    // initialize validators according to the starting value
+    if (this.form.get('attendance')?.value) {
+      this.applyAttendanceValidators();
+    } else {
+      this.clearAttendanceValidators();
+    }
   }
 
   async onSubmit() {
-    if (this.form.invalid) {
+    // if not attending we don't need to validate the other controls
+    if (!this.form.get('attendance')?.value) {
+      // mark the attendance control in case you want to show errors
+      this.form.get('attendance')?.markAsTouched();
+    } else if (this.form.invalid) {
       Object.keys(this.form.controls).forEach(key => {
         this.form.get(key)?.markAsTouched();
       });
@@ -48,7 +69,11 @@ export class RsvpFormComponent {
 
     try {
       let guestData: Guest = { ...this.form.value };
-      guestData.attending = Number(guestData.adults || 0) + Number(guestData.children || 0);
+      if (!guestData.attendance) {
+        guestData.attending = 0;
+      } else {
+        guestData.attending = Number(guestData.adults || 0) + Number(guestData.children || 0);
+      }
       await this.guestService.registerGuest(guestData);
 
       this.submitSuccess.set(true);
@@ -60,8 +85,7 @@ export class RsvpFormComponent {
         colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff']
       });
 
-      this.form.reset({ adults: 1, children: 0, mealType: 'normal', needsTransport: false, isSavedInBbdd: false });
-
+      this.form.reset({ adults: 1, children: 0, mealType: 'normal', needsTransport: false, isSavedInBbdd: false, attendance: guestData.attendance });
       // Esperar 2 segundos usando requestAnimationFrame para máxima eficiencia
       const startTime = performance.now();
       const checkDelay = (now: number) => {
@@ -91,5 +115,26 @@ export class RsvpFormComponent {
   isFieldInvalid(fieldName: string): boolean {
     const field = this.form.get(fieldName);
     return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  private applyAttendanceValidators() {
+    // required validators for when attending
+    this.form.get('adults')?.setValidators([Validators.required, Validators.min(1), Validators.max(10)]);
+    this.form.get('children')?.setValidators([Validators.required, Validators.min(0), Validators.max(10)]);
+    this.form.get('mealType')?.setValidators(Validators.required);
+    this.form.get('needsTransport')?.setValidators(Validators.required);
+    this.form.get('isSavedInBbdd')?.setValidators(Validators.required);
+
+    // update validity
+    ['adults','children','mealType','needsTransport','isSavedInBbdd'].forEach(key => {
+      this.form.get(key)?.updateValueAndValidity();
+    });
+  }
+
+  private clearAttendanceValidators() {
+    ['adults','children','mealType','needsTransport','isSavedInBbdd'].forEach(key => {
+      this.form.get(key)?.clearValidators();
+      this.form.get(key)?.updateValueAndValidity();
+    });
   }
 }

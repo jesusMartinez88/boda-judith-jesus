@@ -1,189 +1,285 @@
 <div class="dashboard-container">
-    <!-- Hamburguer Button (Mobile) -->
-    <button class="menu-toggle" [class.open]="isMenuOpen()" (click)="toggleMenu()" aria-label="Menu Toggle">
-        <div class="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-    </button>
+  <!-- Hamburguer Button (Mobile) -->
+  <button class="menu-toggle" [class.open]="isMenuOpen()" (click)="toggleMenu()" aria-label="Menu Toggle">
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </button>
 
-    <!-- Overlay Backdrop -->
-    <div class="sidebar-overlay" [class.show]="isMenuOpen()" (click)="closeMenu()"></div>
+  <!-- Overlay Backdrop -->
+  <div class="sidebar-overlay" [class.show]="isMenuOpen()" (click)="closeMenu()"></div>
 
-    <aside class="sidebar" [class.open]="isMenuOpen()">
-        <div class="sidebar-header">
-            <span class="logo">💍</span>
-            <h2>Admin Panel</h2>
-        </div>
-        <nav class="sidebar-nav">
-            <a class="nav-item" [class.active]="currentView() === 'stats'" (click)="setView('stats')">
-                <span class="icon">📊</span> Resumen
-            </a>
-            <a class="nav-item" [class.active]="currentView() === 'tables'" (click)="setView('tables')">
-                <span class="icon">🪑</span> Mesas
-            </a>
-            <a class="nav-item" [class.active]="currentView() === 'finances'" (click)="setView('finances')">
-                <span class="icon">💰</span> Control de Gastos
-            </a>
-            <a class="nav-item" href="/" target="_blank">
-                <span class="icon">✉️</span> Ver invitación
-            </a>
-            <a class="nav-item" [class.active]="currentView() === 'settings'" (click)="setView('settings')">
-                <span class="icon">⚙️</span> Configuración
-            </a>
-            <a class="nav-item" (click)="loadStats()">
-                <span class="icon">🔄</span> Actualizar
-            </a>
-        </nav>
-        <div class="sidebar-footer">
-            <button (click)="logout()" class="logout-btn">
-                <span class="icon logout-icon-container">
-                    <svg class="logout-door-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Marco de la puerta -->
-                        <path class="door-frame" d="M10 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H10"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        <path class="door-frame-top" d="M10 3V21" stroke="currentColor" stroke-width="2"
-                            stroke-opacity="0.2" />
+  <aside class="sidebar" [class.open]="isMenuOpen()">
+    <div class="sidebar-header">
+      <span class="logo">💍</span>
+      <h2>Admin Panel</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" [class.active]="currentView() === 'stats'" (click)="setView('stats')">
+        <span class="icon">📊</span> Resumen
+      </a>
+      <a class="nav-item" [class.active]="currentView() === 'tables'" (click)="setView('tables')">
+        <span class="icon">🪑</span> Mesas
+      </a>
+      <a class="nav-item" [class.active]="currentView() === 'finances'" (click)="setView('finances')">
+        <span class="icon">💰</span> Control de Gastos
+      </a>
+      <a class="nav-item" href="/" target="_blank">
+        <span class="icon">✉️</span> Ver invitación
+      </a>
+      <a class="nav-item" [class.active]="currentView() === 'settings'" (click)="setView('settings')">
+        <span class="icon">⚙️</span> Configuración
+      </a>
+      <a class="nav-item" (click)="loadStats()">
+        <span class="icon">🔄</span> Actualizar
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button (click)="logout()" class="logout-btn">
+        <span class="icon logout-icon-container">
+          <svg class="logout-door-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Marco de la puerta -->
+            <path class="door-frame" d="M10 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H10"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path class="door-frame-top" d="M10 3V21" stroke="currentColor" stroke-width="2"
+                stroke-opacity="0.2" />
 
-                        <!-- Flecha de salida (animada) -->
-                        <path class="exit-arrow" d="M15 12H22M22 12L19 9M22 12L19 15" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <!-- Flecha de salida (animada) -->
+                <path class="exit-arrow" d="M15 12H22M22 12L19 9M22 12L19 15" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
 
-                        <!-- La puerta (animada en 3D) -->
-                        <g class="door-wrapper">
-                            <path class="door-leaf"
-                                d="M10 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H10V3Z"
-                                fill="currentColor" fill-opacity="0.9" stroke="currentColor" stroke-width="2" />
-                            <circle class="door-knob" cx="18" cy="12" r="1.2" fill="white" />
-                        </g>
-                    </svg>
+                  <!-- La puerta (animada en 3D) -->
+                  <g class="door-wrapper">
+                    <path class="door-leaf"
+                      d="M10 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H10V3Z"
+                      fill="currentColor" fill-opacity="0.9" stroke="currentColor" stroke-width="2" />
+                      <circle class="door-knob" cx="18" cy="12" r="1.2" fill="white" />
+                    </g>
+                  </svg>
                 </span>
                 Cerrar Sesión
-            </button>
-        </div>
-    </aside>
-
-    <main class="main-content">
-        @if (currentView() === 'stats') {
-        <header class="content-header">
-            <h1>Panel de Estadísticas</h1>
-            <div class="user-info">
-                <span>Bienvenido, Admin 👋</span>
+              </button>
             </div>
-        </header>
+          </aside>
 
-        @if (isLoading()) {
-        <div class="loading-state">
-            <div class="loader"></div>
-            <p>Cargando estadísticas...</p>
-        </div>
-        }
-
-        @if (error()) {
-        <div class="error-state">
-            {{ error() }}
-            <button (click)="loadStats()">Reintentar</button>
-        </div>
-        }
-
-        @if (!isLoading() && stats()) {
-        <div class="stats-grid animate-fade-in">
-            <!-- Attendance Progress Card -->
-            <app-attendance-progress [stats]="stats()"></app-attendance-progress>
-
-            <!-- Total Guests Card -->
-            <div class="stats-card total" style="flex-direction: column; align-items: stretch;">
-                <div style="display: flex; align-items: center; gap: 2rem;">
-                    <div class="card-icon">👥</div>
-                    <div class="card-info">
-                        <h3>Total Invitados</h3>
-                        <p class="value">{{ stats()?.total }}</p>
-                    </div>
+          <main class="main-content">
+            @if (currentView() === 'stats') {
+              <header class="content-header">
+                <h1>Panel de Estadísticas</h1>
+                <div class="user-info">
+                  <span>Bienvenido, Admin 👋</span>
                 </div>
-                <!-- Adults and Children Counters inside Total -->
-                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                    <div class="stat-item adults" style="flex: 1;">
+              </header>
+
+              @if (isLoading()) {
+                <div class="loading-state">
+                  <div class="loader"></div>
+                  <p>Cargando estadísticas...</p>
+                </div>
+              }
+
+              @if (error()) {
+                <div class="error-state">
+                  {{ error() }}
+                  <button (click)="loadStats()">Reintentar</button>
+                </div>
+              }
+
+              @if (!isLoading() && stats()) {
+                <div class="stats-grid animate-fade-in">
+                  <!-- Attendance Progress Card -->
+                  <app-attendance-progress [stats]="stats()"></app-attendance-progress>
+
+                  <!-- Total Guests Card -->
+                  <div class="stats-card total" style="flex-direction: column; align-items: stretch;">
+                    <div style="display: flex; align-items: center; gap: 2rem;">
+                      <div class="card-icon">👥</div>
+                      <div class="card-info">
+                        <h3>Total Invitados</h3>
+                        <p class="value">{{ displayTotal() }}</p>
+                        @if (stats()?.declined !== undefined) {
+                          <p class="declined-note">Rechazados: {{ stats()?.declined }}</p>
+                        }
+                      </div>
+                    </div>
+                    <!-- Adults and Children Counters inside Total -->
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                      <div class="stat-item adults clickable" style="flex: 1;" (click)="openGuestsModal('adults')">
                         <span class="label">Adultos</span>
                         <span class="count" style="font-size: 1.5rem;">{{ adultsCount() }}</span>
-                    </div>
-                    <div class="stat-item children" style="flex: 1;">
+                      </div>
+                      <div class="stat-item children clickable" style="flex: 1;" (click)="openGuestsModal('children')">
                         <span class="label">Niños</span>
                         <span class="count" style="font-size: 1.5rem;">{{ childrenCount() }}</span>
+                      </div>
                     </div>
-                </div>
-            </div>
+                  </div>
 
-            <!-- Attendance Breakdown -->
-            <div class="stats-card attendance">
-                <h3>Estado de Asistencia</h3>
-                <div class="attendance-summary">
-                    <div class="stat-item confirmed">
+                  <!-- Attendance Breakdown -->
+                  <div class="stats-card attendance">
+                    <h3>Estado de Asistencia</h3>
+                    <div class="attendance-summary">
+                      <div class="stat-item confirmed clickable" (click)="openGuestsModal('confirmed')">
                         <span class="label">Confirmados</span>
                         <span class="count">{{ stats()?.confirmed }}</span>
-                    </div>
-                    <!-- <div class="stat-item pending" *ngIf="sentGuestsCount() !== null">
-                        <span class="label">Sentados</span>
-                        <span class="count">{{ sentGuestsCount() }}</span>
+                      </div>
+                      <!-- <div class="stat-item pending" *ngIf="sentGuestsCount() !== null">
+                      <span class="label">Sentados</span>
+                      <span class="count">{{ sentGuestsCount() }}</span>
                     </div> -->
                     <div class="stat-item pending">
-                        <span class="label">Pendientes</span>
-                        <span class="count">{{ pendings() }}</span>
+                      <span class="label">Pendientes de respuesta</span>
+                      <span class="count">{{ pendings() }}</span>
                     </div>
-                    <!-- 
-                    <div class="stat-item declined" *ngIf="stats()?.declined !== undefined">
+                    @if (stats()?.declined !== undefined) {
+                      <div class="stat-item declined clickable" (click)="openDeclinedGuestsModal()">
                         <span class="label">No asisten</span>
                         <span class="count">{{ stats()?.declined }}</span>
-                    </div> -->
-                    <div class="stat-item unassigned" *ngIf="unassignedGuestsCount() !== null">
+                      </div>
+                    }
+                    @if (unassignedGuestsCount() !== null) {
+                      <div class="stat-item unassigned clickable" (click)="openGuestsModal('unassigned')">
                         <span class="label">Sin mesa</span>
                         <span class="count">{{ unassignedGuestsCount() }}</span>
-                    </div>
+                      </div>
+                    }
+                  </div>
                 </div>
-            </div>
 
-            <!-- Transportation and Children Cards -->
-            <!-- Transportation Card -->
-            <div class="stats-card transport">
-                <h3>Transporte</h3>
-                <div class="transport-info">
+                <!-- Transportation and Children Cards -->
+                <!-- Transportation Card -->
+                <div class="stats-card transport clickable-card" (click)="openGuestsModal('transport')">
+                  <h3>Transporte</h3>
+                  <div class="transport-info">
                     <div class="transport-item">
-                        <span class="icon">🚌</span>
-                        <div class="details">
-                            <span class="label">Necesitan Bus</span>
-                            <span class="count">{{ stats()?.needTransport }}</span>
-                        </div>
+                      <span class="icon">🚌</span>
+                      <div class="details">
+                        <span class="label">Necesitan Bus</span>
+                        <span class="count">{{ stats()?.needTransport }}</span>
+                      </div>
                     </div>
+                  </div>
                 </div>
-            </div>
 
-            <!-- Allergies Card -->
-            <div class="stats-card allergies" *ngIf="allergiesCount() !== null">
-                <div class="card-icon">🥗</div>
-                <div class="card-info">
-                    <h3>Con Alergias / Intolerancias</h3>
-                    <p class="value">{{ allergiesCount() }}</p>
+                <!-- Allergies Card -->
+                @if (allergiesCount() !== null) {
+                  <div class="stats-card allergies clickable-card" (click)="openGuestsModal('allergies')">
+                    <div class="card-icon">🥗</div>
+                    <div class="card-info">
+                      <h3>Con Alergias / Intolerancias</h3>
+                      <p class="value">{{ allergiesCount() }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              @if (showDeclinedGuestsModal()) {
+                <div class="modal-backdrop" (click)="closeDeclinedGuestsModal()">
+                  <div class="modal-container declined-modal" (click)="$event.stopPropagation()">
+                    <div class="modal-header">
+                      <h3>Invitados que no asisten</h3>
+                      <button class="close-btn" (click)="closeDeclinedGuestsModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                      @if (declinedGuestsList().length === 0) {
+                        <div style="text-align: center; padding: 2rem; color: #64748b;">
+                          <p style="margin: 0; font-size: 0.95rem;">No hay invitados marcados como que no asisten.</p>
+                        </div>
+                      } @else {
+                        <ul class="declined-list">
+                          @for (guest of declinedGuestsList(); track guest.id) {
+                            <li class="declined-item">
+                              <div class="declined-main">
+                                <span class="name">{{ guest.name }}</span>
+                                @if (guest.email) {
+                                  <span class="email">📧 {{ guest.email }}</span>
+                                }
+                              </div>
+                              @if (guest.notes) {
+                                <p class="notes">💬 {{ guest.notes }}</p>
+                              }
+                              <div class="declined-actions">
+                                <button type="button" class="btn-secondary-modal"
+                                  (click)="moveDeclinedToUnassigned(guest); $event.stopPropagation()">
+                                  ✓ Pasar a "Por asignar"
+                                </button>
+                                <button type="button" class="btn-danger"
+                                  (click)="deleteDeclinedGuest(guest); $event.stopPropagation()">
+                                  🗑️ Eliminar
+                                </button>
+                              </div>
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                  </div>
                 </div>
-            </div>
-        </div>
-        }
+              }
 
-        }
+              <!-- Modal Genérico para otras listas de invitados -->
+              @if (showGuestsModal()) {
+                <div class="modal-backdrop" (click)="closeGuestsModal()">
+                  <div class="modal-container declined-modal" (click)="$event.stopPropagation()">
+                    <div class="modal-header">
+                      <h3>{{ modalTitle() }}</h3>
+                      <button class="close-btn" (click)="closeGuestsModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                      @if (modalGuestsList().length === 0) {
+                        <div style="text-align: center; padding: 2rem; color: #64748b;">
+                          <p style="margin: 0; font-size: 0.95rem;">No hay invitados en esta categoría.</p>
+                        </div>
+                      } @else {
+                        <ul class="declined-list">
+                          @for (guest of modalGuestsList(); track guest.id) {
+                            <li class="declined-item">
+                              <div class="declined-main">
+                                <span class="name">{{ guest.name }}</span>
+                                @if (guest.email) {
+                                  <span class="email">📧 {{ guest.email }}</span>
+                                }
+                              </div>
+                              @if (guest.phone) {
+                                <p class="notes">📱 {{ guest.phone }}</p>
+                              }
+                              @if (guest.tableId && guest.tableId !== 0) {
+                                <p class="notes">🪑 Mesa {{ guest.tableId }}@if (guest.seatNumber) { - Asiento {{ guest.seatNumber }}}</p>
+                              }
+                              @if (guest.allergies && guest.allergies.trim() !== '') {
+                                <p class="notes allergies-note">🥗 Alergias: {{ guest.allergies }}</p>
+                              }
+                              <!-- @if (guest.needsTransport) {
+                                <p class="notes transport-note">🚌 Necesita transporte</p>
+                              } -->
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            }
 
-        @if (currentView() === 'tables') {
-        <app-tables></app-tables>
-        }
+          }
 
-        @if (currentView() === 'settings') {
-        <app-settings></app-settings>
-        }
+          @if (currentView() === 'tables') {
+            <app-tables></app-tables>
+          }
 
-        @if (currentView() === 'finances') {
-        <app-finances></app-finances>
-        }
+          @if (currentView() === 'settings') {
+            <app-settings></app-settings>
+          }
 
-        <footer class="content-footer">
+          @if (currentView() === 'finances') {
+            <app-finances></app-finances>
+          }
+
+          <footer class="content-footer">
             <p>© 2026 Admin Dashboard - Judith & Jesús</p>
-        </footer>
-    </main>
-</div>
+          </footer>
+        </main>
+      </div>

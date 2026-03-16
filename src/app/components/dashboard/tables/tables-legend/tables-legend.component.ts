@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'app-tables-legend',
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
     templateUrl: './tables-legend.component.html',
     styleUrl: './tables-legend.component.css'
 })

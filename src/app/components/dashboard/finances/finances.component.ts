@@ -35,12 +35,71 @@ export class FinancesComponent implements OnInit {
 
     balance = computed(() => this.totalIncome() - this.totalExpense());
 
+    // Gastos por persona
+    expensesByPerson = computed(() => {
+        const expenses = this.records().filter(r => r.type === 'expense' && r.paidBy);
+        const byPerson = new Map<string, number>();
+
+        expenses.forEach(expense => {
+            const person = expense.paidBy!.trim();
+            const current = byPerson.get(person) || 0;
+            byPerson.set(person, current + expense.amount);
+        });
+
+        return Array.from(byPerson.entries())
+            .map(([name, amount]) => ({ name, amount }))
+            .sort((a, b) => b.amount - a.amount);
+    });
+
+    // Ingresos por persona
+    incomesByPerson = computed(() => {
+        const incomes = this.records().filter(r => r.type === 'income' && r.paidBy);
+        const byPerson = new Map<string, number>();
+
+        incomes.forEach(income => {
+            const person = income.paidBy!.trim();
+            const current = byPerson.get(person) || 0;
+            byPerson.set(person, current + income.amount);
+        });
+
+        return Array.from(byPerson.entries())
+            .map(([name, amount]) => ({ name, amount }))
+            .sort((a, b) => b.amount - a.amount);
+    });
+
+    // Balance neto por persona (ingresos - gastos)
+    balanceByPerson = computed(() => {
+        const allPeople = new Set<string>();
+        
+        this.records().forEach(r => {
+            if (r.paidBy) allPeople.add(r.paidBy.trim());
+        });
+
+        return Array.from(allPeople).map(person => {
+            const expenses = this.records()
+                .filter(r => r.type === 'expense' && r.paidBy?.trim() === person)
+                .reduce((sum, r) => sum + r.amount, 0);
+            
+            const incomes = this.records()
+                .filter(r => r.type === 'income' && r.paidBy?.trim() === person)
+                .reduce((sum, r) => sum + r.amount, 0);
+
+            return {
+                name: person,
+                expenses,
+                incomes,
+                balance: incomes - expenses
+            };
+        }).sort((a, b) => b.expenses - a.expenses);
+    });
+
     constructor() {
         this.financeForm = this.fb.group({
             description: ['', [Validators.required, Validators.minLength(3)]],
             amount: [0, [Validators.required, Validators.min(0.01)]],
             type: ['expense', Validators.required],
-            category: ['Otros']
+            category: ['Otros'],
+            paidBy: ['', [Validators.required, Validators.minLength(2)]]
         });
     }
 
@@ -68,7 +127,7 @@ export class FinancesComponent implements OnInit {
             } else {
                 await this.financesService.createFinance(this.financeForm.value);
             }
-            this.financeForm.reset({ type: 'expense', amount: 0, category: 'Otros' });
+            this.financeForm.reset({ type: 'expense', amount: 0, category: 'Otros', paidBy: '' });
         } catch (error) {
             console.error('Error submitting form:', error);
         } finally {
@@ -94,7 +153,8 @@ export class FinancesComponent implements OnInit {
             description: record.description,
             amount: record.amount,
             type: record.type,
-            category: record.category
+            category: record.category,
+            paidBy: record.paidBy || ''
         });
         // Scroll to form
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -102,7 +162,7 @@ export class FinancesComponent implements OnInit {
 
     cancelEdit() {
         this.editingRecordId.set(null);
-        this.financeForm.reset({ type: 'expense', amount: 0, category: 'Otros' });
+        this.financeForm.reset({ type: 'expense', amount: 0, category: 'Otros', paidBy: '' });
     }
 
     getBadgeClass(type: string): string {

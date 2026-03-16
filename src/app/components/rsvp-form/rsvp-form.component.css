@@ -11,6 +11,9 @@
   text-align: center;
   margin-bottom: 2.5rem;
 }
+.label-center {
+  text-align: center;
+}
 
 .rsvp-header h2 {
   background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
@@ -244,9 +247,84 @@
 
 /* Toggle Switch Styles */
 .toggle-group {
-  margin: 1rem 0;
+  margin: 1.5rem 0;
 }
 
+.toggle-button-container {
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-button {
+  display: flex;
+  width: 90%;
+  height: 60px;
+  background: #f3f4f6;
+  border: 2px solid #d1d5db;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.toggle-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #6b7280;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  z-index: 2;
+  position: relative;
+}
+
+.toggle-option.active {
+  color: white;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-button::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+  border-radius: 26px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+  z-index: 1;
+}
+
+.toggle-input:checked + .toggle-button::before {
+  /* No transform, stays on left for "Sí" */
+}
+
+.toggle-input:not(:checked) + .toggle-button::before {
+  transform: translateX(100%);
+}
+
+/* Transport Toggle Styles */
 .toggle-container {
   display: flex;
   align-items: center;
@@ -341,6 +419,46 @@ input:checked+.slider:before {
   color: #be185d;
   font-weight: 600;
   transform: scale(1.05);
+}
+
+.bus-icon {
+  color: #9ca3af;
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.bus-icon.active {
+  color: #ec4899;
+}
+
+/* Radio Button Styles */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: #374151;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.radio-option:hover {
+  background-color: rgba(236, 72, 153, 0.05);
+}
+
+.radio-option input[type="radio"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+  accent-color: #ec4899;
 }
 
 /* Old Radio styles cleanup - keeping relevant ones if any */

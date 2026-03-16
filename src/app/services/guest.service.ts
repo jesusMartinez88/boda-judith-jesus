@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { SettingsService } from './settings.service';
 import confetti from 'canvas-confetti';
 
 export interface Guest {
@@ -10,12 +11,14 @@ export interface Guest {
   email: string;
   phone: string;
   attending: number;
+  attendance?: boolean;
   adults?: number;
   children?: number;
   isAdult?: number;
   mealType: string;
   needsTransport: boolean;
   isSavedInBbdd: boolean;
+  sendEmail?: boolean;
   tableId?: number | null; // Primary field for backend assignment
   tableName?: string | number; // Fallback field
   seatNumber?: number | null; // Position in the table
@@ -36,6 +39,7 @@ export class GuestService {
   guests = signal<Guest[]>([]);
 
   private http = inject(HttpClient);
+  private settingsService = inject(SettingsService);
 
   // Método público para cargar invitados
   async loadGuests(): Promise<Guest[]> {
@@ -76,29 +80,11 @@ export class GuestService {
         let sVal = guest.seatNumber ?? guest.seat_number;
         guest.seatNumber = (sVal !== undefined && sVal !== null) ? Number(sVal) : null;
 
+        // Normalización de needsTransport
+        let transportVal = guest.needsTransport ?? guest.needs_transport ?? guest.needTransport;
+        guest.needsTransport = transportVal === true || transportVal === 1 || transportVal === '1' || transportVal === 'true';
+
         return guest;
-      });
-
-      // --- AUTO-ASIGNACIÓN DE ASIENTOS FALTANTES ---
-      // Si un invitado tiene mesa pero no asiento (ej: datos antiguos), le asignamos uno libre
-      // para que no "desaparezca" de la vista de mesas.
-      const tablesWithGuests = new Set(finalItems.filter(g => g.tableId).map(g => g.tableId));
-
-      tablesWithGuests.forEach(tId => {
-        const tableId = Number(tId);
-        const tableGuests = finalItems.filter(g => g.tableId === tableId);
-        const guestsWithoutSeat = tableGuests.filter(g => g.seatNumber === null);
-
-        if (guestsWithoutSeat.length > 0) {
-          let nextAvailableSeat = 0;
-          guestsWithoutSeat.forEach(guest => {
-            while (tableGuests.some(other => other.seatNumber === nextAvailableSeat)) {
-              nextAvailableSeat++;
-            }
-            guest.seatNumber = nextAvailableSeat;
-            nextAvailableSeat++;
-          });
-        }
       });
 
       this.guests.set(finalItems);
@@ -113,9 +99,47 @@ export class GuestService {
   async registerGuest(guest: Guest): Promise<any> {
     try {
       // Actualización optimista
+      // Si sólo se ha indicado si es adulto/niño (flujo interno), derivamos adults/children
+      if (guest.isAdult !== undefined && guest.adults === undefined && guest.children === undefined) {
+        if (guest.isAdult) {
+          guest.adults = 1;
+          guest.children = 0;
+        } else {
+          guest.adults = 0;
+          guest.children = 1;
+        }
+      }
+
+      if (guest.attendance === false) {
+        guest.attending = 0;
+        guest.adults = 0;
+        guest.children = 0;
+      } else if (guest.adults !== undefined || guest.children !== undefined) {
+        // Flujo del formulario público: se calcula a partir de adultos + niños
+        const adults = Number(guest.adults || 0);
+        const children = Number(guest.children || 0);
+        guest.attending = adults + children;
+      } else {
+        // Flujo interno (ej. creación desde mesas): si no hay conteo, asumimos 1 asistente
+        guest.attending = guest.attending ?? 1;
+      }
       this.guests.update((current: Guest[]) => [...current, guest]);
 
       const result = await firstValueFrom(this.http.post(this.apiUrl, guest));
+
+      // If server returns an ID, update the local guest object and state
+      /* const newId = (result && (result as Guest).id);
+      const seatNumber = (result && (result as Guest).seatNumber); */
+      const guestResponse: Guest = { ...(result as Guest) };
+      if (guestResponse) {
+        // Algunos backends devuelven sólo un subconjunto de campos en el POST.
+        // Para no perder datos del "optimistic update", mezclamos respuesta + datos originales.
+        const merged: Guest = { ...guest, ...guestResponse };
+        this.guests.update((current: Guest[]) =>
+          current.map(g => g === guest ? merged : g)
+        );
+      }
+
       guest.isSavedInBbdd = true;
 
       // Enviar también a Google Sheets como backup (JSONP para evitar CORS)
@@ -220,16 +244,20 @@ export class GuestService {
   async updateGuestTable(guestId: string, tableId: number | null, seatNumber: number | null = null): Promise<any> {
     if (!guestId) return Promise.reject('No guest ID provided');
 
+    // Normalizar: 0 debe ser null
+    const normalizedTableId = (tableId === 0 || tableId === null || tableId === undefined) ? null : tableId;
+    const normalizedSeatNumber = (seatNumber === 0 || seatNumber === null || seatNumber === undefined) ? null : seatNumber;
+
     // Optimístico
     this.guests.update((current: Guest[]) =>
-      current.map(g => (g.id === guestId || g.email === guestId || g.phone === guestId) ? { ...g, tableId, seatNumber } : g)
+      current.map(g => (g.id === guestId || g.email === guestId || g.phone === guestId) ? { ...g, tableId: normalizedTableId, seatNumber: normalizedSeatNumber } : g)
     );
 
     // Enviamos solo los campos especificados por el usuario (camelCase)
     // tableId y seatNumber
     return firstValueFrom(this.http.patch(`${this.apiUrl}/${guestId}`, {
-      tableId,
-      seatNumber
+      tableId: normalizedTableId,
+      seatNumber: normalizedSeatNumber
     }));
   }
 
@@ -237,5 +265,20 @@ export class GuestService {
     // Optimístico
     this.guests.update((current: Guest[]) => current.filter(g => g.id !== guestId));
     return firstValueFrom(this.http.delete(`${this.apiUrl}/${guestId}`));
+  }
+
+  async requestDeleteCode(): Promise<any> {
+    // Triggers an email with a code for confirmation
+    return firstValueFrom(this.http.post(`${this.apiUrl}/request-delete`, {}));
+  }
+
+  async deleteAllGuests(code?: string): Promise<any> {
+    this.guests.set([]);
+    let url = this.apiUrl;
+    if (code) {
+      const separator = url.includes('?') ? '&' : '?';
+      url = `${url}${separator}code=${encodeURIComponent(code)}`;
+    }
+    return firstValueFrom(this.http.delete(url));
   }
 }

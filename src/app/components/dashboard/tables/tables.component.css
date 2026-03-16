@@ -16,6 +16,12 @@
     max-width: 100%;
 }
 
+/* legend inside tables layout should span both columns */
+.tables-layout > app-tables-legend {
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
 .hall-scroll-container {
     width: 100%;
     overflow-x: auto;
@@ -35,6 +41,15 @@
     top: 1rem;
     display: flex;
     flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.reception-queue.cdk-drop-list-receiving,
+.reception-queue.receiving-guest {
+    background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%);
+    border: 2px solid #ec4899;
+    box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1), 0 8px 24px rgba(236, 72, 153, 0.15);
+    transform: scale(1.01);
 }
 
 .queue-header {
@@ -721,6 +736,7 @@
     justify-content: flex-start;
     cursor: grab;
     z-index: 5;
+    overflow: visible;
     transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 
     --radius: 108px;
@@ -781,7 +797,7 @@
     border-color: #ec4899;
     background: #fdf2f8;
     color: #db2777;
-    transform: scale(1.25) translateY(-3px);
+    transform: scale(1.25);
 }
 
 .seat-name {
@@ -1293,17 +1309,31 @@
     background: #f1f5f9;
     border: 2px dashed #cbd5e1;
     min-height: 50px;
+    height: 50px;
     border-radius: 14px;
     margin-bottom: 0.65rem;
+    box-sizing: border-box;
 }
 
-/* Placeholder personalizado para el salon */
+/* Placeholder personalizado para el salon - oculto, el efecto lo hace cdk-drop-list-receiving */
 .guest-seat-placeholder {
-    width: 28px;
-    height: 28px;
-    background: rgba(236, 72, 153, 0.1);
-    border: 2px dashed #ec4899;
-    border-radius: 50%;
+    display: none;
+}
+
+/* Asiento vacío al recibir un drag: ampliar círculo */
+.guest-seat.cdk-drop-list-receiving .seat-marker.empty {
+    transform: scale(1.35);
+    background: #fdf2f8;
+    border: 2px solid #ec4899;
+    color: #db2777;
+    box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15);
+}
+
+/* Asiento ocupado al recibir un drag: ampliar círculo sin desplazar */
+.guest-seat.cdk-drop-list-receiving .seat-marker:not(.empty) {
+    transform: scale(1.25);
+    border-color: #ec4899;
+    box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15);
 }
 
 /* Feedback visual de que una mesa puede recibir el drop */
@@ -1313,4 +1343,14 @@
 
 .table-container.square.cdk-drop-list-receiving {
     border-radius: 20px;
+}
+
+/* Evitar que el CDK desplace el contenido del asiento al hacer drop */
+.guest-seat.cdk-drop-list-receiving .guest-seat-inner {
+    transform: none !important;
+    position: relative;
+}
+
+.guest-seat.cdk-drop-list-receiving {
+    z-index: 10;
 }

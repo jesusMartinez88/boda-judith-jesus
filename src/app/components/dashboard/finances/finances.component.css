@@ -109,11 +109,220 @@
     }
 }
 
+/* Comparison Card */
+.comparison-card {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.comparison-header {
+    margin-bottom: 1.5rem;
+}
+
+.comparison-header h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    color: #1e293b;
+    font-family: 'Playfair Display', serif;
+}
+
+.comparison-subtitle {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.comparison-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.person-item {
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+
+.person-item:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.person-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.person-name {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.person-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 8px rgba(236, 72, 153, 0.2);
+}
+
+.name-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.person-total {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.total-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.total-amount {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.person-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 10px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.detail-label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.detail-value {
+    font-weight: 700;
+}
+
+.expense-color {
+    color: #dc2626;
+}
+
+.income-color {
+    color: #16a34a;
+}
+
+.contribution-bar {
+    width: 100%;
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(90deg, #fca5a5 0%, #dc2626 100%);
+}
+
+.bar-fill.high {
+    background: linear-gradient(90deg, #dc2626 0%, #991b1b 100%);
+}
+
+.bar-fill.medium {
+    background: linear-gradient(90deg, #fb923c 0%, #ea580c 100%);
+}
+
+.bar-fill.low {
+    background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.contribution-percentage {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .person-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .person-total {
+        align-items: flex-start;
+    }
+
+    .person-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    .name-text {
+        font-size: 1rem;
+    }
+
+    .total-amount {
+        font-size: 1.1rem;
+    }
+}
+
 .card {
     background: white;
     padding: 1.5rem;
     border-radius: 16px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.card.editing-mode {
+    border: 3px solid #fbbf24;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15), 0 8px 16px -2px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(to bottom, #fffbeb 0%, white 100%);
+    animation: editPulse 0.5s ease-out;
+}
+
+@keyframes editPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 @media (max-width: 640px) {
@@ -365,6 +574,25 @@
     font-size: 0.75rem;
     font-weight: 500;
     white-space: nowrap;
+}
+
+.paid-by-badge {
+    padding: 0.25rem 0.6rem;
+    background: #fdf2f8;
+    color: #be185d;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.paid-by-badge.empty {
+    background: transparent;
+    color: #cbd5e1;
+    font-weight: 400;
 }
 
 .amount-cell {

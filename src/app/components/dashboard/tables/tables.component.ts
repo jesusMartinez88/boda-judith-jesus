@@ -1,11 +1,11 @@
 import { Component, OnInit, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { GuestService, Guest } from '../../../services/guest.service';
 import { SettingsService } from '../../../services/settings.service';
 import { TableService, TableConfig } from '../../../services/table.service';
-import { FormsModule } from '@angular/forms';
-import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
-import { firstValueFrom } from 'rxjs';
+import { ReactiveFormsModule, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { DragDropModule, CdkDragDrop, CdkDragRelease } from '@angular/cdk/drag-drop';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { TablesLegendComponent } from './tables-legend/tables-legend.component';
 import { TablesHeaderComponent } from './tables-header/tables-header.component';
 import { ExportPdfBtnComponent } from './export-pdf-btn/export-pdf-btn';
@@ -13,7 +13,7 @@ import { ExportPdfBtnComponent } from './export-pdf-btn/export-pdf-btn';
 @Component({
     selector: 'app-tables',
     standalone: true,
-    imports: [CommonModule, FormsModule, TablesLegendComponent, TablesHeaderComponent, DragDropModule, ExportPdfBtnComponent],
+    imports: [ReactiveFormsModule, TablesLegendComponent, TablesHeaderComponent, DragDropModule, ExportPdfBtnComponent],
     templateUrl: './tables.component.html',
     styleUrl: './tables.component.css'
 })
@@ -21,9 +21,11 @@ export class TablesComponent implements OnInit {
     private guestService = inject(GuestService);
     private settingsService = inject(SettingsService);
     private tableService = inject(TableService);
+    private fb = inject(FormBuilder);
 
     guests = this.guestService.guests;
     maxGuests = computed(() => this.settingsService.settings().max_guests_per_table);
+    //autoAssign = computed(() => this.settingsService.settings().auto_assign_tables ?? false);
 
     isLoading = signal(true);
     draggedGuest: Guest | null = null;
@@ -33,27 +35,30 @@ export class TablesComponent implements OnInit {
     // Drag animation state
     draggingGuestId = signal<string | undefined>(undefined);
     newlySeatedIds = signal<Set<string>>(new Set());
+    isReceivingGuest = signal<boolean>(false);
 
     // Modal para nuevo/editar invitado
     showAddModal = signal(false);
     isEditingGuest = signal(false);
     editingGuestId = signal<string | null>(null);
-    newGuest = signal<Guest>({
-        name: '',
-        email: '',
-        phone: '',
-        attending: 1,
-        mealType: 'normal',
-        needsTransport: false,
-        isSavedInBbdd: false
+    guestForm: FormGroup = this.fb.group({
+        name: ['', [Validators.required, Validators.minLength(3)]],
+        email: ['', [Validators.email]],
+        phone: [''],
+        attendance: [true],
+        isAdult: [1, [Validators.required]],
+        mealType: ['normal', [Validators.required]],
+        allergies: [''],
+        notes: [''],
+        needsTransport: [false]
     });
 
     // Modal para nueva mesa
     showCreateTableModal = signal(false);
-    newTableData = signal({
-        name: '',
-        capacity: 10,
-        shape: 'round' as 'round' | 'square' | 'rectangular' | 'presidential'
+    tableForm: FormGroup = this.fb.group({
+        name: ['', [Validators.required, Validators.minLength(2)]],
+        capacity: [10, [Validators.required, Validators.min(1), Validators.max(25)]],
+        shape: ['round', [Validators.required]]
     });
 
     // Modal para confirmar borrado de mesa
@@ -76,10 +81,14 @@ export class TablesComponent implements OnInit {
 
     // Edición inline de nombres de mesa
     editingTableId = signal<number | null>(null);
-    editingName = signal<string>('');
+    editingNameControl = new FormControl<string>('', { nonNullable: true });
 
     searchTerm = signal<string>('');
+    searchControl = new FormControl<string>('', { nonNullable: true });
     isEditLayoutMode = signal<boolean>(false);
+
+    private capacityControls = new Map<number, FormControl<number>>();
+    private capacitySubs = new Map<number, Subscription>();
 
     // Organizar invitados por mesa siguiendo ESTRICTAMENTE la configuración
     tables = computed(() => {
@@ -98,8 +107,11 @@ export class TablesComponent implements OnInit {
                 posX: config.posX,
                 posY: config.posY,
                 guests: guestList.filter(g => {
+                    if (g.attending === 0) return false;
                     const guestTableId = Number(g.tableId || 0);
-                    return guestTableId === tableId && guestTableId !== 0;
+                    if (guestTableId !== tableId || guestTableId === 0) return false;
+                    // siempre mostrar únicamente invitados que ya tienen un número de asiento
+                    return g.seatNumber !== null && g.seatNumber !== undefined;
                 })
             };
         }).sort((a, b) => a.id - b.id);
@@ -109,14 +121,24 @@ export class TablesComponent implements OnInit {
         const guestList = this.guests();
         const tableConfigs = this.tableService.tables();
 
-        // Si no hay mesas cargadas aún, todos se ven como sin asignar (o esperamos)
-        if (!tableConfigs || tableConfigs.length === 0) return guestList;
+        // Excluir siempre invitados que han rechazado
+        const filteredList = guestList.filter(g => g.attending !== 0 && g.attendance !== false);
+
+        // Si no hay mesas cargadas aún, todos se ven como sin asignar (excepto rechazados)
+        if (!tableConfigs || tableConfigs.length === 0) return filteredList;
 
         const validTableIds = new Set(tableConfigs.map(t => Number(t.id)));
 
-        return guestList.filter(g => {
+        return filteredList.filter(g => {
             const tableId = Number(g.tableId || 0);
-            return tableId === 0 || !validTableIds.has(tableId);
+            if (tableId === 0 || !validTableIds.has(tableId)) {
+                return true;
+            }
+            // siempre considerar sin asiento como "por asignar"
+            if (g.seatNumber === null || g.seatNumber === undefined) {
+                return true;
+            }
+            return false;
         });
     });
 
@@ -169,6 +191,24 @@ export class TablesComponent implements OnInit {
 
     ngOnInit() {
         this.loadData();
+        // Reactive search input -> signal
+        this.searchControl.valueChanges.subscribe(v => this.searchTerm.set((v ?? '').toString()));
+    }
+
+    getCapacityControl(tableId: number, initialCapacity: number): FormControl<number> {
+        const existing = this.capacityControls.get(tableId);
+        if (existing) return existing;
+
+        const ctrl = new FormControl<number>(Number(initialCapacity || 1), { nonNullable: true });
+        this.capacityControls.set(tableId, ctrl);
+
+        const sub = ctrl.valueChanges.subscribe(v => {
+            const n = Number(v);
+            if (!Number.isFinite(n)) return;
+            this.updateTableCapacity(tableId, n);
+        });
+        this.capacitySubs.set(tableId, sub);
+        return ctrl;
     }
 
     async loadData() {
@@ -193,12 +233,31 @@ export class TablesComponent implements OnInit {
 
     // --- HTML5 Drag & Drop Handlers ---
 
-    /** Returns the guest at a specific seat of a table */
+    /** Previene la animación de retorno al soltar un invitado */
+    onGuestDragEnded(event: any) {
+        // Simplemente resetear sin animación
+        if (event.source) {
+            event.source.reset();
+        }
+    }
+
+    onReceptionQueueEntered() {
+        this.isReceivingGuest.set(true);
+    }
+
+    onReceptionQueueExited() {
+        this.isReceivingGuest.set(false);
+    }
+
+    /** Returns the guest at a specific seat of a table (1-indexed: 1, 2, 3...) */
     getGuestAtSeat(tableId: number, seatIndex: number): Guest | undefined {
         return this.guests().find(g => Number(g.tableId) === tableId && g.seatNumber === seatIndex);
     }
 
     async onDrop(event: CdkDragDrop<any>) {
+        // Resetear el estado de recepción inmediatamente
+        this.isReceivingGuest.set(false);
+        
         const guest = event.item.data as Guest;
         let targetData = event.container.data;
 
@@ -206,7 +265,7 @@ export class TablesComponent implements OnInit {
         let tableId: number | null = null;
         let seatNumber: number | null = null;
 
-        if (targetData === undefined) {
+        if (targetData === undefined || targetData === null) {
             // Cola de recepción
             tableId = null;
             seatNumber = null;
@@ -216,13 +275,19 @@ export class TablesComponent implements OnInit {
             const table = this.tables().find(t => t.id === tableId);
             if (table) {
                 const currentGuestId = this.guestKey(guest);
-                // Find first free seat (excluding the dragged guest's current position)
-                for (let i = 0; i < table.capacity; i++) {
+                // Find first free seat (1-indexed: 1, 2, 3..., excluding the dragged guest's current position)
+                for (let i = 1; i <= table.capacity; i++) {
                     const occupant = this.getGuestAtSeat(tableId, i);
                     if (!occupant || this.guestKey(occupant) === currentGuestId) {
                         seatNumber = i;
                         break;
                     }
+                }
+                if(seatNumber === null) {
+                  this.fullTableName.set(table?.name || '');
+                  this.fullTableCapacity.set(table?.capacity || 0);
+                  this.showFullTableModal.set(true);
+                  return;
                 }
             }
         } else if (targetData && typeof targetData === 'object') {
@@ -275,7 +340,8 @@ export class TablesComponent implements OnInit {
 
     async confirmDeleteGuest() {
         const guest = this.guestToDelete();
-        const guestId = guest?.id;
+        // use id if available, otherwise fall back to email/phone so we at least remove from state
+        const guestId = guest?.id || guest?.email || guest?.phone;
         if (!guestId) return;
 
         try {
@@ -297,14 +363,16 @@ export class TablesComponent implements OnInit {
     openAddModal() {
         this.isEditingGuest.set(false);
         this.editingGuestId.set(null);
-        this.newGuest.set({
+        this.guestForm.reset({
             name: '',
             email: '',
             phone: '',
-            attending: 1,
+            attendance: true,
+            isAdult: 1,
             mealType: 'normal',
-            needsTransport: false,
-            isSavedInBbdd: false
+            allergies: '',
+            notes: '',
+            needsTransport: false
         });
         this.showAddModal.set(true);
     }
@@ -315,20 +383,26 @@ export class TablesComponent implements OnInit {
         this.editingGuestId.set(null);
     }
 
-    updateNewGuestField(field: keyof Guest, value: any) {
-        this.newGuest.update(guest => ({ ...guest, [field]: value }));
-    }
-
     openEditModal(guest: Guest) {
         this.isEditingGuest.set(true);
         this.editingGuestId.set(guest.id || null);
-        this.newGuest.set({ ...guest });
+        this.guestForm.reset({
+            name: guest.name || '',
+            email: guest.email || '',
+            phone: guest.phone || '',
+            attendance: guest.attendance !== false && guest.attending !== 0,
+            isAdult: (guest.isAdult ?? 1),
+            mealType: guest.mealType || 'normal',
+            allergies: guest.allergies || '',
+            notes: guest.notes || '',
+            needsTransport: !!guest.needsTransport
+        });
         this.showAddModal.set(true);
     }
 
     async saveGuest() {
-        const guestData = this.newGuest();
-        if (!guestData.name) {
+        if (this.guestForm.invalid) {
+            this.guestForm.markAllAsTouched();
             this.triggerAlert('Nombre Requerido', 'Por favor, rellena al menos el nombre del invitado.');
             return;
         }
@@ -336,9 +410,29 @@ export class TablesComponent implements OnInit {
         try {
             this.isLoading.set(true);
 
+            const formValue = this.guestForm.value as any;
+            const isAdult = Number(formValue.isAdult) === 1;
+            const guestData: Guest = {
+                name: (formValue.name || '').trim(),
+                email: (formValue.email || '').trim(),
+                phone: (formValue.phone || '').trim(),
+                attendance: formValue.attendance !== false,
+                isAdult: isAdult ? 1 : 0,
+                adults: isAdult ? 1 : 0,
+                children: isAdult ? 0 : 1,
+                attending: (formValue.attendance === false) ? 0 : 1,
+                mealType: formValue.mealType || 'normal',
+                allergies: formValue.allergies || '',
+                notes: formValue.notes || '',
+                needsTransport: !!formValue.needsTransport,
+                isSavedInBbdd: false
+            };
+
             if (this.isEditingGuest() && this.editingGuestId()) {
                 await this.guestService.updateGuest(this.editingGuestId()!, guestData);
             } else {
+                // No mandar email en alta manual desde mesas
+                (guestData as any).sendEmail = false;
                 await this.guestService.registerGuest(guestData);
             }
 
@@ -366,7 +460,7 @@ export class TablesComponent implements OnInit {
         const currentTables = this.tableService.tables();
         const suggestedName = `Mesa ${currentTables.length + 1}`;
 
-        this.newTableData.set({
+        this.tableForm.reset({
             name: suggestedName,
             capacity: this.maxGuests() || 10,
             shape: 'round'
@@ -378,16 +472,16 @@ export class TablesComponent implements OnInit {
         this.showCreateTableModal.set(false);
     }
 
-    updateNewTableField(field: string, value: any) {
-        this.newTableData.update(data => ({ ...data, [field]: value }));
-    }
-
     async confirmAddTable() {
-        const data = this.newTableData();
+        if (this.tableForm.invalid) {
+            this.tableForm.markAllAsTouched();
+            return;
+        }
+        const data = this.tableForm.value as any;
         const currentTables = this.tableService.tables();
 
         // Validación: Nombre duplicado
-        const duplicate = currentTables.find(t => (t.name || '').toLowerCase() === data.name.trim().toLowerCase());
+        const duplicate = currentTables.find(t => (t.name || '').toLowerCase() === String(data.name || '').trim().toLowerCase());
         if (duplicate) {
             this.triggerAlert('Nombre Duplicado', `Ya existe una mesa con el nombre "${data.name}". Por favor, elige uno diferente.`);
             return;
@@ -399,8 +493,8 @@ export class TablesComponent implements OnInit {
             this.isLoading.set(true);
             await firstValueFrom(this.tableService.addTable({
                 id: nextId,
-                name: data.name || `Mesa ${currentTables.length + 1}`,
-                capacity: data.capacity,
+                name: String(data.name || `Mesa ${currentTables.length + 1}`),
+                capacity: Number(data.capacity),
                 shape: data.shape as any
             }));
             this.closeCreateTableModal();
@@ -409,9 +503,9 @@ export class TablesComponent implements OnInit {
             // Fallback local
             this.tableService.tables.update(t => [...t, {
                 id: nextId,
-                name: data.name,
+                name: String(data.name || `Mesa ${currentTables.length + 1}`),
                 shape: data.shape as any,
-                capacity: data.capacity
+                capacity: Number(data.capacity)
             }]);
             this.closeCreateTableModal();
         } finally {
@@ -506,9 +600,9 @@ export class TablesComponent implements OnInit {
         const table = this.tables().find(t => t.id === id);
         if (!table) return;
 
-        // Identificar invitados que están en asientos que van a desaparecer
+        // Identificar invitados que están en asientos que van a desaparecer (1-indexed: asientos > newCapacity)
         const guestsInRemovedSeats = table.guests.filter(g =>
-            g.seatNumber !== undefined && g.seatNumber !== null && g.seatNumber >= newCapacity
+            g.seatNumber !== undefined && g.seatNumber !== null && g.seatNumber > newCapacity
         );
 
         // Si quedan más invitados que la nueva capacidad (ej. invitados sin asiento específico), también los sacamos
@@ -537,12 +631,12 @@ export class TablesComponent implements OnInit {
     }
 
     startEditingTable(id: number, currentName: string | undefined) {
-        this.editingName.set(currentName || `Mesa ${id}`);
+        this.editingNameControl.setValue(currentName || `Mesa ${id}`);
         this.editingTableId.set(id);
     }
 
     async saveTableName(id: number) {
-        const newName = this.editingName().trim();
+        const newName = (this.editingNameControl.value || '').trim();
 
         if (!newName) {
             this.editingTableId.set(null);
@@ -612,6 +706,8 @@ export class TablesComponent implements OnInit {
 
     closeFullTableModal() {
         this.showFullTableModal.set(false);
+        this.fullTableName.set('');
+        this.fullTableCapacity.set(0);
     }
 
     getMenuClass(mealType?: string): string {
