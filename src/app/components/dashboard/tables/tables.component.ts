@@ -310,8 +310,40 @@ export class TablesComponent implements OnInit {
                 const prevSeatNumber = (guest.seatNumber !== undefined && guest.seatNumber !== null) ? Number(guest.seatNumber) : null;
                 const existingGuestId = this.guestKey(existingGuest);
 
-                // Mover al que ya estaba de forma asíncrona pero sin bloquear el flujo principal
-                this.guestService.updateGuestTable(existingGuestId, prevTableId, prevSeatNumber);
+                try {
+                    // IMPORTANTE: Primero mover al invitado existente a un lugar temporal (cola de recepción)
+                    // para liberar el asiento y evitar problemas de capacidad
+                    await this.guestService.updateGuestTable(existingGuestId, null, null);
+                    
+                    // Luego mover al invitado arrastrado al nuevo asiento
+                    await this.guestService.updateGuestTable(guestId, tableId, seatNumber);
+                    
+                    // Finalmente mover al invitado que estaba al asiento original del arrastrado
+                    await this.guestService.updateGuestTable(existingGuestId, prevTableId, prevSeatNumber);
+
+                    // Trigger sit-down animation for both guests
+                    if (tableId !== null) {
+                        const sid = guest.id ?? guest.email ?? guest.phone;
+                        if (sid) {
+                            this.newlySeatedIds.update(s => new Set([...s, sid]));
+                            setTimeout(() => {
+                                this.newlySeatedIds.update(s => { const n = new Set(s); n.delete(sid); return n; });
+                            }, 1500);
+                        }
+                    }
+                    if (prevTableId !== null) {
+                        const eid = existingGuest.id ?? existingGuest.email ?? existingGuest.phone;
+                        if (eid) {
+                            this.newlySeatedIds.update(s => new Set([...s, eid]));
+                            setTimeout(() => {
+                                this.newlySeatedIds.update(s => { const n = new Set(s); n.delete(eid); return n; });
+                            }, 1500);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error swapping guests:', error);
+                }
+                return; // Exit early after swap
             }
         }
 
