@@ -26,6 +26,9 @@
       <a class="nav-item" [class.active]="currentView() === 'finances'" (click)="setView('finances')">
         <span class="icon">💰</span> Control de Gastos
       </a>
+      <a class="nav-item" [class.active]="currentView() === 'todos'" (click)="setView('todos')">
+        <span class="icon">📝</span> Tareas
+      </a>
       <a class="nav-item" href="/" target="_blank">
         <span class="icon">✉️</span> Ver invitación
       </a>
@@ -276,6 +279,10 @@
 
           @if (currentView() === 'finances') {
             <app-finances></app-finances>
+          }
+
+          @if (currentView() === 'todos') {
+            <app-todos></app-todos>
           }
 
           <footer class="content-footer">

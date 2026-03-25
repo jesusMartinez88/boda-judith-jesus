@@ -1,0 +1,136 @@
+<div class="todos-container animate-fade-in">
+  <header class="section-header">
+    <h1>Tareas Pendientes 📝</h1>
+    <p>Organiza los preparativos paso a paso</p>
+  </header>
+
+  <div class="content-grid">
+    <!-- Form Section -->
+    <section class="form-section">
+      <div class="card" [class.editing-mode]="editingTodoId() !== null">
+        <h3>{{ editingTodoId() ? '✏️ Editar Tarea' : 'Nueva Tarea' }}</h3>
+        <form [formGroup]="todoForm" (ngSubmit)="onSubmit()" class="todo-form">
+          <div class="form-group">
+            <label>Descripción de la tarea</label>
+            <input type="text" formControlName="name" placeholder="Ej: Comprar las flores"
+              [class.error]="todoForm.get('name')?.invalid && todoForm.get('name')?.touched">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fecha prevista</label>
+              <input type="date" formControlName="date"
+                [class.error]="todoForm.get('date')?.invalid && todoForm.get('date')?.touched">
+            </div>
+            <div class="form-group">
+              <label>Estado</label>
+              <select formControlName="status">
+                <option value="pending">Pendiente</option>
+                <option value="completed">Completada</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+              {{ isSubmitting() ? 'Guardando...' : (editingTodoId() ? 'Guardar Cambios' : 'Añadir Tarea') }}
+            </button>
+            @if (editingTodoId()) {
+            <button type="button" class="cancel-btn" (click)="cancelEdit()">Cancelar</button>
+            }
+          </div>
+        </form>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="stats-mini-grid">
+        <div class="mini-card pending">
+          <span class="label">Pendientes</span>
+          <span class="value">{{ pendingCount() }}</span>
+        </div>
+        <div class="mini-card completed">
+          <span class="label">Completadas</span>
+          <span class="value">{{ completedCount() }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- List Section -->
+    <section class="list-section">
+      <div class="card">
+        <div class="card-header">
+          <h3>Listado de Tareas</h3>
+          <button class="refresh-btn" (click)="loadData()" [disabled]="isLoading()">
+            <span [class.spinning]="isLoading()">🔄</span>
+          </button>
+        </div>
+
+        <div class="todos-list">
+          @if (todos().length === 0 && !isLoading()) {
+          <div class="empty-state">
+            <span class="empty-icon">✅</span>
+            <p>¡No hay tareas! Relájate un poco.</p>
+          </div>
+          } @else {
+          @for (todo of sortedTodos(); track todo.id) {
+          <div class="todo-item" [class.completed]="todo.status === 'completed'">
+            <div class="todo-status-indicator" [style.background-color]="getStatusColor(todo)"></div>
+            <div class="todo-content">
+              <div class="todo-main">
+                <span class="todo-name">{{ todo.name }}</span>
+                <div class="todo-meta">
+                  <span class="todo-date" [style.color]="getStatusColor(todo)">
+                    📅 {{ todo.date | date:'dd/MM/yyyy' }}
+                  </span>
+                  @if (todo.status === 'pending') {
+                  <span class="due-label" [style.color]="getStatusColor(todo)">
+                    {{ getDueLabel(todo.date) }}
+                  </span>
+                  }
+                </div>
+              </div>
+              <div class="todo-actions">
+                @if (todo.status === 'pending') {
+                <button class="action-btn check-btn" (click)="toggleStatus(todo)" title="Completar">
+                  ✔️
+                </button>
+                } @else {
+                <button class="action-btn undo-btn" (click)="toggleStatus(todo)" title="Reabrir">
+                  ↩️
+                </button>
+                }
+                <button class="action-btn edit-btn" (click)="editTodo(todo)" title="Editar">
+                  ✏️
+                </button>
+                <button class="action-btn delete-btn" (click)="deleteTodo(todo.id!)" title="Eliminar">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+          }
+          }
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal de eliminación -->
+  @if (showDeleteModal()) {
+    <div class="modal-backdrop" (click)="closeDeleteModal()">
+      <div class="modal-container delete-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Confirmar Eliminación</h3>
+          <button class="close-btn" (click)="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que querés borrar la tarea <strong>"{{ todoToDelete()?.name }}"</strong>?</p>
+          <div class="modal-actions">
+            <button class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
+            <button class="btn-danger" (click)="confirmDelete()">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

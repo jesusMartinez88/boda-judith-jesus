@@ -9,11 +9,12 @@ import { AttendanceProgressComponent } from './attendance-progress/attendance-pr
 import { Guest, GuestService } from '../../services/guest.service';
 import { SettingsService } from '../../services/settings.service';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { TodosComponent } from './todos/todos.component';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [TablesComponent, SettingsComponent, FinancesComponent, AttendanceProgressComponent, DragDropModule],
+    imports: [TablesComponent, SettingsComponent, FinancesComponent, AttendanceProgressComponent, DragDropModule, TodosComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })
@@ -126,7 +127,7 @@ export class DashboardComponent implements OnInit {
 
     isLoading = signal(true);
     error = signal<string | null>(null);
-    currentView = signal<'stats' | 'tables' | 'settings' | 'finances'>('stats');
+    currentView = signal<'stats' | 'tables' | 'settings' | 'finances' | 'todos'>('stats');
     isMenuOpen = signal(false);
 
     ngOnInit() {
@@ -196,7 +197,7 @@ export class DashboardComponent implements OnInit {
         });
     }
 
-    setView(view: 'stats' | 'tables' | 'settings' | 'finances') {
+    setView(view: 'stats' | 'tables' | 'settings' | 'finances' | 'todos') {
         this.currentView.set(view);
         this.closeMenu();
     }
