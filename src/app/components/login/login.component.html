@@ -46,6 +46,13 @@
         </div>
       }
 
+      @if (loadingMessage()) {
+        <div class="loading-message">
+          <div class="loading-icon">⏳</div>
+          <p>{{ loadingMessage() }}</p>
+        </div>
+      }
+
       <button type="submit" [disabled]="loginForm.invalid || isLoading()" class="login-btn">
         @if (!isLoading()) {
           <span>Entrar</span>
