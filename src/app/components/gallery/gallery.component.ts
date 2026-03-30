@@ -23,43 +23,41 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
     {
       id: 1,
       title: 'El comienzo',
-      placeholder: 'assets/fotos/foto1.jpeg',
+      placeholder: 'assets/fotos/foto15.jpg',
       description: 'Todo empezó con una mirada y una copa de vino...',
-      date: 'Junio 2020'
+      date: 'Junio 2018'
     },
     {
       id: 2,
       title: 'Viajes inolvidables',
-      placeholder: 'assets/fotos/foto2.jpeg',
+      placeholder: 'assets/fotos/foto12.jpg',
       description: 'Nuestro primer viaje juntos fue el inicio de mil aventuras más.',
-      date: 'Agosto 2021'
+      date: 'Agosto 2019'
     },
     {
       id: 3,
       title: 'Cómplices',
-      placeholder: 'assets/fotos/foto3.jpeg',
+      placeholder: 'assets/fotos/foto2.jpeg',
       description: 'Entre risas y momentos compartidos, supimos que era para siempre.',
       date: 'Enero 2022'
     },
     {
       id: 4,
       title: 'La gran pregunta',
-      placeholder: 'assets/fotos/foto4.jpeg',
+      placeholder: 'assets/fotos/foto17.jpeg',
       description: 'Un día cualquiera que se convirtió en el más importante de nuestras vidas.',
-      date: 'Septiembre 2024'
+      date: 'Agosto 2025'
     },
     {
       id: 5,
       title: 'Hacia el altar',
-      placeholder: 'assets/fotos/foto5.jpeg',
+      placeholder: 'assets/fotos/foto1.jpeg',
       description: 'Contando los días para decir "Sí, quiero" rodeados de nuestra gente.',
-      date: 'Abril 2025'
+      date: 'Octubre 2025'
     }
   ];
 
   sliderImages = [
-    'assets/fotos/foto1.jpeg',
-    'assets/fotos/foto2.jpeg',
     'assets/fotos/foto3.jpeg',
     'assets/fotos/foto4.jpeg',
     'assets/fotos/foto5.jpeg',
@@ -69,6 +67,9 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
     'assets/fotos/foto9.jpeg',
     'assets/fotos/foto10.jpeg',
     'assets/fotos/foto11.jpeg',
+    'assets/fotos/foto13.jpg',
+    'assets/fotos/foto14.jpg',
+    'assets/fotos/foto16.jpg',
   ];
 
   selectedPhoto: Photo | null = null;
