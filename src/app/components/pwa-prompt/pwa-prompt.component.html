@@ -1,0 +1,37 @@
+<!-- Prompt de instalación -->
+@if (pwaService.showInstallPrompt()) {
+  <div class="pwa-overlay" (click)="dismissInstall()">
+    <div class="pwa-prompt install-prompt" (click)="$event.stopPropagation()">
+      <div class="prompt-icon">📱</div>
+      <h3>Instalar aplicación</h3>
+      <p>Añade esta app a tu pantalla de inicio para un acceso rápido y una mejor experiencia</p>
+      <div class="prompt-actions">
+        <button class="btn-primary" (click)="installApp()">
+          Instalar
+        </button>
+        <button class="btn-secondary" (click)="dismissInstall()">
+          Ahora no
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Prompt de actualización -->
+@if (pwaService.showUpdatePrompt()) {
+  <div class="pwa-overlay">
+    <div class="pwa-prompt update-prompt">
+      <div class="prompt-icon">🔄</div>
+      <h3>Nueva versión disponible</h3>
+      <p>Hay una actualización disponible. Recarga la página para obtener la última versión</p>
+      <div class="prompt-actions">
+        <button class="btn-primary" (click)="reloadApp()">
+          Actualizar ahora
+        </button>
+        <button class="btn-secondary" (click)="dismissUpdate()">
+          Más tarde
+        </button>
+      </div>
+    </div>
+  </div>
+}

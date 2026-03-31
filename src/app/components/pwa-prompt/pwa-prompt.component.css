@@ -1,0 +1,148 @@
+.pwa-overlay {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 10002;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 1rem;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pwa-prompt {
+    background: white;
+    border-radius: 24px 24px 0 0;
+    padding: 2rem;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    animation: promptSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.prompt-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    animation: bounce 1s ease-in-out infinite;
+}
+
+.pwa-prompt h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+}
+
+.pwa-prompt p {
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 1.5rem 0;
+}
+
+.prompt-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+    color: white;
+    border: none;
+    padding: 1rem 1.5rem;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(236, 72, 153, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(236, 72, 153, 0.4);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #64748b;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    color: #475569;
+    background: #f1f5f9;
+}
+
+.update-prompt {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #fbbf24;
+}
+
+.update-prompt h3 {
+    color: #92400e;
+}
+
+.update-prompt p {
+    color: #78350f;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes promptSlideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@media (min-width: 640px) {
+    .pwa-overlay {
+        align-items: center;
+        padding: 2rem;
+    }
+
+    .pwa-prompt {
+        border-radius: 24px;
+    }
+
+    .prompt-actions {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        flex: 0 0 auto;
+        min-width: 140px;
+    }
+}

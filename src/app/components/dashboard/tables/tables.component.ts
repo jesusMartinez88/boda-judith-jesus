@@ -85,7 +85,7 @@ export class TablesComponent implements OnInit {
 
     searchTerm = signal<string>('');
     searchControl = new FormControl<string>('', { nonNullable: true });
-    isEditLayoutMode = signal<boolean>(false);
+    isEditLayoutMode = signal<boolean>(true);
 
     private capacityControls = new Map<number, FormControl<number>>();
     private capacitySubs = new Map<number, Subscription>();

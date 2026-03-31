@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { PwaService } from '../../services/pwa.service';
 
 import { RouterLink } from '@angular/router';
 
@@ -16,6 +17,7 @@ export class LoginComponent {
     private fb = inject(FormBuilder);
     private authService = inject(AuthService);
     private router = inject(Router);
+    private pwaService = inject(PwaService);
 
     loginForm = this.fb.group({
         username: ['', [Validators.required, Validators.minLength(4)]],
@@ -68,6 +70,8 @@ export class LoginComponent {
             }).subscribe({
                 next: () => {
                     this.clearLoadingMessages();
+                    // Notificar al servicio PWA que el usuario se ha logueado
+                    this.pwaService.onUserLoggedIn();
                     this.router.navigate(['/dashboard']);
                 },
                 error: (err) => {
