@@ -10,15 +10,10 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "favicon.svg",
+      "src": "favicon-ring.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
-    },
-    {
-      "src": "favicon-ring.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
     }
   ]
 }
