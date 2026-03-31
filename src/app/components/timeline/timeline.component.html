@@ -10,9 +10,260 @@
       </div>
       <div class="timeline-content">
         <div class="event-time">{{ event.time }}</div>
-        <div class="event-card">
+        <div class="event-card" [class.coctel-card]="event.title === 'Cóctel'">
           <h3 class="event-title">{{ event.title }}</h3>
           <p class="event-description">{{ event.description }}</p>
+          
+          @if (event.title === 'Cóctel') {
+            <div class="card-animation">
+              <svg class="brindis-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Glass Left -->
+                <g id="glass-left" class="glass-left-group">
+                  <!-- Bowl -->
+                  <path d="M25 30 L25 50 C25 62 40 62 40 50 L40 30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <!-- Liquid -->
+                  <path id="liquid-left" d="M27 35 L27 50 C27 58 38 58 38 50 L38 35 Z" fill="currentColor" fill-opacity="0.2"/>
+                  <!-- Stem & Base -->
+                  <path d="M32.5 60 L32.5 80 M28 80 H37" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </g>
+                
+                <!-- Glass Right -->
+                <g id="glass-right" class="glass-right-group">
+                  <!-- Bowl -->
+                  <path d="M75 30 L75 50 C75 62 60 62 60 50 L60 30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <!-- Liquid -->
+                  <path id="liquid-right" d="M73 35 L73 50 C73 58 62 58 62 50 L62 35 Z" fill="currentColor" fill-opacity="0.2"/>
+                  <!-- Stem & Base -->
+                  <path d="M67.5 60 L67.5 80 M63 80 H72" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </g>
+                
+                <!-- Bubbles/Sparkles -->
+                <g id="sparkles" class="sparkles">
+                  <circle cx="50" cy="35" r="2.5" fill="currentColor" />
+                  <circle cx="45" cy="30" r="2" fill="currentColor" />
+                  <circle cx="55" cy="30" r="2" fill="currentColor" />
+                  <circle cx="48" cy="38" r="1.5" fill="currentColor" />
+                  <circle cx="52" cy="38" r="1.5" fill="currentColor" />
+                  <circle cx="50" cy="42" r="1.8" fill="currentColor" />
+                </g>
+              </svg>
+            </div>
+          }
+
+          @if (event.title === 'Cena') {
+            <div class="card-animation">
+              <svg class="dinner-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Plate -->
+                <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="2" fill="white" fill-opacity="0.05"/>
+                <circle cx="50" cy="50" r="32" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2" opacity="0.3"/>
+                
+                <!-- Meat -->
+                <path class="meat" d="M35 45 Q50 35 65 45 L60 65 Q50 75 40 65 Z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2"/>
+                
+                <!-- Fork (left) -->
+                <g class="fork">
+                  <path d="M30 30 V50 M26 30 V40 M34 30 V40 M30 50 L30 75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </g>
+                
+                <!-- Knife (right) -->
+                <g class="knife">
+                  <!-- Blade (hoja recta) -->
+                  <path d="M70 30 L70 55 L68 57 L66 55 L66 30 Z" 
+                        fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                  <!-- Filo del cuchillo -->
+                  <line x1="66" y1="30" x2="66" y2="55" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+                  <!-- Handle (mango) -->
+                  <rect x="66" y="57" width="4" height="20" rx="2" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="1.5"/>
+                  <!-- Detalles del mango -->
+                  <line x1="66" y1="62" x2="70" y2="62" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                  <line x1="66" y1="67" x2="70" y2="67" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                  <line x1="66" y1="72" x2="70" y2="72" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+                </g>
+              </svg>
+            </div>
+          }
+
+          @if (event.title === 'Ceremonia') {
+            <div class="card-animation ceremony-animation">
+              <svg class="ceremony-svg" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Altar/Fondo -->
+                <g id="altar-wrapper">
+                  <g>
+                    <!-- Arco decorativo -->
+                    <path d="M40 85 L40 40 Q60 25 80 40 L80 85" 
+                          stroke="currentColor" stroke-width="2" opacity="0.15" fill="none"/>
+                    <!-- Flores del arco -->
+                    <circle cx="40" cy="45" r="3" fill="currentColor" opacity="0.1"/>
+                    <circle cx="45" cy="35" r="2.5" fill="currentColor" opacity="0.1"/>
+                    <circle cx="55" cy="28" r="2.5" fill="currentColor" opacity="0.1"/>
+                    <circle cx="65" cy="30" r="2.5" fill="currentColor" opacity="0.1"/>
+                    <circle cx="75" cy="35" r="2.5" fill="currentColor" opacity="0.1"/>
+                    <circle cx="80" cy="45" r="3" fill="currentColor" opacity="0.1"/>
+                  </g>
+                </g>
+                
+                <!-- Novio (derecha) -->
+                <g id="groom-wrapper">
+                  <g>
+                    <!-- Sombra -->
+                    <ellipse cx="78" cy="85" rx="8" ry="2" fill="currentColor" opacity="0.08"/>
+                    <!-- Piernas -->
+                    <rect x="73" y="65" width="5" height="20" rx="1" fill="currentColor" opacity="0.15"/>
+                    <rect x="77" y="65" width="5" height="20" rx="1" fill="currentColor" opacity="0.15"/>
+                    <!-- Cuerpo/Traje -->
+                    <path d="M70 50 L70 65 L86 65 L86 50 Q86 48 84 48 L72 48 Q70 48 70 50 Z" 
+                          fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="1"/>
+                    <!-- Corbata -->
+                    <path d="M78 48 L78 62 L76 64 L78 65 L80 64 Z" fill="currentColor" opacity="0.25"/>
+                    <!-- Brazos -->
+                    <path d="M70 52 L65 58 L66 60" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.15"/>
+                    <path d="M86 52 L91 58 L90 60" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.15"/>
+                    <!-- Cuello -->
+                    <rect x="76" y="44" width="4" height="4" fill="currentColor" opacity="0.12"/>
+                    <!-- Cabeza -->
+                    <circle cx="78" cy="38" r="7" fill="currentColor" opacity="0.15"/>
+                    <!-- Cabello -->
+                    <path d="M72 36 Q78 32 84 36" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.2"/>
+                    <!-- Ojos -->
+                    <circle cx="76" cy="38" r="0.8" fill="currentColor" opacity="0.4"/>
+                    <circle cx="80" cy="38" r="0.8" fill="currentColor" opacity="0.4"/>
+                    <!-- Sonrisa -->
+                    <path d="M75 41 Q78 42 81 41" stroke="currentColor" stroke-width="0.8" stroke-linecap="round" opacity="0.3"/>
+                  </g>
+                </g>
+                
+                <!-- Corazón del novio (pulsa) -->
+                <g id="groom-heart-wrapper">
+                  <path d="M78 55 L77 56 Q75 58 75 60 Q75 62 77 63 L78 64 L79 63 Q81 62 81 60 Q81 58 79 56 Z" 
+                        fill="currentColor" opacity="0.3"/>
+                </g>
+                
+                <!-- Novia (izquierda, se acerca) -->
+                <g id="bride-wrapper">
+                  <g>
+                    <!-- Sombra -->
+                    <ellipse cx="28" cy="85" rx="10" ry="2" fill="currentColor" opacity="0.08"/>
+                    <!-- Vestido (forma de campana) -->
+                    <path d="M28 85 L20 60 Q20 55 23 52 L33 52 Q36 55 36 60 L28 85 Z" 
+                          fill="currentColor" opacity="0.12" stroke="currentColor" stroke-width="1.5"/>
+                    <!-- Detalles del vestido -->
+                    <path d="M22 65 Q28 63 34 65 M23 72 Q28 70 33 72 M24 78 Q28 76 32 78" 
+                          stroke="currentColor" stroke-width="0.8" opacity="0.15"/>
+                    <!-- Cintura/Corsé -->
+                    <path d="M24 52 L24 58 L32 58 L32 52" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>
+                    <!-- Brazos -->
+                    <path d="M24 54 L20 58 L21 60" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.15"/>
+                    <path d="M32 54 L36 58 L35 60" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.15"/>
+                    <!-- Cuello -->
+                    <rect x="26" y="46" width="4" height="4" fill="currentColor" opacity="0.12"/>
+                    <!-- Cabeza -->
+                    <circle cx="28" cy="40" r="6" fill="currentColor" opacity="0.15"/>
+                    <!-- Cabello/Peinado -->
+                    <path d="M23 38 Q28 35 33 38" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.2"/>
+                    <circle cx="23" cy="39" r="2" fill="currentColor" opacity="0.15"/>
+                    <circle cx="33" cy="39" r="2" fill="currentColor" opacity="0.15"/>
+                    <!-- Velo -->
+                    <path d="M22 37 Q28 32 34 37 L34 48 Q28 52 22 48 Z" 
+                          fill="currentColor" opacity="0.06" stroke="currentColor" stroke-width="0.8"/>
+                    <!-- Ojos -->
+                    <circle cx="26" cy="40" r="0.8" fill="currentColor" opacity="0.4"/>
+                    <circle cx="30" cy="40" r="0.8" fill="currentColor" opacity="0.4"/>
+                    <!-- Sonrisa -->
+                    <path d="M25 43 Q28 44 31 43" stroke="currentColor" stroke-width="0.8" stroke-linecap="round" opacity="0.3"/>
+                    <!-- Ramo de flores -->
+                    <g id="bouquet">
+                      <circle cx="24" cy="62" r="2.5" fill="currentColor" opacity="0.2"/>
+                      <circle cx="28" cy="60" r="2.8" fill="currentColor" opacity="0.25"/>
+                      <circle cx="32" cy="62" r="2.5" fill="currentColor" opacity="0.2"/>
+                      <circle cx="26" cy="63" r="2" fill="currentColor" opacity="0.18"/>
+                      <circle cx="30" cy="63" r="2" fill="currentColor" opacity="0.18"/>
+                      <!-- Tallos -->
+                      <path d="M28 65 L28 68" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>
+                    </g>
+                  </g>
+                </g>
+                
+                <!-- Cola del vestido (movimiento) -->
+                <g id="dress-train-wrapper">
+                  <path d="M20 85 Q10 80 8 75 L12 78 Q15 82 20 85 Z" 
+                        fill="currentColor" opacity="0.08" stroke="currentColor" stroke-width="0.8"/>
+                </g>
+                
+                <!-- Corazones flotantes -->
+                <g id="hearts-wrapper">
+                  <g>
+                    <!-- Corazón grande central -->
+                    <path d="M53 50 L51 52 Q48 55 48 58 Q48 61 51 63 L53 65 L55 63 Q58 61 58 58 Q58 55 55 52 Z" 
+                          fill="currentColor" opacity="0.35"/>
+                    <!-- Corazón pequeño arriba izquierda -->
+                    <path d="M45 38 L44 39 Q42 41 42 43 Q42 45 44 46 L45 47 L46 46 Q48 45 48 43 Q48 41 46 39 Z" 
+                          fill="currentColor" opacity="0.28"/>
+                    <!-- Corazón pequeño arriba derecha -->
+                    <path d="M61 38 L60 39 Q58 41 58 43 Q58 45 60 46 L61 47 L62 46 Q64 45 64 43 Q64 41 62 39 Z" 
+                          fill="currentColor" opacity="0.28"/>
+                    <!-- Corazón mini abajo -->
+                    <path d="M53 68 L52 69 Q51 70 51 71 Q51 72 52 73 L53 74 L54 73 Q55 72 55 71 Q55 70 54 69 Z" 
+                          fill="currentColor" opacity="0.22"/>
+                  </g>
+                </g>
+                
+                <!-- Brillos/Sparkles cuando se encuentran -->
+                <g id="sparkles-wrapper">
+                  <g>
+                    <circle cx="50" cy="45" r="1.5" fill="currentColor" opacity="0.6"/>
+                    <circle cx="56" cy="50" r="1.2" fill="currentColor" opacity="0.5"/>
+                    <circle cx="44" cy="50" r="1.2" fill="currentColor" opacity="0.5"/>
+                    <circle cx="53" cy="42" r="1" fill="currentColor" opacity="0.4"/>
+                    <circle cx="47" cy="42" r="1" fill="currentColor" opacity="0.4"/>
+                    <!-- Líneas de brillo -->
+                    <path d="M50 38 L50 40 M48 39 L49 40 M52 39 L51 40" 
+                          stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          }
+
+          @if (event.title === 'Barra Libre & Fiesta') {
+            <div class="card-animation">
+              <svg class="disco-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Hanger -->
+                <path d="M50 0 V15" stroke="currentColor" stroke-width="2"/>
+                <!-- Disco Ball -->
+                <g class="disco-ball">
+                  <circle cx="50" cy="45" r="30" stroke="currentColor" stroke-width="2" fill="white" fill-opacity="0.1"/>
+                  <!-- Grid -->
+                  <path d="M20 45 H80 M30 30 H70 M30 60 H70 M50 15 V75 M35 15 Q50 45 35 75 M65 15 Q50 45 65 75" stroke="currentColor" stroke-width="1" stroke-opacity="0.3"/>
+                  <!-- Reflections -->
+                  <g class="reflections">
+                    <rect x="40" y="30" width="4" height="4" fill="currentColor" opacity="0.6"/>
+                    <rect x="55" y="40" width="3" height="3" fill="currentColor" opacity="0.4"/>
+                    <rect x="45" y="55" width="5" height="5" fill="currentColor" opacity="0.5"/>
+                  </g>
+                </g>
+                <!-- Laser Rays (8 direcciones) -->
+                <g class="disco-rays">
+                  <!-- Rayo superior izquierda -->
+                  <line id="ray-1" x1="50" y1="45" x2="10" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                  <!-- Rayo superior derecha -->
+                  <line id="ray-2" x1="50" y1="45" x2="90" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                  <!-- Rayo inferior izquierda -->
+                  <line id="ray-3" x1="50" y1="45" x2="10" y2="90" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                  <!-- Rayo inferior derecha -->
+                  <line id="ray-4" x1="50" y1="45" x2="90" y2="90" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                  <!-- Rayo izquierda -->
+                  <line id="ray-5" x1="50" y1="45" x2="5" y2="45" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                  <!-- Rayo derecha -->
+                  <line id="ray-6" x1="50" y1="45" x2="95" y2="45" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                  <!-- Rayo arriba -->
+                  <line id="ray-7" x1="50" y1="45" x2="50" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                  <!-- Rayo abajo -->
+                  <line id="ray-8" x1="50" y1="45" x2="50" y2="95" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                </g>
+              </svg>
+            </div>
+          }
+
           <div class="event-location">
             <a href="{{ event.locationUrl }}" target="_blank" rel="noopener" class="map-btn">
               <span class="btn-icon">📍</span><span>{{ event.location }}</span>

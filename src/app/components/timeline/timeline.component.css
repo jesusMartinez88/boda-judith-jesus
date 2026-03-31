@@ -49,6 +49,586 @@
   }
 }
 
+.event-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border-left: 4px solid #ec4899;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-animation {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 3rem;
+  height: 3rem;
+  opacity: 0.2;
+  transition: all 0.3s ease;
+}
+
+.event-card:hover .card-animation {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.brindis-svg, .ceremony-svg, .disco-svg, .dinner-svg {
+  width: 100%;
+  height: 100%;
+  color: #ec4899;
+}
+
+.dinner-svg {
+  transform: scale(0.9);
+  transform-origin: center;
+}
+
+.knife {
+  transform-origin: 68px 57px;
+}
+
+.event-card:hover .knife {
+  animation: knife-cut 1.2s ease-in-out infinite;
+}
+
+.event-card:hover .fork {
+  animation: fork-steady 1.2s ease-in-out infinite;
+}
+
+@keyframes knife-cut {
+  0%, 100% { 
+    transform: translate(0, 0) rotate(0deg); 
+  }
+  25% {
+    transform: translate(-8px, 5px) rotate(-8deg);
+  }
+  50% { 
+    transform: translate(-12px, 8px) rotate(-12deg); 
+  }
+  75% {
+    transform: translate(-8px, 5px) rotate(-8deg);
+  }
+}
+
+@keyframes fork-steady {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg); 
+  }
+  50% { 
+    transform: translateY(2px) rotate(-2deg); 
+  }
+}
+
+.disco-ball {
+  transform-origin: 50px 45px;
+}
+
+.event-card:hover .disco-ball {
+  animation: disco-spin 4s linear infinite;
+}
+
+.event-card:hover .reflections rect {
+  animation: reflections-blink 0.5s ease-in-out infinite alternate;
+}
+
+/* Animaciones de rayos láser individuales */
+.event-card:hover #ray-1 {
+  animation: laser-pulse-1 1.5s ease-in-out infinite;
+}
+
+.event-card:hover #ray-2 {
+  animation: laser-pulse-2 1.5s ease-in-out infinite;
+}
+
+.event-card:hover #ray-3 {
+  animation: laser-pulse-3 1.5s ease-in-out infinite;
+}
+
+.event-card:hover #ray-4 {
+  animation: laser-pulse-4 1.5s ease-in-out infinite;
+}
+
+.event-card:hover #ray-5 {
+  animation: laser-pulse-5 1.5s ease-in-out infinite;
+}
+
+.event-card:hover #ray-6 {
+  animation: laser-pulse-6 1.5s ease-in-out infinite;
+}
+
+.event-card:hover #ray-7 {
+  animation: laser-pulse-7 1.5s ease-in-out infinite;
+}
+
+.event-card:hover #ray-8 {
+  animation: laser-pulse-8 1.5s ease-in-out infinite;
+}
+
+@keyframes disco-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes reflections-blink {
+  from { opacity: 0.2; }
+  to { opacity: 1; }
+}
+
+/* Rayos láser que se alargan y acortan con desfase */
+@keyframes laser-pulse-1 {
+  0%, 100% { 
+    stroke-dasharray: 0 100;
+    opacity: 0.2;
+  }
+  50% { 
+    stroke-dasharray: 60 100;
+    opacity: 0.8;
+  }
+}
+
+@keyframes laser-pulse-2 {
+  0%, 100% { 
+    stroke-dasharray: 60 100;
+    opacity: 0.8;
+  }
+  50% { 
+    stroke-dasharray: 0 100;
+    opacity: 0.2;
+  }
+}
+
+@keyframes laser-pulse-3 {
+  0%, 100% { 
+    stroke-dasharray: 30 100;
+    opacity: 0.5;
+  }
+  50% { 
+    stroke-dasharray: 60 100;
+    opacity: 0.9;
+  }
+}
+
+@keyframes laser-pulse-4 {
+  0%, 100% { 
+    stroke-dasharray: 60 100;
+    opacity: 0.9;
+  }
+  50% { 
+    stroke-dasharray: 20 100;
+    opacity: 0.3;
+  }
+}
+
+@keyframes laser-pulse-5 {
+  0%, 100% { 
+    stroke-dasharray: 40 100;
+    opacity: 0.6;
+  }
+  50% { 
+    stroke-dasharray: 0 100;
+    opacity: 0.2;
+  }
+}
+
+@keyframes laser-pulse-6 {
+  0%, 100% { 
+    stroke-dasharray: 0 100;
+    opacity: 0.2;
+  }
+  50% { 
+    stroke-dasharray: 50 100;
+    opacity: 0.8;
+  }
+}
+
+@keyframes laser-pulse-7 {
+  0%, 100% { 
+    stroke-dasharray: 50 100;
+    opacity: 0.7;
+  }
+  50% { 
+    stroke-dasharray: 10 100;
+    opacity: 0.3;
+  }
+}
+
+@keyframes laser-pulse-8 {
+  0%, 100% { 
+    stroke-dasharray: 20 100;
+    opacity: 0.4;
+  }
+  50% { 
+    stroke-dasharray: 60 100;
+    opacity: 0.9;
+  }
+}
+
+/* ============================================
+   ANIMACIÓN DE LA CEREMONIA - NOVIA Y NOVIO DETALLADA
+   ============================================ */
+
+/* @property declarations para cada elemento */
+@property --altar-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --altar-scale {
+  syntax: "<transform-function>";
+  inherits: true;
+  initial-value: scale(0.9);
+}
+
+@property --groom-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --groom-translate {
+  syntax: "<transform-function>";
+  inherits: true;
+  initial-value: translateY(10px);
+}
+
+@property --groom-heart-scale {
+  syntax: "<transform-function>";
+  inherits: true;
+  initial-value: scale(0);
+}
+
+@property --bride-translate {
+  syntax: "<transform-function>";
+  inherits: true;
+  initial-value: translateX(-60px);
+}
+
+@property --bride-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --dress-train-rotate {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@property --hearts-scale {
+  syntax: "<transform-function>";
+  inherits: true;
+  initial-value: scale(0);
+}
+
+@property --hearts-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --sparkles-scale {
+  syntax: "<transform-function>";
+  inherits: true;
+  initial-value: scale(0);
+}
+
+@property --sparkles-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+/* Aplicar variables a los elementos */
+#altar-wrapper {
+  transform-box: fill-box;
+  transform-origin: center center;
+  transform: var(--altar-scale);
+  opacity: var(--altar-opacity);
+}
+
+#groom-wrapper {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  transform: var(--groom-translate);
+  opacity: var(--groom-opacity);
+}
+
+#groom-heart-wrapper {
+  transform-box: fill-box;
+  transform-origin: center center;
+  transform: var(--groom-heart-scale);
+}
+
+#bride-wrapper {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  transform: var(--bride-translate);
+  opacity: var(--bride-opacity);
+}
+
+#dress-train-wrapper {
+  transform-box: fill-box;
+  transform-origin: right center;
+  transform: rotate(var(--dress-train-rotate));
+  opacity: var(--bride-opacity);
+}
+
+#hearts-wrapper {
+  transform-box: fill-box;
+  transform-origin: center center;
+  transform: var(--hearts-scale);
+  opacity: var(--hearts-opacity);
+}
+
+#sparkles-wrapper {
+  transform-box: fill-box;
+  transform-origin: center center;
+  transform: var(--sparkles-scale);
+  opacity: var(--sparkles-opacity);
+}
+
+/* Animación detallada por partes al hover */
+.event-card:hover .ceremony-animation {
+  animation: ceremony-detailed-story 4s forwards ease-out;
+}
+
+@keyframes ceremony-detailed-story {
+  /* Fase 1: Aparece el altar y el novio (0-25%) */
+  0% {
+    --altar-opacity: 0;
+    --altar-scale: scale(0.9);
+    --groom-opacity: 0;
+    --groom-translate: translateY(10px);
+    --groom-heart-scale: scale(0);
+    --bride-translate: translateX(-60px);
+    --bride-opacity: 0;
+    --dress-train-rotate: 0deg;
+    --hearts-scale: scale(0);
+    --hearts-opacity: 0;
+    --sparkles-scale: scale(0);
+    --sparkles-opacity: 0;
+  }
+  15% {
+    --altar-opacity: 1;
+    --altar-scale: scale(1);
+    --groom-opacity: 0;
+    --groom-translate: translateY(10px);
+  }
+  25% {
+    --altar-opacity: 1;
+    --altar-scale: scale(1);
+    --groom-opacity: 1;
+    --groom-translate: translateY(0px);
+    --groom-heart-scale: scale(0);
+    --bride-translate: translateX(-60px);
+    --bride-opacity: 0;
+  }
+  /* Fase 2: Pulso del corazón del novio (25-40%) */
+  30% {
+    --groom-heart-scale: scale(1.3);
+  }
+  35% {
+    --groom-heart-scale: scale(0.9);
+  }
+  40% {
+    --groom-heart-scale: scale(1);
+    --bride-translate: translateX(-60px);
+    --bride-opacity: 0;
+  }
+  /* Fase 3: La novia se acerca (40-65%) */
+  65% {
+    --altar-opacity: 1;
+    --altar-scale: scale(1);
+    --groom-opacity: 1;
+    --groom-translate: translateY(0px);
+    --groom-heart-scale: scale(1);
+    --bride-translate: translateX(0px);
+    --bride-opacity: 1;
+    --dress-train-rotate: 5deg;
+    --hearts-scale: scale(0);
+    --hearts-opacity: 0;
+  }
+  /* Fase 4: Aparecen corazones (65-80%) */
+  80% {
+    --bride-translate: translateX(0px);
+    --bride-opacity: 1;
+    --dress-train-rotate: 0deg;
+    --hearts-scale: scale(1.2);
+    --hearts-opacity: 1;
+    --sparkles-scale: scale(0);
+    --sparkles-opacity: 0;
+  }
+  /* Fase 5: Brillos finales (80-100%) */
+  85% {
+    --sparkles-scale: scale(1.5);
+    --sparkles-opacity: 1;
+  }
+  90% {
+    --sparkles-scale: scale(1.2);
+    --sparkles-opacity: 0.8;
+  }
+  100% {
+    --altar-opacity: 1;
+    --altar-scale: scale(1);
+    --groom-opacity: 1;
+    --groom-translate: translateY(0px);
+    --groom-heart-scale: scale(1);
+    --bride-translate: translateX(0px);
+    --bride-opacity: 1;
+    --dress-train-rotate: 0deg;
+    --hearts-scale: scale(1);
+    --hearts-opacity: 1;
+    --sparkles-scale: scale(1);
+    --sparkles-opacity: 0.6;
+  }
+}
+
+/* Animación continua del ramo de flores */
+.event-card:hover #bouquet {
+  animation: bouquet-sway 2s ease-in-out infinite;
+}
+
+@keyframes bouquet-sway {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  50% {
+    transform: rotate(3deg) translateY(-2px);
+  }
+}
+
+/* ============================================
+   ANIMACIÓN NARRATIVA DEL BRINDIS
+   Enfoque directo con keyframes
+   ============================================ */
+
+/* Configuración base de los elementos SVG */
+#glass-left {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+#glass-right {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+#sparkles {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+}
+
+#liquid-left,
+#liquid-right {
+  transition: fill-opacity 0.3s ease;
+}
+
+/* Animaciones individuales para cada elemento */
+@keyframes glass-left-clink {
+  0%, 20% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(15deg);
+  }
+  55% {
+    transform: translateY(-20px) rotate(18deg);
+  }
+  60%, 100% {
+    transform: translateY(-20px) rotate(15deg);
+  }
+}
+
+@keyframes glass-right-clink {
+  0%, 20% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(-15deg);
+  }
+  55% {
+    transform: translateY(-20px) rotate(-18deg);
+  }
+  60%, 100% {
+    transform: translateY(-20px) rotate(-15deg);
+  }
+}
+
+@keyframes sparkles-burst {
+  0%, 50% {
+    opacity: 0;
+    transform: scale(0) translateY(0);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.5) translateY(-2px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.2) translateY(-3px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.3) translateY(-8px);
+  }
+  85% {
+    opacity: 0.9;
+    transform: scale(1.4) translateY(-12px);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1.5) translateY(-15px);
+  }
+}
+
+@keyframes liquid-splash {
+  0%, 20% {
+    fill-opacity: 0.2;
+  }
+  50% {
+    fill-opacity: 0.3;
+  }
+  55% {
+    fill-opacity: 0.5;
+  }
+  60% {
+    fill-opacity: 0.4;
+  }
+  70% {
+    fill-opacity: 0.35;
+  }
+  85% {
+    fill-opacity: 0.3;
+  }
+  100% {
+    fill-opacity: 0.25;
+  }
+}
+
+/* Activación de todas las animaciones al hover */
+.coctel-card:hover #glass-left {
+  animation: glass-left-clink 3s ease-in-out forwards;
+}
+
+.coctel-card:hover #glass-right {
+  animation: glass-right-clink 3s ease-in-out forwards;
+}
+
+.coctel-card:hover #sparkles {
+  animation: sparkles-burst 3s ease-in-out forwards;
+}
+
+.coctel-card:hover #liquid-left,
+.coctel-card:hover #liquid-right {
+  animation: liquid-splash 3s ease-in-out forwards;
+}
+
 .timeline-marker {
   flex-shrink: 0;
   position: relative;
@@ -88,19 +668,6 @@
   margin-bottom: 0.5rem;
 }
 
-.event-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  border-left: 4px solid #ec4899;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-}
-
-.event-card:hover {
-  transform: translateX(5px);
-  box-shadow: 0 8px 25px rgba(236, 72, 153, 0.15);
-}
 
 .event-title {
   font-size: 1.5rem;
