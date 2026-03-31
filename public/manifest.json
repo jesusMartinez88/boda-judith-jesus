@@ -6,7 +6,7 @@
   "background_color": "#fce7f3",
   "display": "standalone",
   "scope": "/",
-  "start_url": "/",
+  "start_url": "/login",
   "orientation": "portrait-primary",
   "icons": [
     {
