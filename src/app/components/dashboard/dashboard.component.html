@@ -12,6 +12,13 @@
   <div class="sidebar-overlay" [class.show]="isMenuOpen()" (click)="closeMenu()"></div>
 
   <aside class="sidebar" [class.open]="isMenuOpen()">
+    <div class="user-info-mobile">
+      <div class="user-avatar">👤</div>
+      <div class="user-details">
+        <span class="user-name">Admin</span>
+        <span class="user-greeting">Bienvenido</span>
+      </div>
+    </div>
     <div class="sidebar-header">
       <span class="logo">💍</span>
       <h2>Admin Panel</h2>
@@ -71,7 +78,7 @@
             @if (currentView() === 'stats') {
               <header class="content-header">
                 <h1>Panel de Estadísticas</h1>
-                <div class="user-info">
+                <div class="user-info user-info-desktop">
                   <span>Bienvenido, Admin 👋</span>
                 </div>
               </header>
