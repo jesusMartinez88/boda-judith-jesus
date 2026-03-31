@@ -1,0 +1,24 @@
+{
+  "name": "Boda Judith & Jesús",
+  "short_name": "Boda J&J",
+  "description": "Invitación y gestión de boda de Judith y Jesús",
+  "theme_color": "#ec4899",
+  "background_color": "#fce7f3",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "favicon-ring.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
