@@ -37,6 +37,11 @@ self.addEventListener('activate', (event) => {
 
 // Estrategia: Network First, fallback a Cache
 self.addEventListener('fetch', (event) => {
+  // Ignorar peticiones que no sean HTTP/HTTPS (chrome-extension, etc.)
+  if (!event.request.url.startsWith('http')) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
