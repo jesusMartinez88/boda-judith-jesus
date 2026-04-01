@@ -871,3 +871,158 @@
     font-size: 0.75rem;
   }
 }
+
+/* Optimización para modo horizontal (landscape) en móviles */
+@media (max-width: 1024px) and (orientation: landscape) {
+  /* Forzar que el menú hamburguesa siga visible */
+  .menu-toggle {
+    display: flex !important;
+  }
+
+  /* Ocultar el sidebar por defecto en landscape */
+  .sidebar:not(.open) {
+    display: none;
+  }
+
+  /* Cuando el sidebar está abierto, mostrarlo como overlay con grid */
+  .sidebar.open {
+    display: flex !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    transform: none !important;
+    flex-direction: column !important;
+    padding: 2rem !important;
+    z-index: 10000 !important;
+    overflow-y: auto !important;
+    background: #1e293b !important;
+  }
+
+  .sidebar.open .sidebar-header {
+    margin-bottom: 1.5rem !important;
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .sidebar.open .user-info-mobile {
+    display: flex !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* Grid de opciones para mostrar todo sin scroll */
+  .sidebar.open .sidebar-nav {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.75rem !important;
+    overflow: visible !important;
+    flex: none !important;
+    margin-bottom: 1.5rem !important;
+    flex-direction: row !important;
+  }
+
+  .sidebar.open .nav-item {
+    padding: 1rem !important;
+    text-align: center !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    white-space: normal !important;
+    min-height: 80px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .sidebar.open .nav-item .icon {
+    font-size: 1.5rem !important;
+  }
+
+  .sidebar.open .sidebar-footer {
+    margin-left: 0 !important;
+    margin-top: auto !important;
+    display: block !important;
+  }
+
+  .sidebar.open .logout-btn {
+    width: 100% !important;
+  }
+
+  /* Ajustar el contenido principal */
+  .main-content {
+    padding: 1rem !important;
+    width: 100% !important;
+    margin-top: 0 !important;
+  }
+
+  .content-header {
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .content-header h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .stats-grid {
+    gap: 0.75rem !important;
+  }
+
+  .stats-card {
+    padding: 1rem !important;
+  }
+
+  .content-footer {
+    padding: 0.75rem 1rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .version-info {
+    font-size: 0.7rem !important;
+    padding: 0.2rem 0.5rem !important;
+  }
+}
+
+/* Para pantallas muy pequeñas en landscape */
+@media (max-width: 768px) and (orientation: landscape) and (max-height: 450px) {
+  /* Grid más compacto para pantallas muy pequeñas */
+  .sidebar.open .sidebar-nav {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+
+  .sidebar.open .nav-item {
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.75rem !important;
+    min-height: 70px !important;
+  }
+
+  .sidebar.open .nav-item .icon {
+    font-size: 1.3rem !important;
+  }
+
+  .sidebar.open {
+    padding: 1.5rem !important;
+  }
+
+  .main-content {
+    padding: 0.75rem !important;
+  }
+
+  .content-header {
+    padding: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .content-header h1 {
+    font-size: 1.25rem !important;
+  }
+
+  .stats-grid {
+    gap: 0.5rem !important;
+  }
+
+  .stats-card {
+    padding: 0.75rem !important;
+  }
+}
