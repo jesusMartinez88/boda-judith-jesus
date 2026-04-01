@@ -1,4 +1,4 @@
-const CACHE_NAME = 'boda-judith-jesus-v1.3.0';
+const CACHE_NAME = 'boda-judith-jesus-v1.3.1';
 const urlsToCache = [
   '/',
   '/index.html',
