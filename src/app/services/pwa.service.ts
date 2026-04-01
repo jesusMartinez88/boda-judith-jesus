@@ -14,6 +14,12 @@ export class PwaService {
   }
 
   private initPWA() {
+    // No inicializar PWA en desarrollo (localhost)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      console.log('PWA deshabilitado en desarrollo');
+      return;
+    }
+
     // Detectar si la app ya está instalada
     if (this.isAppInstalled()) {
       console.log('App ya instalada');

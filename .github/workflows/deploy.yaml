@@ -22,6 +22,10 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+      
+      - name: Sync version
+        run: npm run version:sync
+      
       - name: Debug Environment Variable
         run: |
           if [ -z "$NG_APP_SHEETURL" ]; then

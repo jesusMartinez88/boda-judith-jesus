@@ -1,5 +1,5 @@
-<!-- Prompt de instalación -->
-@if (pwaService.showInstallPrompt()) {
+<!-- Prompt de instalación - Solo en /dashboard -->
+@if (isInDashboard() && pwaService.showInstallPrompt()) {
   <div class="pwa-overlay" (click)="dismissInstall()">
     <div class="pwa-prompt install-prompt" (click)="$event.stopPropagation()">
       <div class="prompt-icon">📱</div>
@@ -17,8 +17,8 @@
   </div>
 }
 
-<!-- Prompt de actualización -->
-@if (pwaService.showUpdatePrompt()) {
+<!-- Prompt de actualización - Solo en /dashboard -->
+@if (isInDashboard() && pwaService.showUpdatePrompt()) {
   <div class="pwa-overlay">
     <div class="pwa-prompt update-prompt">
       <div class="prompt-icon">🔄</div>

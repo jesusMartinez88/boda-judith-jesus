@@ -226,6 +226,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
+    margin-bottom: 15px;
 }
 
 /* Cards */
@@ -828,4 +829,45 @@
     overflow-x: auto;
     white-space: pre-wrap;
     word-wrap: break-word;
+}
+
+/* Footer con versión */
+.content-footer {
+  margin-top: auto;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.875rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.content-footer p {
+  margin: 0;
+}
+
+.version-info {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .content-footer {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+  }
+  
+  .version-info {
+    font-size: 0.75rem;
+  }
 }

@@ -10,6 +10,7 @@ import { Guest, GuestService } from '../../services/guest.service';
 import { SettingsService } from '../../services/settings.service';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TodosComponent } from './todos/todos.component';
+import { VersionService } from '../../services/version.service';
 
 @Component({
     selector: 'app-dashboard',
@@ -23,6 +24,7 @@ export class DashboardComponent implements OnInit {
     private guestService = inject(GuestService);
     private authService = inject(AuthService);
     private settingsService = inject(SettingsService);
+    versionService = inject(VersionService);
 
     stats = signal<WeddingStats | null>(null);
     allergiesCount = signal<number | null>(null);
