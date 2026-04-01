@@ -7,7 +7,7 @@
   "display": "standalone",
   "scope": "/",
   "start_url": "/login",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "icons": [
     {
       "src": "favicon-ring.svg",
