@@ -211,7 +211,27 @@
 
     <!-- Notes -->
     <div class="form-group">
-      <label for="notes" class="form-label">Notas & Canción favorita 🎵</label>
+      <div class="label-with-ai">
+        <label for="notes" class="form-label">Notas & Canción favorita 🎵</label>
+        @if (aiAvailable()) {
+          <button 
+            type="button" 
+            class="ai-button" 
+            (click)="generateAiSuggestion()"
+            [disabled]="aiLoading()"
+            title="Generar mensaje y canción con IA">
+            @if (!aiLoading()) {
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <span>IA</span>
+            }
+            @if (aiLoading()) {
+              <span class="ai-loading">⏳</span>
+            }
+          </button>
+        }
+      </div>
       <div class="input-icon-wrapper">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -232,7 +252,27 @@
     <!-- Show only when attendance is false (No podré ir) -->
     @if (!form.get('attendance')?.value) {
     <div class="form-group">
-      <label for="notes" class="form-label">Motivo</label>
+      <div class="label-with-ai">
+        <label for="notes" class="form-label">Motivo</label>
+        @if (aiAvailable()) {
+          <button 
+            type="button" 
+            class="ai-button" 
+            (click)="generateAiExcuse()"
+            [disabled]="aiLoading()"
+            title="Generar motivo con IA">
+            @if (!aiLoading()) {
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <span>IA</span>
+            }
+            @if (aiLoading()) {
+              <span class="ai-loading">⏳</span>
+            }
+          </button>
+        }
+      </div>
       <div class="input-icon-wrapper">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -258,4 +298,62 @@
       }
     </button>
   </form>
+
+  <!-- Modal de descarga de IA -->
+  @if (showDownloadModal()) {
+    <div class="modal-overlay" (click)="cancelDownload()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="modal-icon">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <h3>Primera vez usando IA</h3>
+        </div>
+        <div class="modal-body">
+          <p>El modelo de inteligencia artificial necesita descargarse para funcionar.</p>
+          <ul class="modal-list">
+            <li>📦 Tamaño: ~1.5 GB</li>
+            <li>⏱️ Tiempo: varios minutos</li>
+            <li>✨ Solo se descarga una vez</li>
+          </ul>
+          <p class="modal-note">La descarga se realizará en segundo plano. Puedes seguir usando la aplicación.</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="modal-btn modal-btn-cancel" (click)="cancelDownload()">
+            Cancelar
+          </button>
+          <button type="button" class="modal-btn modal-btn-confirm" (click)="confirmDownload()">
+            Descargar y continuar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de error -->
+  @if (showErrorModal()) {
+    <div class="modal-overlay" (click)="closeErrorModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="modal-icon" style="color: #dc2626;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <h3>No se pudo usar la IA</h3>
+        </div>
+        <div class="modal-body">
+          <p>{{ aiErrorMessage() }}</p>
+          <p class="modal-note" style="margin-top: 1rem;">Puedes escribir tu mensaje y canción manualmente en el campo de notas.</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="modal-btn modal-btn-confirm" (click)="closeErrorModal()" style="width: 100%;">
+            Entendido
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>
