@@ -43,6 +43,20 @@
   opacity: 0.9;
 }
 
+.footer-credit {
+  font-size: 0.9rem !important;
+  opacity: 0.8 !important;
+  margin-top: 1.25rem !important;
+  font-style: italic;
+  transition: opacity 0.3s ease;
+  line-height: 1.8 !important;
+}
+
+.footer-credit:hover {
+  opacity: 1 !important;
+}
+
+
 /* Global Animations */
 @keyframes fadeInUp {
   from {
