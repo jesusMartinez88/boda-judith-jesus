@@ -152,6 +152,62 @@
   background-color: #fff;
 }
 
+/* Estilos específicos para select (dropdown) */
+select.form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ec4899' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 20px;
+  padding-right: 3rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: #374151;
+}
+
+select.form-input:hover {
+  border-color: #ec4899;
+  background-color: #fdf2f8;
+}
+
+select.form-input:focus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23be185d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-color: #fdf2f8;
+}
+
+/* Estilos para las opciones del select */
+select.form-input option {
+  padding: 0.75rem 1rem;
+  background-color: white;
+  color: #374151;
+  font-weight: 500;
+}
+
+select.form-input option:hover,
+select.form-input option:focus,
+select.form-input option:checked {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+  color: #be185d;
+  font-weight: 600;
+}
+
+/* Estilos específicos para Firefox */
+@-moz-document url-prefix() {
+  select.form-input option:checked {
+    background-color: #fdf2f8;
+    color: #be185d;
+  }
+}
+
+/* Estilos para Chrome/Safari */
+select.form-input option:checked {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%) !important;
+  color: #be185d !important;
+  font-weight: 600;
+}
+
 .input-icon-wrapper {
   position: relative;
   display: flex;
