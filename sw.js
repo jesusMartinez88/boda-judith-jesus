@@ -1,4 +1,4 @@
-const CACHE_NAME = 'boda-judith-jesus-v1.3.4';
+const CACHE_NAME = 'boda-judith-jesus-v1.4.0';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -45,8 +45,8 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Si la respuesta es válida, clonamos y guardamos en caché
-        if (response && response.status === 200) {
+        // Solo cacheamos si la respuesta es válida y es una petición GET
+        if (response && response.status === 200 && event.request.method === 'GET') {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
