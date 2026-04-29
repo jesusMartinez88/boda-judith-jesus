@@ -20,6 +20,9 @@ interface AILanguageModel {
 declare global {
   interface Window {
     LanguageModel?: AILanguageModel;
+    ai?: {
+      languageModel: AILanguageModel;
+    };
   }
 }
 
@@ -36,17 +39,48 @@ export class ChromeAiService {
     this.checkAvailability();
   }
 
+  private get aiModel() {
+    return window.ai?.languageModel || window.LanguageModel;
+  }
+
   private async checkAvailability() {
     try {
-      if (window.LanguageModel) {
-        const capabilities = await window.LanguageModel.availability();
-        this.isAvailable.set(capabilities.available !== 'no');
-        this.needsDownload.set(capabilities.available === 'after-download');
+      const model = this.aiModel;
+      if (model) {
+        // En algunas versiones es capabilities() y en otras availability()
+        let capabilities: any;
+        if ((model as any).capabilities) {
+          capabilities = await (model as any).capabilities();
+        } else if ((model as any).availability) {
+          capabilities = await (model as any).availability();
+        }
+
+        // Si capabilities es un string (algunas versiones viejas), lo usamos directamente
+        // Si es un objeto, buscamos la propiedad available
+        const status = typeof capabilities === 'string' ? capabilities : capabilities?.available;
+
+        const readyValues = ['readily', 'available'];
+        const downloadValues = ['after-download', 'downloadable'];
+        const unavailableValues = ['no', 'unavailable'];
+
+        const isReady = readyValues.includes(status);
+        const needsDl = downloadValues.includes(status);
+        const isUnavailable = unavailableValues.includes(status);
+
+        this.isAvailable.set(isReady || needsDl);
+        this.needsDownload.set(needsDl);
+
+        if (isUnavailable || status === undefined) {
+          // Si es undefined, algo falló en la detección, mejor desactivar local
+          this.isAvailable.set(false);
+          this.needsDownload.set(false);
+        }
       } else {
         this.isAvailable.set(false);
         this.needsDownload.set(false);
       }
     } catch (error) {
+      console.error('Error checking AI availability:', error);
       this.isAvailable.set(false);
       this.needsDownload.set(false);
     }
@@ -57,9 +91,10 @@ export class ChromeAiService {
   }
 
   private async getSession(): Promise<AILanguageModelSession> {
-    if (!this.session && window.LanguageModel) {
+    const model = this.aiModel;
+    if (!this.session && model) {
       try {
-        this.session = await window.LanguageModel.create({
+        this.session = await model.create({
           monitor(m: any) {
             m.addEventListener('downloadprogress', (e: any) => {
               console.log(`Descargando modelo: ${Math.round(e.loaded * 100)}%`);
@@ -82,9 +117,7 @@ export class ChromeAiService {
     if (this.session) {
       try {
         this.session.destroy();
-      } catch (e) {
-        // Ignorar errores al destruir
-      }
+      } catch (e) {}
       this.session = null;
     }
   }
@@ -130,7 +163,7 @@ export class ChromeAiService {
     this.isLoading.set(true);
     try {
       const session = await this.getSession();
-      const prompt = `Sugiere UNA canción popular de discoteca o fiesta perfecta para bailar en una boda. 
+      const prompt = `Sugiere UNA canción popular de discoteca o fiesta perfecta para bailar en una boda, dando preferencia a música o artistas en español. 
       Responde SOLO con el nombre de la canción y el artista en este formato exacto: "Nombre de la canción - Artista"
       Elige canciones conocidas y animadas que funcionen bien en bodas. Escribe en español.`;
       
