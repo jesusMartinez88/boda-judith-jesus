@@ -1,11 +1,12 @@
 import { Component, signal, inject } from '@angular/core';
-
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { GuestService, Guest } from '../../services/guest.service';
 import { ChromeAiService } from '../../services/chrome-ai.service';
-import { AiGenerateService } from '../../services/ai-generate.service';
+import { AiGenerateService, AiGenerateRequest } from '../../services/ai-generate.service';
 import confetti from 'canvas-confetti';
 
+/** Version: 1.5.2 - FULL RECOVERY - Forced Local AI Flow */
 @Component({
   selector: 'app-rsvp-form',
   standalone: true,
@@ -27,12 +28,13 @@ export class RsvpFormComponent {
   showDownloadModal = signal(false);
   showErrorModal = signal(false);
   aiErrorMessage = signal('');
-  downloadProgress = signal(0);
+  isDownloading = signal(false);
+  downloadProgress = this.chromeAi.downloadProgress;
+  streamingText = signal('');
 
   constructor(private formBuilder: FormBuilder, private guestService: GuestService) {
     this.form = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      //email: ['', [Validators.required, Validators.email]],
       email: [''],
       phone: ['', [Validators.pattern(/^[0-9]{9}$/)]],
       attendance: [true],
@@ -45,7 +47,6 @@ export class RsvpFormComponent {
       notes: ['']
     });
 
-    // adjust validators when attendance toggles
     this.form.get('attendance')?.valueChanges.subscribe(att => {
       if (att) {
         this.applyAttendanceValidators();
@@ -54,7 +55,6 @@ export class RsvpFormComponent {
       }
     });
 
-    // initialize validators according to the starting value
     if (this.form.get('attendance')?.value) {
       this.applyAttendanceValidators();
     } else {
@@ -63,9 +63,7 @@ export class RsvpFormComponent {
   }
 
   async onSubmit() {
-    // if not attending we don't need to validate the other controls
     if (!this.form.get('attendance')?.value) {
-      // mark the attendance control in case you want to show errors
       this.form.get('attendance')?.markAsTouched();
     } else if (this.form.invalid) {
       Object.keys(this.form.controls).forEach(key => {
@@ -97,7 +95,7 @@ export class RsvpFormComponent {
       });
 
       this.form.reset({ adults: 1, children: 0, mealType: 'normal', needsTransport: false, isSavedInBbdd: false, attendance: guestData.attendance });
-      // Esperar 2 segundos usando requestAnimationFrame para máxima eficiencia
+
       const startTime = performance.now();
       const checkDelay = (now: number) => {
         if (now - startTime >= 3000) {
@@ -129,14 +127,12 @@ export class RsvpFormComponent {
   }
 
   private applyAttendanceValidators() {
-    // required validators for when attending
     this.form.get('adults')?.setValidators([Validators.required, Validators.min(1), Validators.max(10)]);
     this.form.get('children')?.setValidators([Validators.required, Validators.min(0), Validators.max(10)]);
     this.form.get('mealType')?.setValidators(Validators.required);
     this.form.get('needsTransport')?.setValidators(Validators.required);
     this.form.get('isSavedInBbdd')?.setValidators(Validators.required);
 
-    // update validity
     ['adults', 'children', 'mealType', 'needsTransport', 'isSavedInBbdd'].forEach(key => {
       this.form.get(key)?.updateValueAndValidity();
     });
@@ -152,20 +148,24 @@ export class RsvpFormComponent {
   async generateAiSuggestion() {
     await this.chromeAi.recheckAvailability();
 
-    // 1) Modelo local listo → usarlo directamente
-    if (this.chromeAi.isAvailable() && !this.chromeAi.needsDownload()) {
-      await this.performAiGeneration();
+    // 1. Si está listo localmente, es la prioridad absoluta
+    if (this.chromeAi.isAvailable()) {
+      await this.runLocalGeneration();
       return;
     }
 
-    // 2) Sin modelo local → intentar backend
+    // 2. Si no está listo localmente, intentamos el BACKEND primero
     this.chromeAi.isLoading.set(true);
     try {
       await this.performAiGenerationViaBackend();
     } catch (error) {
-      console.error('Backend AI failed:', error);
-      // 3) Backend falló → preguntar si descarga el modelo del navegador
-      this.showDownloadModal.set(true);
+      // 3. Si el BACKEND falla, vemos si podemos ofrecer la descarga local
+      if (this.chromeAi.needsDownload()) {
+        this.showDownloadModal.set(true);
+      } else {
+        this.aiErrorMessage.set('La IA no está disponible en este momento.');
+        this.showErrorModal.set(true);
+      }
     } finally {
       this.chromeAi.isLoading.set(false);
     }
@@ -174,90 +174,132 @@ export class RsvpFormComponent {
   async generateAiExcuse() {
     await this.chromeAi.recheckAvailability();
 
-    // 1) Modelo local listo → usarlo directamente
-    if (this.chromeAi.isAvailable() && !this.chromeAi.needsDownload()) {
-      await this.performAiExcuseGeneration();
+    // 1. Local listo
+    if (this.chromeAi.isAvailable()) {
+      await this.runLocalExcuseGeneration();
       return;
     }
 
-    // 2) Sin modelo local → intentar backend
+    // 2. Intentamos BACKEND
     this.chromeAi.isLoading.set(true);
     try {
       await this.performAiExcuseGenerationViaBackend();
     } catch (error) {
-      console.error('Backend AI excuse failed:', error);
-      // 3) Backend falló → preguntar si descarga el modelo del navegador
-      this.showDownloadModal.set(true);
+      // 3. Si falla BACKEND, ofrecemos descarga local
+      if (this.chromeAi.needsDownload()) {
+        this.showDownloadModal.set(true);
+      } else {
+        this.aiErrorMessage.set('La IA no está disponible en este momento.');
+        this.showErrorModal.set(true);
+      }
     } finally {
       this.chromeAi.isLoading.set(false);
     }
   }
 
-  async confirmDownload() {
-    this.showDownloadModal.set(false);
-    // Marcar que ya no necesita descarga para evitar mostrar el modal de nuevo
-    this.chromeAi.needsDownload.set(false);
+  async executeLocalDownloadProcess() {
+    this.isDownloading.set(true);
 
-    // Determinar qué acción ejecutar según el estado del formulario
-    if (this.form.get('attendance')?.value) {
-      await this.performAiGeneration();
-    } else {
-      await this.performAiExcuseGeneration();
+    try {
+      // 1. Descargamos el modelo
+      await this.chromeAi.downloadModel();
+
+      // 2. Generamos localmente
+      const guestName = this.form.get('name')?.value || 'Invitado';
+      if (this.form.get('attendance')?.value) {
+        await this.performLocalStream(this.chromeAi.generateAttendanceNoteStream(guestName));
+      } else {
+        await this.performLocalStream(this.chromeAi.generateExcuseStream());
+      }
+
+      this.showDownloadModal.set(false);
+      this.chromeAi.needsDownload.set(false);
+    } catch (error) {
+      console.error('Error en proceso local:', error);
+      this.aiErrorMessage.set('Error al activar la IA local.');
+      this.showErrorModal.set(true);
+    } finally {
+      this.isDownloading.set(false);
     }
   }
 
   cancelDownload() {
+    console.log('Descarga cancelada por el usuario');
     this.showDownloadModal.set(false);
   }
 
-  private async performAiGeneration() {
-    try {
-      const { message, song } = await this.chromeAi.generateMessageAndSong();
-      const newNotes = `${message}\n🎵 ${song}`;
-      this.form.patchValue({ notes: newNotes });
-    } catch (error: any) {
-      console.error('Error generando sugerencia (local):', error);
-      this.aiErrorMessage.set(error.message || 'No se pudo generar la sugerencia. Por favor, intenta de nuevo.');
-      this.showErrorModal.set(true);
-    }
+  private async runLocalGeneration() {
+    const guestName = this.form.get('name')?.value || 'Invitado';
+    await this.performLocalStream(this.chromeAi.generateAttendanceNoteStream(guestName));
+  }
+
+  private async runLocalExcuseGeneration() {
+    //const guestName = this.form.get('name')?.value || 'Invitado';
+    await this.performLocalStream(this.chromeAi.generateExcuseStream());
+  }
+
+  private async performLocalStream(stream$: Observable<string>) {
+    this.streamingText.set('');
+    this.form.patchValue({ notes: '' });
+    this.chromeAi.isLoading.set(true);
+
+    return new Promise<void>((resolve, reject) => {
+      stream$.subscribe({
+        next: (chunk: string) => {
+          this.streamingText.update(prev => prev + chunk);
+
+          let display = this.streamingText()
+            .replace('MENSAJE:', '')
+            .replace('CANCION:', '\n🎵 ');
+
+          this.form.patchValue({ notes: display.trim() });
+        },
+        error: (err: unknown) => {
+          this.chromeAi.isLoading.set(false);
+          reject(err);
+        },
+        complete: () => {
+          this.chromeAi.isLoading.set(false);
+          resolve();
+        }
+      });
+    });
   }
 
   private async performAiGenerationViaBackend() {
     const guestName = this.form.get('name')?.value || 'Invitado';
-    const responseText = await this.aiGenerate.generate({ type: 'attendance_full', guestName });
-
-    // Parsear la respuesta combinada (MENSAJE: ... CANCION: ...)
-    let message = '';
-    let song = '';
-
-    if (responseText.includes('MENSAJE:') && responseText.includes('CANCION:')) {
-      const parts = responseText.split('CANCION:');
-      message = parts[0].replace('MENSAJE:', '').trim();
-      song = parts[1].trim();
-    } else {
-      // Fallback si el formato falla
-      message = responseText;
-    }
-
-    const newNotes = `${message}${song ? '\n🎵 ' + song : ''}`;
-    this.form.patchValue({ notes: newNotes });
-  }
-
-  private async performAiExcuseGeneration() {
-    try {
-      const excuse = await this.chromeAi.generateExcuse();
-      this.form.patchValue({ notes: excuse });
-    } catch (error: any) {
-      console.error('Error generando excusa (local):', error);
-      this.aiErrorMessage.set(error.message || 'No se pudo generar el motivo. Por favor, intenta de nuevo.');
-      this.showErrorModal.set(true);
-    }
+    await this.performAiStream({ type: 'attendance_full', guestName });
   }
 
   private async performAiExcuseGenerationViaBackend() {
     const guestName = this.form.get('name')?.value || 'Invitado';
-    const excuse = await this.aiGenerate.generate({ type: 'absence_reason', guestName });
-    this.form.patchValue({ notes: excuse });
+    await this.performAiStream({ type: 'absence_reason', guestName });
+  }
+
+  private async performAiStream(payload: AiGenerateRequest) {
+    this.streamingText.set('');
+    this.form.patchValue({ notes: '' });
+
+    return new Promise<void>((resolve, reject) => {
+      this.aiGenerate.generateStream(payload).subscribe({
+        next: (chunk: string) => {
+          this.streamingText.update(prev => prev + chunk);
+
+          let display = this.streamingText()
+            .replace('MENSAJE:', '')
+            .replace('CANCION:', '\n🎵 ');
+
+          this.form.patchValue({ notes: display.trim() });
+        },
+        error: (err: unknown) => {
+          console.error('Streaming error:', err);
+          reject(err);
+        },
+        complete: () => {
+          resolve();
+        }
+      });
+    });
   }
 
   closeErrorModal() {

@@ -11,6 +11,7 @@
   text-align: center;
   margin-bottom: 2.5rem;
 }
+
 .label-center {
   text-align: center;
 }
@@ -372,11 +373,11 @@ select.form-input option:checked {
   z-index: 1;
 }
 
-.toggle-input:checked + .toggle-button::before {
+.toggle-input:checked+.toggle-button::before {
   /* No transform, stays on left for "Sí" */
 }
 
-.toggle-input:not(:checked) + .toggle-button::before {
+.toggle-input:not(:checked)+.toggle-button::before {
   transform: translateX(100%);
 }
 
@@ -577,10 +578,13 @@ input:checked+.slider:before {
 }
 
 @keyframes sparkle {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1) rotate(0deg);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.1) rotate(180deg);
     opacity: 0.8;
@@ -591,6 +595,7 @@ input:checked+.slider:before {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -724,6 +729,7 @@ input:checked+.slider:before {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -734,6 +740,7 @@ input:checked+.slider:before {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -760,5 +767,54 @@ input:checked+.slider:before {
 
   .modal-btn {
     width: 100%;
+  }
+
+
+  .download-progress-container {
+    padding: 1rem 0;
+  }
+
+  .download-status {
+    font-weight: 600;
+    color: #be185d;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .progress-bar-bg {
+    width: 100%;
+    height: 10px;
+    background: #f3f4f6;
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #be185d, #ec4899);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
+  .download-wait-text {
+    width: 100%;
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-style: italic;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.5;
+    }
   }
 }

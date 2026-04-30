@@ -1,9 +1,10 @@
 import { Injectable, signal } from '@angular/core';
+import { Observable } from 'rxjs';
 
 // Tipos para la Chrome AI API (Prompt API)
 interface AILanguageModelSession {
-  prompt(text: string, options?: any): Promise<string>;
-  promptStreaming(text: string, options?: any): ReadableStream;
+  prompt(text: string, options?: { signal?: AbortSignal }): Promise<string>;
+  promptStreaming(text: string, options?: { signal?: AbortSignal }): AsyncIterable<string>;
   destroy(): void;
   clone(): Promise<AILanguageModelSession>;
 }
@@ -13,16 +14,21 @@ interface AILanguageModelCapabilities {
 }
 
 interface AILanguageModel {
-  availability(options?: any): Promise<AILanguageModelCapabilities>;
-  create(options?: any): Promise<AILanguageModelSession>;
+  capabilities(): Promise<AILanguageModelCapabilities>;
+  availability(): Promise<AILanguageModelCapabilities>;
+  create(options?: {
+    monitor?: (m: any) => void;
+    signal?: AbortSignal;
+    systemPrompt?: string;
+  }): Promise<AILanguageModelSession>;
 }
 
 declare global {
   interface Window {
-    LanguageModel?: AILanguageModel;
     ai?: {
       languageModel: AILanguageModel;
     };
+    LanguageModel?: AILanguageModel;
   }
 }
 
@@ -32,7 +38,9 @@ declare global {
 export class ChromeAiService {
   isAvailable = signal(false);
   isLoading = signal(false);
+  isSupported = signal(false);
   needsDownload = signal(false);
+  downloadProgress = signal(0);
   private session: AILanguageModelSession | null = null;
 
   constructor() {
@@ -47,35 +55,40 @@ export class ChromeAiService {
     try {
       const model = this.aiModel;
       if (model) {
-        // En algunas versiones es capabilities() y en otras availability()
-        let capabilities: any;
+        this.isSupported.set(true);
+        
+        let status: any;
+        
+        // 1. Intentar obtener el estado y LOGUEAR el objeto completo para ver qué hay dentro
         if ((model as any).capabilities) {
-          capabilities = await (model as any).capabilities();
+          const cap = await (model as any).capabilities();
+          status = typeof cap === 'string' ? cap : (cap?.available || cap?.status);
         } else if ((model as any).availability) {
-          capabilities = await (model as any).availability();
+          const av = await (model as any).availability();
+          status = typeof av === 'string' ? av : (av?.available || av?.status);
+        } else if ((window as any).ai?.canCreateTextSession) {
+          status = await (window as any).ai.canCreateTextSession();
         }
 
-        // Si capabilities es un string (algunas versiones viejas), lo usamos directamente
-        // Si es un objeto, buscamos la propiedad available
-        const status = typeof capabilities === 'string' ? capabilities : capabilities?.available;
+        const isReady = status === 'readily' || status === 'available';
+        const needsDl = status === 'after-download' || status === 'downloadable';
+        const isUnavailable = status === 'no' || status === 'unavailable';
 
-        const readyValues = ['readily', 'available'];
-        const downloadValues = ['after-download', 'downloadable'];
-        const unavailableValues = ['no', 'unavailable'];
+        this.isAvailable.set(isReady);
+        
+        if (status === undefined || status === null) {
+          this.isAvailable.set(false);
+          this.needsDownload.set(true);
+        } else {
+          this.needsDownload.set(needsDl || (!isReady && !isUnavailable));
+        }
 
-        const isReady = readyValues.includes(status);
-        const needsDl = downloadValues.includes(status);
-        const isUnavailable = unavailableValues.includes(status);
-
-        this.isAvailable.set(isReady || needsDl);
-        this.needsDownload.set(needsDl);
-
-        if (isUnavailable || status === undefined) {
-          // Si es undefined, algo falló en la detección, mejor desactivar local
+        if (isUnavailable) {
           this.isAvailable.set(false);
           this.needsDownload.set(false);
         }
       } else {
+        this.isSupported.set(false);
         this.isAvailable.set(false);
         this.needsDownload.set(false);
       }
@@ -90,14 +103,21 @@ export class ChromeAiService {
     await this.checkAvailability();
   }
 
+  async downloadModel(): Promise<void> {
+    await this.getSession();
+    this.needsDownload.set(false);
+  }
+
   private async getSession(): Promise<AILanguageModelSession> {
     const model = this.aiModel;
     if (!this.session && model) {
       try {
         this.session = await model.create({
-          monitor(m: any) {
-            m.addEventListener('downloadprogress', (e: any) => {
-              console.log(`Descargando modelo: ${Math.round(e.loaded * 100)}%`);
+          monitor: (m: { addEventListener: (name: string, cb: (e: { loaded: number, total: number }) => void) => void }) => {
+            m.addEventListener('downloadprogress', (e) => {
+              const progress = Math.round((e.loaded / e.total) * 100);
+              this.downloadProgress.set(progress);
+              console.log(`Descargando modelo: ${progress}%`);
             });
           },
         });
@@ -196,6 +216,66 @@ export class ChromeAiService {
     ]);
 
     return { message, song };
+  }
+
+  async generate(prompt: string): Promise<string> {
+    const session = await this.getSession();
+    const result = await session.prompt(prompt);
+    return result;
+  }
+
+  generateStream(prompt: string): Observable<string> {
+    return new Observable<string>((observer) => {
+      let isAborted = false;
+
+      this.getSession().then(async (session) => {
+        try {
+          const stream = session.promptStreaming(prompt);
+          let fullText = '';
+          
+          for await (const chunk of stream) {
+            if (isAborted) break;
+            
+            let delta = '';
+            // DETECCIÓN INTELIGENTE:
+            // Si el chunk empieza por lo que ya teníamos, es ACUMULADO.
+            // Si no, es un DELTA puro.
+            if (chunk.startsWith(fullText) && fullText.length > 0) {
+              delta = chunk.substring(fullText.length);
+              fullText = chunk;
+            } else {
+              delta = chunk;
+              fullText += chunk;
+            }
+
+            if (delta) {
+              observer.next(delta);
+            }
+          }
+          observer.complete();
+        } catch (error) {
+          observer.error(error);
+        }
+      }).catch(err => observer.error(err));
+
+      return () => { isAborted = true; };
+    });
+  }
+
+  generateAttendanceNoteStream(guestName: string): Observable<string> {
+    const prompt = `Actúa como el invitado "${guestName}" que confirma su asistencia a la boda de Judith y Jesús. 
+    Escribe una nota rápida, festiva y cariñosa para los novios. 
+    Y recomienda UNA canción de fiesta para bailar.
+    Formato:
+    MENSAJE: [Tu nota aquí]
+    CANCION: [Canción - Artista]
+    Escribe en español.`;
+    return this.generateStream(prompt);
+  }
+
+  generateExcuseStream(): Observable<string> {
+    const prompt = 'Actúa como un invitado que no puede asistir a una boda. Genera una excusa breve (1-2 frases), educada y cariñosa en español para los novios (Judith y Jesús).';
+    return this.generateStream(prompt);
   }
 
   async generateExcuse(): Promise<string> {
