@@ -1,0 +1,129 @@
+<div class="contacts-container animate-fade-in">
+  <header class="content-header">
+    <div class="header-main">
+      <h1>Enviar Invitaciones</h1>
+      <p class="subtitle">Gestiona y envía el enlace de la web a tus contactos.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-import" (click)="importFromDevice()">
+        <span class="icon">📱</span> Importar
+      </button>
+      <button class="btn-add-cat" (click)="isAddingCategory.set(!isAddingCategory())">
+        <span class="icon">📁</span> {{ isAddingCategory() ? '✕' : 'Nueva Pestaña' }}
+      </button>
+      <button class="btn-add" (click)="isAddingManual.set(!isAddingManual())">
+        <span class="icon">{{ isAddingManual() ? '✕' : '➕' }}</span> {{ isAddingManual() ? 'Contacto' : 'Contacto' }}
+      </button>
+    </div>
+  </header>
+
+  @if (isAddingCategory()) {
+    <div class="manual-form animate-slide-down">
+      <h3>Crear Nueva Pestaña (Categoría)</h3>
+      <div class="form-grid-mini">
+        <input type="text" [(ngModel)]="newCategoryName" placeholder="Ej: Amigos, Familia Suegro...">
+        <button class="btn-save" (click)="addCategory()" [disabled]="!newCategoryName.trim()">
+          Crear Pestaña
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (isAddingManual()) {
+    <!-- ... (form grid remains same) -->
+    <div class="manual-form animate-slide-down">
+      <h3>Añadir Contacto Nuevo</h3>
+      <form [formGroup]="contactForm" (ngSubmit)="addManual()" class="form-grid">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" formControlName="name" placeholder="Ej: Juan Pérez" [class.invalid]="contactForm.get('name')?.invalid && contactForm.get('name')?.touched">
+          @if (contactForm.get('name')?.invalid && contactForm.get('name')?.touched) {
+            <span class="error-msg">El nombre es obligatorio (mín. 3 letras)</span>
+          }
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" formControlName="phone" placeholder="Ej: 600112233" [class.invalid]="contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched">
+          @if (contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched) {
+            <span class="error-msg">Debe empezar por 6 o 7 y tener 9 dígitos</span>
+          }
+        </div>
+        <button type="submit" class="btn-save" [disabled]="contactForm.invalid && contactForm.touched">
+          Guardar
+        </button>
+      </form>
+    </div>
+  }
+
+  <div class="tabs-container">
+    <div class="tabs">
+      @for (cat of categories(); track cat.id) {
+        <button class="tab-btn" [class.active]="activeTab() === cat.slug" (click)="setTab(cat.slug)">
+          {{ cat.name }}
+          <span class="badge">{{ getSentCount(cat.slug) }}/{{ getTotalCount(cat.slug) }}</span>
+        </button>
+      }
+    </div>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Buscar contacto...">
+    </div>
+  </div>
+
+  <div class="contacts-grid">
+    @if (filteredContacts().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>No se encontraron contactos en esta lista.</p>
+      </div>
+    } @else {
+      @for (contact of filteredContacts(); track contact.id) {
+        <div class="contact-card" [class.sent]="contact.linkSent">
+          <div class="contact-info">
+            <div class="name-row">
+              <span class="contact-name">{{ contact.name }}</span>
+              @if (contact.linkSent) {
+                <span class="sent-badge">✅ Enviado</span>
+              }
+            </div>
+            <span class="contact-phone">📱 {{ contact.phone }}</span>
+            @if (contact.sentAt) {
+              <span class="sent-date">Último envío: {{ contact.sentAt | date:'dd/MM HH:mm' }}</span>
+            }
+          </div>
+          <div class="contact-actions">
+            <button class="btn-whatsapp" (click)="sendInvitation(contact)" [disabled]="isGenerating() === contact.id">
+              @if (isGenerating() === contact.id) {
+                <span class="loader-sm"></span> Generando...
+              } @else {
+                <span class="icon">💬</span> Enviar Link
+              }
+            </button>
+            <button class="btn-delete-mini" (click)="openDeleteConfirm(contact)" title="Eliminar">
+              🗑️
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  @if (showDeleteConfirm()) {
+    <div class="modal-overlay animate-fade-in" (click)="closeDeleteConfirm()">
+      <div class="modal-content animate-pop-in" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-icon warning">⚠️</div>
+          <h3>¿Eliminar contacto?</h3>
+        </div>
+        <div class="modal-body">
+          Estás a punto de eliminar a <strong>{{ contactToDelete()?.name }}</strong>. 
+          Esta acción no se puede deshacer.
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeDeleteConfirm()">Cancelar</button>
+          <button class="btn-delete-confirm" (click)="confirmDelete()">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

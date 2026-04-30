@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export type AiGenerateType = 'absence_reason' | 'attendance_note' | 'song_request' | 'attendance_full';
+export type AiGenerateType = 'absence_reason' | 'attendance_note' | 'song_request' | 'attendance_full' | 'invitation_text';
 
 export interface AiGenerateRequest {
   type: AiGenerateType;

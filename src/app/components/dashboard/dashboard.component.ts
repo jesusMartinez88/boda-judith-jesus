@@ -11,11 +11,12 @@ import { SettingsService } from '../../services/settings.service';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TodosComponent } from './todos/todos.component';
 import { VersionService } from '../../services/version.service';
+import { ContactsComponent } from './contacts/contacts.component';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [TablesComponent, SettingsComponent, FinancesComponent, AttendanceProgressComponent, DragDropModule, TodosComponent],
+    imports: [TablesComponent, SettingsComponent, FinancesComponent, AttendanceProgressComponent, DragDropModule, TodosComponent, ContactsComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })
@@ -129,7 +130,7 @@ export class DashboardComponent implements OnInit {
 
     isLoading = signal(true);
     error = signal<string | null>(null);
-    currentView = signal<'stats' | 'tables' | 'settings' | 'finances' | 'todos'>('stats');
+    currentView = signal<'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts'>('stats');
     isMenuOpen = signal(false);
 
     ngOnInit() {
@@ -199,7 +200,7 @@ export class DashboardComponent implements OnInit {
         });
     }
 
-    setView(view: 'stats' | 'tables' | 'settings' | 'finances' | 'todos') {
+    setView(view: 'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts') {
         this.currentView.set(view);
         this.closeMenu();
     }
