@@ -28,7 +28,7 @@ export class MusicPlayerComponent {
 
             // Agregar listeners para interacciones del usuario
             this.addInteractionListeners();
-        }, { allowSignalWrites: true });
+        });
     }
 
     private async attemptAutoplay(): Promise<void> {

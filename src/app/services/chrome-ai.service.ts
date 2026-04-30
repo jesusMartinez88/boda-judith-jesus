@@ -9,17 +9,24 @@ interface AILanguageModelSession {
   clone(): Promise<AILanguageModelSession>;
 }
 
+interface AIExpectedOutput {
+  type: 'text';
+  languages: string[];
+}
+
 interface AILanguageModelCapabilities {
   available: 'readily' | 'after-download' | 'no';
 }
 
 interface AILanguageModel {
-  capabilities(): Promise<AILanguageModelCapabilities>;
-  availability(): Promise<AILanguageModelCapabilities>;
+  capabilities(options?: { expectedOutputs?: AIExpectedOutput[] }): Promise<AILanguageModelCapabilities>;
+  availability(options?: { expectedOutputs?: AIExpectedOutput[] }): Promise<AILanguageModelCapabilities>;
   create(options?: {
     monitor?: (m: any) => void;
     signal?: AbortSignal;
     systemPrompt?: string;
+    expectedLanguage?: string;
+    expectedOutputs?: AIExpectedOutput[];
   }): Promise<AILanguageModelSession>;
 }
 
@@ -59,12 +66,16 @@ export class ChromeAiService {
         
         let status: any;
         
-        // 1. Intentar obtener el estado y LOGUEAR el objeto completo para ver qué hay dentro
+        const checkOptions = {
+          expectedOutputs: [{ type: 'text' as const, languages: ['es'] }]
+        };
+
+        // 1. Intentar obtener el estado
         if ((model as any).capabilities) {
-          const cap = await (model as any).capabilities();
+          const cap = await (model as any).capabilities(checkOptions);
           status = typeof cap === 'string' ? cap : (cap?.available || cap?.status);
         } else if ((model as any).availability) {
-          const av = await (model as any).availability();
+          const av = await (model as any).availability(checkOptions);
           status = typeof av === 'string' ? av : (av?.available || av?.status);
         } else if ((window as any).ai?.canCreateTextSession) {
           status = await (window as any).ai.canCreateTextSession();
@@ -120,6 +131,8 @@ export class ChromeAiService {
               console.log(`Descargando modelo: ${progress}%`);
             });
           },
+          expectedLanguage: 'es',
+          expectedOutputs: [{ type: 'text', languages: ['es'] }]
         });
       } catch (error) {
         console.error('Error creando sesión:', error);
