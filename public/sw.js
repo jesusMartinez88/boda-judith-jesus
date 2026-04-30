@@ -1,4 +1,4 @@
-const CACHE_NAME = 'boda-judith-jesus-v1.4.0';
+const CACHE_NAME = 'boda-judith-jesus-v1.4.1';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -38,7 +38,8 @@ self.addEventListener('activate', (event) => {
 // Estrategia: Network First, fallback a Cache
 self.addEventListener('fetch', (event) => {
   // Ignorar peticiones que no sean HTTP/HTTPS (chrome-extension, etc.)
-  if (!event.request.url.startsWith('http')) {
+  // Y EXCLUIR peticiones de IA para no interferir con el streaming
+  if (!event.request.url.startsWith('http') || event.request.url.includes('/api/ai')) {
     return;
   }
 

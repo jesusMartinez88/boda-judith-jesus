@@ -23,7 +23,6 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   @ViewChild('heroOverlay') heroOverlay!: ElementRef;
   @ViewChild('particlesCanvas') particlesCanvas!: ElementRef<HTMLCanvasElement>;
 
-  private ctx?: gsap.Context;
   private particles: Array<{ x: number; y: number; size: number; speedX: number; speedY: number; opacity: number }> = [];
   private animationFrameId?: number;
 
@@ -34,9 +33,6 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.ctx) {
-      this.ctx.revert();
-    }
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
@@ -49,44 +45,44 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    this.ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 1.2 } });
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 1.2 } });
 
-      gsap.set([
-        this.heroTitle.nativeElement,
-        this.heroSubtitle.nativeElement,
-        this.heroLocation.nativeElement,
-        this.countdownWrapper.nativeElement,
-        this.heroCta.nativeElement
-      ], {
-        opacity: 0,
-        y: 50
-      });
+    // Configurar estado inicial de todos los elementos
+    gsap.set([
+      this.heroTitle.nativeElement,
+      this.heroSubtitle.nativeElement,
+      this.heroLocation.nativeElement,
+      this.countdownWrapper.nativeElement,
+      this.heroCta.nativeElement
+    ], {
+      opacity: 0,
+      y: 50
+    });
 
-      tl.to(this.heroTitle.nativeElement, {
+    // Animación de entrada secuencial
+    tl.to(this.heroTitle.nativeElement, {
+      opacity: 1,
+      y: 0,
+      delay: 0.5
+    })
+      .to(this.heroSubtitle.nativeElement, {
+        opacity: 1,
+        y: 0
+      }, '-=0.8')
+      .to(this.heroLocation.nativeElement, {
+        opacity: 1,
+        y: 0
+      }, '-=0.8')
+      .to(this.countdownWrapper.nativeElement, {
+        opacity: 1,
+        y: 0
+      }, '-=0.8')
+      .to(this.heroCta.nativeElement, {
         opacity: 1,
         y: 0,
-        delay: 0.5
-      })
-        .to(this.heroSubtitle.nativeElement, {
-          opacity: 1,
-          y: 0
-        }, '-=0.8')
-        .to(this.heroLocation.nativeElement, {
-          opacity: 1,
-          y: 0
-        }, '-=0.8')
-        .to(this.countdownWrapper.nativeElement, {
-          opacity: 1,
-          y: 0
-        }, '-=0.8')
-        .to(this.heroCta.nativeElement, {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          ease: 'back.out(1.7)'
-        }, '-=0.6');
-    }, this.heroContent.nativeElement);
+        duration: 1,
+        ease: 'back.out(1.7)'
+      }, '-=0.6');
   }
 
   private initScrollEffects() {
@@ -107,10 +103,9 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       }
     });
 
-    // Efecto de zoom out y fade en el contenido
+    // Efecto de zoom out en el contenido
     gsap.to(this.heroContent.nativeElement, {
       scale: 0.8,
-      opacity: 0,
       y: -100,
       ease: 'power2.in',
       scrollTrigger: {
@@ -133,49 +128,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       }
     });
 
-    // Efecto de rotación 3D en el título
-    if (this.heroTitle) {
-      gsap.to(this.heroTitle.nativeElement, {
-        rotationX: -15,
-        z: -200,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: this.heroTitle.nativeElement,
-          start: 'top center',
-          end: 'bottom top',
-          scrub: 1
-        }
-      });
-    }
-
-    // Dispersión lateral de elementos
-    if (this.heroSubtitle) {
-      gsap.to(this.heroSubtitle.nativeElement, {
-        x: -100,
-        opacity: 0,
-        ease: 'power2.in',
-        scrollTrigger: {
-          trigger: this.heroSubtitle.nativeElement,
-          start: 'top center',
-          end: 'bottom top',
-          scrub: 1
-        }
-      });
-    }
-
-    if (this.heroLocation) {
-      gsap.to(this.heroLocation.nativeElement, {
-        x: 100,
-        opacity: 0,
-        ease: 'power2.in',
-        scrollTrigger: {
-          trigger: this.heroLocation.nativeElement,
-          start: 'top center',
-          end: 'bottom top',
-          scrub: 1
-        }
-      });
-    }
+    // NO hay animación de desaparición para el título - debe permanecer visible
   }
 
   private initParticles() {
