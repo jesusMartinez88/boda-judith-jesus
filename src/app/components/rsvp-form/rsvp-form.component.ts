@@ -48,6 +48,7 @@ export class RsvpFormComponent {
     });
 
     this.form.get('attendance')?.valueChanges.subscribe(att => {
+      this.form.patchValue({ notes: '' }, { emitEvent: false });
       if (att) {
         this.applyAttendanceValidators();
       } else {
@@ -63,9 +64,7 @@ export class RsvpFormComponent {
   }
 
   async onSubmit() {
-    if (!this.form.get('attendance')?.value) {
-      this.form.get('attendance')?.markAsTouched();
-    } else if (this.form.invalid) {
+    if (this.form.invalid) {
       Object.keys(this.form.controls).forEach(key => {
         this.form.get(key)?.markAsTouched();
       });
