@@ -29,6 +29,7 @@ export class ContactsComponent implements OnInit {
   constructor() {
     this.contactForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
+      countryCode: ['+34', [Validators.required]],
       phone: ['', [Validators.required, Validators.pattern(/^[67]\d{8}$/)]]
     });
   }
@@ -86,12 +87,31 @@ export class ContactsComponent implements OnInit {
 
       if (selectedContacts.length > 0) {
         const contactsToCreate: Contact[] = selectedContacts
-          .map((c: any) => ({
-            name: c.name[0],
-            phone: c.tel[0].replace(/\s/g, '').replace(/^\+34|^34/, ''),
-            side: this.activeTab(),
-            linkSent: false
-          }))
+          .map((c: any) => {
+            const rawPhone = c.tel[0].replace(/\s/g, '');
+            let countryCode = '+34';
+            let phone = rawPhone;
+            
+            // Detectar y extraer código de país si existe
+            if (rawPhone.startsWith('+')) {
+              const match = rawPhone.match(/^(\+\d{1,3})(\d+)$/);
+              if (match) {
+                countryCode = match[1];
+                phone = match[2];
+              }
+            } else if (rawPhone.startsWith('34')) {
+              countryCode = '+34';
+              phone = rawPhone.substring(2);
+            }
+            
+            return {
+              name: c.name[0],
+              phone,
+              countryCode,
+              side: this.activeTab(),
+              linkSent: false
+            };
+          })
           .filter((c: any) => this.isValidPhone(c.phone));
 
         if (contactsToCreate.length === 0) {
@@ -112,16 +132,17 @@ export class ContactsComponent implements OnInit {
       return;
     }
 
-    const { name, phone } = this.contactForm.value;
+    const { name, phone, countryCode } = this.contactForm.value;
 
     try {
       await this.contactService.createContact({
         name,
         phone,
+        countryCode,
         side: this.activeTab(),
         linkSent: false
       });
-      this.contactForm.reset();
+      this.contactForm.reset({ countryCode: '+34' });
       this.isAddingManual.set(false);
     } catch (err) {
       console.error('Error adding manual contact:', err);
@@ -150,7 +171,9 @@ export class ContactsComponent implements OnInit {
 
       const cleanMessage = String(message).trim();
       const encodedText = encodeURIComponent(cleanMessage);
-      const whatsappUrl = `https://api.whatsapp.com/send?phone=${contact.phone}&text=${encodedText}`;
+      // Construir número completo con código de país (sin el +)
+      const fullPhone = `${contact.countryCode.replace('+', '')}${contact.phone}`;
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${fullPhone}&text=${encodedText}`;
       
       await this.contactService.patchContact(contact.id, {
         linkSent: true,

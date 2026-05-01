@@ -41,9 +41,23 @@
             <span class="error-msg">El nombre es obligatorio (mín. 3 letras)</span>
           }
         </div>
-        <div class="form-group">
+        <div class="form-group phone-group">
           <label>Teléfono</label>
-          <input type="tel" formControlName="phone" placeholder="Ej: 600112233" [class.invalid]="contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched">
+          <div class="phone-input-wrapper">
+            <select formControlName="countryCode" class="country-code-select">
+              <option value="+34">🇪🇸 +34</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+33">🇫🇷 +33</option>
+              <option value="+49">🇩🇪 +49</option>
+              <option value="+39">🇮🇹 +39</option>
+              <option value="+351">🇵🇹 +351</option>
+              <option value="+52">🇲🇽 +52</option>
+              <option value="+54">🇦🇷 +54</option>
+              <option value="+55">🇧🇷 +55</option>
+            </select>
+            <input type="tel" formControlName="phone" placeholder="Ej: 600112233" [class.invalid]="contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched">
+          </div>
           @if (contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched) {
             <span class="error-msg">Debe empezar por 6 o 7 y tener 9 dígitos</span>
           }
@@ -86,7 +100,7 @@
                 <span class="sent-badge">✅ Enviado</span>
               }
             </div>
-            <span class="contact-phone">📱 {{ contact.phone }}</span>
+            <span class="contact-phone">📱 {{ contact.countryCode }} {{ contact.phone }}</span>
             @if (contact.sentAt) {
               <span class="sent-date">Último envío: {{ contact.sentAt | date:'dd/MM HH:mm' }}</span>
             }

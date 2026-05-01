@@ -7,6 +7,7 @@ export interface Contact {
   id?: number;
   name: string;
   phone: string;
+  countryCode: string;
   side: string;
   linkSent: boolean;
   sentAt?: string;

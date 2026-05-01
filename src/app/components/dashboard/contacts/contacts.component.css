@@ -103,6 +103,37 @@
   width: 100%;
 }
 
+.phone-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.country-code-select {
+  padding: 0.5rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  min-width: 90px;
+  font-weight: 500;
+}
+
+.country-code-select:focus {
+  outline: none;
+  border-color: #be185d;
+  box-shadow: 0 0 0 3px rgba(190, 24, 93, 0.1);
+}
+
+.phone-input-wrapper input {
+  flex: 1;
+}
+
 .form-group input.invalid {
   border-color: #ef4444;
   background-color: #fef2f2;
