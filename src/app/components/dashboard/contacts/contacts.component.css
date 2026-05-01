@@ -22,7 +22,7 @@
   margin-top: 1rem;
 }
 
-.btn-import, .btn-add, .btn-add-cat {
+.btn-import, .btn-add, .btn-add-cat, .btn-generic {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -32,6 +32,22 @@
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.btn-generic {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  color: white;
+  border: none;
+}
+
+.btn-generic:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.btn-generic:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-import {
@@ -371,11 +387,39 @@
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+.modal-content.generic-invitation {
+  max-width: 550px;
+}
+
 .modal-header {
   display: flex;
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
+  position: relative;
+}
+
+.modal-header .close-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #94a3b8;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.modal-header .close-btn:hover {
+  background-color: #f1f5f9;
+  color: #475569;
 }
 
 .modal-icon.warning {
@@ -383,6 +427,18 @@
   height: 40px;
   background-color: #fff7ed;
   color: #ea580c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.25rem;
+}
+
+.modal-icon.success {
+  width: 40px;
+  height: 40px;
+  background-color: #f5f3ff;
+  color: #8b5cf6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -433,6 +489,93 @@
 
 .btn-delete-confirm:hover {
   background-color: #be123c;
+}
+
+.btn-copy {
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-copy:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.btn-copy:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.invitation-text-container {
+  background-color: #f8fafc;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.invitation-text {
+  color: #1e293b;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+.copy-info {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.copy-success {
+  color: #10b981;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.copy-hint {
+  color: #64748b;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.generating-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  gap: 1rem;
+}
+
+.generating-state .loader {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f1f5f9;
+  border-radius: 50%;
+  border-top-color: #8b5cf6;
+  animation: spin 0.8s linear infinite;
+}
+
+.generating-state p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 @keyframes popIn {

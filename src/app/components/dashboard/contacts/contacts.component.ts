@@ -25,6 +25,10 @@ export class ContactsComponent implements OnInit {
   isGenerating = signal<number | null>(null);
   showDeleteConfirm = signal(false);
   contactToDelete = signal<Contact | null>(null);
+  showGenericInvitation = signal(false);
+  genericInvitationText = signal('');
+  isGeneratingGeneric = signal(false);
+  copySuccess = signal(false);
 
   constructor() {
     this.contactForm = this.fb.group({
@@ -88,26 +92,12 @@ export class ContactsComponent implements OnInit {
       if (selectedContacts.length > 0) {
         const contactsToCreate: Contact[] = selectedContacts
           .map((c: any) => {
-            const rawPhone = c.tel[0].replace(/\s/g, '');
-            let countryCode = '+34';
-            let phone = rawPhone;
-            
-            // Detectar y extraer código de país si existe
-            if (rawPhone.startsWith('+')) {
-              const match = rawPhone.match(/^(\+\d{1,3})(\d+)$/);
-              if (match) {
-                countryCode = match[1];
-                phone = match[2];
-              }
-            } else if (rawPhone.startsWith('34')) {
-              countryCode = '+34';
-              phone = rawPhone.substring(2);
-            }
+            const result = this.parsePhoneNumber(c.tel[0]);
             
             return {
               name: c.name[0],
-              phone,
-              countryCode,
+              phone: result.phone,
+              countryCode: result.countryCode,
               side: this.activeTab(),
               linkSent: false
             };
@@ -147,6 +137,59 @@ export class ContactsComponent implements OnInit {
     } catch (err) {
       console.error('Error adding manual contact:', err);
     }
+  }
+
+  /**
+   * Parsea un número de teléfono en cualquier formato y extrae el código de país y el número limpio
+   * Formatos soportados:
+   * - 678678678
+   * - +34 675 67 67 67
+   * - +34678678678
+   * - 34678678678
+   * - +34-678-678-678
+   */
+  parsePhoneNumber(rawPhone: string): { countryCode: string; phone: string } {
+    // Limpiar: eliminar espacios, guiones, paréntesis
+    let clean = rawPhone.replace(/[\s\-\(\)]/g, '');
+    
+    let countryCode = '+34'; // Por defecto España
+    let phone = clean;
+    
+    // Caso 1: Empieza con + (ej: +34678678678 o +34675676767)
+    if (clean.startsWith('+')) {
+      // Intentar extraer código de país (1-3 dígitos después del +)
+      const match = clean.match(/^\+(\d{1,3})(\d+)$/);
+      if (match) {
+        const possibleCode = match[1];
+        const possiblePhone = match[2];
+        
+        // Validar que el código de país sea conocido
+        const knownCodes = ['1', '34', '44', '33', '49', '39', '351', '52', '54', '55'];
+        if (knownCodes.includes(possibleCode)) {
+          countryCode = '+' + possibleCode;
+          phone = possiblePhone;
+        } else {
+          // Intentar con 2 dígitos
+          const code2 = possibleCode.substring(0, 2);
+          if (knownCodes.includes(code2)) {
+            countryCode = '+' + code2;
+            phone = possibleCode.substring(2) + possiblePhone;
+          }
+        }
+      }
+    }
+    // Caso 2: Empieza con 34 pero no tiene + (ej: 34678678678)
+    else if (clean.startsWith('34') && clean.length > 9) {
+      countryCode = '+34';
+      phone = clean.substring(2);
+    }
+    // Caso 3: Solo dígitos sin código de país (ej: 678678678)
+    else {
+      countryCode = '+34';
+      phone = clean;
+    }
+    
+    return { countryCode, phone };
   }
 
   isValidPhone(phone: string): boolean {
@@ -217,5 +260,47 @@ export class ContactsComponent implements OnInit {
 
   getTotalCount(slug: string) {
     return this.contacts().filter(c => c.side === slug).length;
+  }
+
+  async generateGenericInvitation() {
+    try {
+      this.isGeneratingGeneric.set(true);
+      this.showGenericInvitation.set(true);
+      this.genericInvitationText.set('');
+      
+      const message = await this.aiService.generate({
+        type: 'invitation_text',
+        guestName: 'todos',
+        stream: false
+      });
+
+      this.genericInvitationText.set(String(message).trim());
+      
+      // Auto-copiar al portapapeles
+      await this.copyToClipboard();
+    } catch (err) {
+      console.error('Error generating generic invitation:', err);
+      alert('Error al generar la invitación. Por favor, intenta de nuevo.');
+      this.showGenericInvitation.set(false);
+    } finally {
+      this.isGeneratingGeneric.set(false);
+    }
+  }
+
+  async copyToClipboard() {
+    try {
+      await navigator.clipboard.writeText(this.genericInvitationText());
+      this.copySuccess.set(true);
+      setTimeout(() => this.copySuccess.set(false), 2000);
+    } catch (err) {
+      console.error('Error copying to clipboard:', err);
+      alert('No se pudo copiar al portapapeles. Por favor, copia el texto manualmente.');
+    }
+  }
+
+  closeGenericInvitation() {
+    this.showGenericInvitation.set(false);
+    this.genericInvitationText.set('');
+    this.copySuccess.set(false);
   }
 }

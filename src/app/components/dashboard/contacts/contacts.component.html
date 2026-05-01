@@ -5,6 +5,13 @@
       <p class="subtitle">Gestiona y envía el enlace de la web a tus contactos.</p>
     </div>
     <div class="header-actions">
+      <button class="btn-generic" (click)="generateGenericInvitation()" [disabled]="isGeneratingGeneric()">
+        @if (isGeneratingGeneric()) {
+          <span class="loader-sm"></span> Generando...
+        } @else {
+          <span class="icon">✨</span> Invitación Genérica
+        }
+      </button>
       <button class="btn-import" (click)="importFromDevice()">
         <span class="icon">📱</span> Importar
       </button>
@@ -136,6 +143,43 @@
         <div class="modal-footer">
           <button class="btn-cancel" (click)="closeDeleteConfirm()">Cancelar</button>
           <button class="btn-delete-confirm" (click)="confirmDelete()">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showGenericInvitation()) {
+    <div class="modal-overlay animate-fade-in" (click)="closeGenericInvitation()">
+      <div class="modal-content generic-invitation animate-pop-in" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-icon success">✨</div>
+          <h3>Invitación Genérica</h3>
+          <button class="close-btn" (click)="closeGenericInvitation()">✕</button>
+        </div>
+        <div class="modal-body">
+          @if (isGeneratingGeneric()) {
+            <div class="generating-state">
+              <div class="loader"></div>
+              <p>Generando invitación con IA...</p>
+            </div>
+          } @else {
+            <div class="invitation-text-container">
+              <p class="invitation-text">{{ genericInvitationText() }}</p>
+            </div>
+            <div class="copy-info">
+              @if (copySuccess()) {
+                <span class="copy-success">✅ ¡Copiado al portapapeles!</span>
+              } @else {
+                <span class="copy-hint">💡 El texto se copió automáticamente. También podés copiarlo manualmente.</span>
+              }
+            </div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn-copy" (click)="copyToClipboard()" [disabled]="isGeneratingGeneric()">
+            <span class="icon">📋</span> Copiar Texto
+          </button>
+          <button class="btn-cancel" (click)="closeGenericInvitation()">Cerrar</button>
         </div>
       </div>
     </div>
