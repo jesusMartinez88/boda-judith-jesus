@@ -23,37 +23,51 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
     {
       id: 1,
       title: 'El comienzo',
-      placeholder: 'assets/fotos/foto15.jpg',
-      description: 'Todo empezó con una mirada y una copa de vino...',
-      date: 'Junio 2018'
+      placeholder: 'assets/fotos/foto12.jpg',
+      description: 'Todo empezó por una casualidad',
+      date: '2018'
     },
     {
       id: 2,
       title: 'Viajes inolvidables',
-      placeholder: 'assets/fotos/foto12.jpg',
+      placeholder: 'assets/fotos/foto20.jpeg',
       description: 'Nuestro primer viaje juntos fue el inicio de mil aventuras más.',
-      date: 'Agosto 2019'
+      date: '2018'
     },
     {
       id: 3,
       title: 'Cómplices',
       placeholder: 'assets/fotos/foto2.jpeg',
       description: 'Entre risas y momentos compartidos, supimos que era para siempre.',
-      date: 'Enero 2022'
+      date: '2022'
     },
     {
       id: 4,
-      title: 'La gran pregunta',
-      placeholder: 'assets/fotos/foto17.jpeg',
-      description: 'Un día cualquiera que se convirtió en el más importante de nuestras vidas.',
-      date: 'Agosto 2025'
+      title: 'Sumando aventuras',
+      placeholder: 'assets/fotos/foto19.jpeg',
+      description: 'Una escapada diferente.',
+      date: '2023'
     },
     {
       id: 5,
+      title: 'La gran pregunta',
+      placeholder: 'assets/fotos/foto17.jpeg',
+      description: 'Un día cualquiera que se convirtió en el más importante de nuestras vidas.',
+      date: '2025'
+    },
+    {
+      id: 6,
       title: 'Hacia el altar',
       placeholder: 'assets/fotos/foto1.jpeg',
       description: 'Contando los días para decir "Sí, quiero" rodeados de nuestra gente.',
-      date: 'Octubre 2025'
+      date: '2025'
+    },
+    {
+      id: 7,
+      title: 'Ya falta poco...',
+      placeholder: 'assets/fotos/foto18.jpeg',
+      description: 'Nuestra fecha mas esperada .',
+      date: '2026'
     }
   ];
 
@@ -69,6 +83,7 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
     'assets/fotos/foto11.jpeg',
     'assets/fotos/foto13.jpg',
     'assets/fotos/foto14.jpg',
+    'assets/fotos/foto15.jpg',
     'assets/fotos/foto16.jpg',
   ];
 
