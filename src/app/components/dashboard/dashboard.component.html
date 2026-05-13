@@ -206,8 +206,14 @@
                             <li class="declined-item">
                               <div class="declined-main">
                                 <span class="name">{{ guest.name }}</span>
+                                @if (guest.phone) {
+                                  <span class="phone">📱 {{ guest.phone }}</span>
+                                }
                                 @if (guest.email) {
                                   <span class="email">📧 {{ guest.email }}</span>
+                                }
+                                @if (guest.notes) {
+                                  <span class="notes-indicator" title="Tiene notas">💬</span>
                                 }
                               </div>
                               @if (guest.notes) {
@@ -250,23 +256,23 @@
                           @for (guest of modalGuestsList(); track guest.id) {
                             <li class="declined-item">
                               <div class="declined-main">
-                                <span class="name">{{ guest.name }}</span>
+                                <span class="name">{{ guest.name }} {{ guest.phone ? ' - 📱' + guest.phone : '' }}</span>
                                 @if (guest.email) {
                                   <span class="email">📧 {{ guest.email }}</span>
                                 }
                               </div>
-                              @if (guest.phone) {
-                                <p class="notes">📱 {{ guest.phone }}</p>
-                              }
-                              @if (guest.tableId && guest.tableId !== 0) {
+                              @if (guest.tableId && guest.tableId !== 0 && modalTitle() === 'Invitados Confirmados') {
                                 <p class="notes">🪑 Mesa {{ guest.tableId }}@if (guest.seatNumber) { - Asiento {{ guest.seatNumber }}}</p>
                               }
-                              @if (guest.allergies && guest.allergies.trim() !== '') {
+                              @if (guest.allergies && guest.allergies.trim() !== '' && ['Invitados Confirmados', 'Invitados con Alergias'].some((title) => title === modalTitle())) {
                                 <p class="notes allergies-note">🥗 Alergias: {{ guest.allergies }}</p>
                               }
-                              <!-- @if (guest.needsTransport) {
+                              @if (guest.notes && modalTitle() === 'Invitados Confirmados') {
+                                <p class="notes">💬 {{ guest.notes }}</p>
+                              }
+                              @if (guest.needsTransport && modalTitle() === 'Invitados Confirmados') {
                                 <p class="notes transport-note">🚌 Necesita transporte</p>
-                              } -->
+                              }
                             </li>
                           }
                         </ul>
