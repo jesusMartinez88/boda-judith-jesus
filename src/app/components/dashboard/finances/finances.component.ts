@@ -2,11 +2,12 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FinancesService, FinanceRecord } from '../../../services/finances.service';
+import { ToastComponent } from '../../../shared/toast/toast.component';
 
 @Component({
     selector: 'app-finances',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastComponent],
     templateUrl: './finances.component.html',
     styleUrl: './finances.component.css'
 })
@@ -22,6 +23,14 @@ export class FinancesComponent implements OnInit {
     isSubmitting = signal(false);
     isLoading = signal(true);
     editingRecordId = signal<number | null>(null);
+    // Toast notifications
+    showToast = signal(false);
+    toastMessage = signal('');
+    toastType = signal<'success' | 'error' | null>(null);
+    // Delete confirmation modal
+    showDeleteModal = signal(false);
+    deleteTargetId = signal<number | null>(null);
+    deleteTargetDesc = signal('');
 
     // Pagination
     currentPage = signal(1);
@@ -111,7 +120,7 @@ export class FinancesComponent implements OnInit {
     // Balance neto por persona (ingresos - gastos)
     balanceByPerson = computed(() => {
         const allPeople = new Set<string>();
-        
+
         this.records().forEach(r => {
             if (r.paidBy) allPeople.add(r.paidBy.trim());
         });
@@ -120,7 +129,7 @@ export class FinancesComponent implements OnInit {
             const expenses = this.records()
                 .filter(r => r.type === 'expense' && r.paidBy?.trim() === person)
                 .reduce((sum, r) => sum + r.amount, 0);
-            
+
             const incomes = this.records()
                 .filter(r => r.type === 'income' && r.paidBy?.trim() === person)
                 .reduce((sum, r) => sum + r.amount, 0);
@@ -146,7 +155,7 @@ export class FinancesComponent implements OnInit {
 
     ngOnInit() {
         this.loadData();
-        
+
         // Listen to paidBy field changes for autocomplete
         this.financeForm.get('paidBy')?.valueChanges.subscribe(value => {
             this.onPaidByInput(value || '');
@@ -174,21 +183,72 @@ export class FinancesComponent implements OnInit {
                 await this.financesService.createFinance(this.financeForm.value);
             }
             this.financeForm.reset({ type: 'expense', amount: 0, category: 'Otros', paidBy: '' });
+            // If form was opened as modal, close it after successful save
+            if (this.showFormModal && this.showFormModal()) {
+                this.closeFormModal();
+            }
+            // Show success toast
+            this.showAppToast('Registro guardado correctamente', 'success');
         } catch (error) {
             console.error('Error submitting form:', error);
+            // Show error toast
+            const msg = (error && (error as any).message) ? (error as any).message : 'No se ha podido guardar';
+            this.showAppToast(msg, 'error');
         } finally {
             this.isSubmitting.set(false);
         }
     }
 
-    async deleteRecord(id: number | undefined) {
-        if (!id) return;
-        if (confirm('¿Estás seguro de que quieres eliminar este registro?')) {
-            try {
-                await this.financesService.deleteFinance(id);
-            } catch (error) {
-                console.error('Error deleting record:', error);
-            }
+    showAppToast(message: string, type: 'success' | 'error') {
+        this.toastMessage.set(message);
+        this.toastType.set(type);
+        this.showToast.set(true);
+        // Auto-hide after 3.5s
+        setTimeout(() => {
+            this.showToast.set(false);
+            this.toastMessage.set('');
+            this.toastType.set(null);
+        }, 3500);
+    }
+
+    hideToast() {
+        this.showToast.set(false);
+        this.toastMessage.set('');
+        this.toastType.set(null);
+    }
+
+    // Prompt user with modal to confirm delete
+    promptDeleteRecord(record: FinanceRecord) {
+        if (!record || !record.id) return;
+        this.deleteTargetId.set(record.id);
+        this.deleteTargetDesc.set(record.description || '');
+        this.showDeleteModal.set(true);
+    }
+
+    // Cancel delete
+    cancelDelete() {
+        this.showDeleteModal.set(false);
+        this.deleteTargetId.set(null);
+        this.deleteTargetDesc.set('');
+    }
+
+    // Confirm and perform delete
+    async confirmDelete() {
+        const id = this.deleteTargetId();
+        if (!id) return this.cancelDelete();
+        this.isLoading.set(true);
+        try {
+            await this.financesService.deleteFinance(id);
+            this.showAppToast('Registro eliminado correctamente', 'success');
+            this.cancelDelete();
+            // reload data
+            await this.loadData();
+        } catch (err) {
+            console.error('Error deleting record:', err);
+            const msg = (err && (err as any).message) ? (err as any).message : 'No se ha podido eliminar';
+            this.showAppToast(msg, 'error');
+        } finally {
+            this.isLoading.set(false);
         }
     }
 
@@ -202,13 +262,63 @@ export class FinancesComponent implements OnInit {
             category: record.category,
             paidBy: record.paidBy || ''
         });
-        // Scroll to form
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // If viewport is narrow, open the form in modal for better UX on mobile/tablet
+        if (window.innerWidth <= 1200) {
+            this.showFormModal.set(true);
+            setTimeout(() => {
+                const input = document.getElementById('paidByInput') as HTMLInputElement | null;
+                if (input) input.focus();
+            }, 150);
+        } else {
+            // Desktop: scroll to inline form
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    openNewRecordForm() {
+        // Reset editing state and show empty form, then scroll/focus for mobile
+        this.editingRecordId.set(null);
+        this.financeForm.reset({ type: 'expense', amount: 0, category: 'Otros', paidBy: '' });
+        // Smooth scroll to the form and focus the paidBy input when available
+        setTimeout(() => {
+            const el = document.getElementById('finance-form');
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            const input = document.getElementById('paidByInput') as HTMLInputElement | null;
+            if (input) {
+                input.focus();
+            }
+        }, 150);
+    }
+
+    // Modal control for mobile/tablet when form is hidden
+    showFormModal = signal(false);
+
+    openFormModal() {
+        this.editingRecordId.set(null);
+        this.financeForm.reset({ type: 'expense', amount: 0, category: 'Otros', paidBy: '' });
+        this.showFormModal.set(true);
+        setTimeout(() => {
+            const input = document.getElementById('paidByInput') as HTMLInputElement | null;
+            if (input) input.focus();
+        }, 150);
+    }
+
+    closeFormModal() {
+        this.showFormModal.set(false);
+        // Clear editing state to avoid showing inline form after closing modal
+        this.editingRecordId.set(null);
+        this.financeForm.reset({ type: 'expense', amount: 0, category: 'Otros', paidBy: '' });
     }
 
     cancelEdit() {
         this.editingRecordId.set(null);
         this.financeForm.reset({ type: 'expense', amount: 0, category: 'Otros', paidBy: '' });
+        // If the form is open in modal, close it as part of cancel
+        if (this.showFormModal && this.showFormModal()) {
+            this.closeFormModal();
+        }
     }
 
     getBadgeClass(type: string): string {
@@ -279,14 +389,14 @@ export class FinancesComponent implements OnInit {
     // Autocomplete methods
     onPaidByInput(value: string) {
         const trimmedValue = value.trim().toLowerCase();
-        
+
         if (!trimmedValue) {
             this.showSuggestions.set(false);
             this.filteredSuggestions.set([]);
             return;
         }
 
-        const filtered = this.uniquePaidByNames().filter(name => 
+        const filtered = this.uniquePaidByNames().filter(name =>
             name.toLowerCase().includes(trimmedValue)
         );
 
@@ -303,7 +413,7 @@ export class FinancesComponent implements OnInit {
 
     onPaidByKeydown(event: KeyboardEvent) {
         const suggestions = this.filteredSuggestions();
-        
+
         if (!this.showSuggestions() || suggestions.length === 0) {
             return;
         }
@@ -311,7 +421,7 @@ export class FinancesComponent implements OnInit {
         switch (event.key) {
             case 'ArrowDown':
                 event.preventDefault();
-                this.selectedSuggestionIndex.update(i => 
+                this.selectedSuggestionIndex.update(i =>
                     i < suggestions.length - 1 ? i + 1 : i
                 );
                 break;

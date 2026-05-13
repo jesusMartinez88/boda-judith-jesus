@@ -499,6 +499,27 @@
     background: #f1f5f9;
 }
 
+.card-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-mobile-btn {
+    display: none;
+    background: #ec4899;
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.add-mobile-btn:hover {
+    background: #db2777;
+}
+
 .spinning {
     display: inline-block;
     animation: spin 1s linear infinite;
@@ -670,6 +691,12 @@
         display: none;
     }
 
+    .add-mobile-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
     .show-mobile {
         display: block;
     }
@@ -712,6 +739,89 @@
         font-size: 1rem;
     }
 }
+
+/* Hide the inline form and show modal-trigger button when viewport is narrower than 1200px */
+@media (max-width: 1200px) {
+    .content-grid {
+        grid-template-columns: 1fr; /* already set earlier, ensure single column */
+    }
+
+    .form-section {
+        display: none;
+    }
+
+    .add-mobile-btn {
+        display: inline-flex;
+    }
+}
+
+/* Modal styles */
+.finance-modal {
+    max-width: 720px;
+    width: 95%;
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 20px 40px rgba(2,6,23,0.4);
+}
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2,6,23,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1200;
+}
+.modal-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(2,6,23,0.25);
+    z-index: 1201;
+}
+
+.modal-container .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.modal-container .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+.modal-form .form-group input,
+.modal-form .form-group select {
+    font-size: 0.95rem;
+}
+
+/* Delete modal specific */
+.delete-modal {
+    max-width: 520px;
+    width: 92%;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(2,6,23,0.16);
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-danger:hover { background: #dc2626; }
+
+.muted { color: #64748b; font-size: 0.9rem; margin-top: 0.5rem; }
+
+/* Toast styles moved to shared Toast component */
 
 /* ===== PAGINATION ===== */
 .pagination-container {

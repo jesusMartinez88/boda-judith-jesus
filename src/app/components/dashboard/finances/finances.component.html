@@ -31,14 +31,15 @@
 
     <div class="content-grid">
         <!-- Form Section -->
-        <section class="form-section">
+            @if (!showFormModal()) {
+            <section class="form-section">
             <div class="card" [class.editing-mode]="editingRecordId() !== null">
                 <h3>{{ editingRecordId() ? '✏️ Editar Registro' : 'Nuevo Registro' }}</h3>
-                <form [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="finance-form">
+            <form id="finance-form" [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="finance-form">
                   <div class="form-group autocomplete-wrapper">
                       <label>Pagado por / Recibido de</label>
-                      <input type="text" 
-                             formControlName="paidBy" 
+                     <input id="paidByInput" type="text"
+                         formControlName="paidBy"
                              placeholder="Ej: Juan, María, Ambos..."
                              [class.error]="financeForm.get('paidBy')?.invalid && financeForm.get('paidBy')?.touched"
                              (keydown)="onPaidByKeydown($event)"
@@ -49,13 +50,13 @@
                              [attr.aria-expanded]="showSuggestions()"
                              [attr.aria-controls]="showSuggestions() ? 'paidby-suggestions' : null"
                              [attr.aria-activedescendant]="selectedSuggestionIndex() >= 0 ? 'suggestion-' + selectedSuggestionIndex() : null">
-                      
+
                       @if (showSuggestions() && filteredSuggestions().length > 0) {
-                      <ul class="autocomplete-suggestions" 
-                          id="paidby-suggestions" 
+                      <ul class="autocomplete-suggestions"
+                          id="paidby-suggestions"
                           role="listbox">
                           @for (suggestion of filteredSuggestions(); track suggestion; let i = $index) {
-                          <li class="suggestion-item" 
+                          <li class="suggestion-item"
                               [class.selected]="i === selectedSuggestionIndex()"
                               [id]="'suggestion-' + i"
                               role="option"
@@ -121,19 +122,135 @@
                 </form>
             </div>
         </section>
+        }
+
+        <!-- Modal for form when form-section is hidden on narrower screens -->
+        @if (showFormModal()) {
+        <div class="modal-backdrop" (click)="closeFormModal()">
+            <div class="modal-container finance-modal" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>{{ editingRecordId() ? '✏️ Editar Registro' : 'Nuevo Registro' }}</h3>
+                    <button class="close-btn" (click)="closeFormModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <form [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="finance-form modal-form">
+                        <div class="form-group autocomplete-wrapper">
+                            <label>Pagado por / Recibido de</label>
+                            <input id="paidByInput" type="text"
+                                   formControlName="paidBy"
+                                   placeholder="Ej: Juan, María, Ambos..."
+                                   [class.error]="financeForm.get('paidBy')?.invalid && financeForm.get('paidBy')?.touched"
+                                   (keydown)="onPaidByKeydown($event)"
+                                   (blur)="onPaidByBlur()"
+                                   (focus)="onPaidByFocus()"
+                                   autocomplete="off">
+
+                            @if (showSuggestions() && filteredSuggestions().length > 0) {
+                            <ul class="autocomplete-suggestions" id="paidby-suggestions" role="listbox">
+                                @for (suggestion of filteredSuggestions(); track suggestion; let i = $index) {
+                                <li class="suggestion-item"
+                                    [class.selected]="i === selectedSuggestionIndex()"
+                                    [id]="'suggestion-' + i"
+                                    role="option"
+                                    [attr.aria-selected]="i === selectedSuggestionIndex()"
+                                    (mousedown)="selectSuggestion(suggestion)">
+                                    <span class="suggestion-avatar">{{ suggestion.charAt(0).toUpperCase() }}</span>
+                                    <span class="suggestion-name">{{ suggestion }}</span>
+                                </li>
+                                }
+                            </ul>
+                            }
+                        </div>
+
+                        <div class="form-group">
+                            <label>Descripción</label>
+                            <input type="text" formControlName="description" placeholder="Ej: Pago Fotógrafo"
+                                [class.error]="financeForm.get('description')?.invalid && financeForm.get('description')?.touched">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Importe (€)</label>
+                                <input type="number" formControlName="amount" step="0.01"
+                                    [class.error]="financeForm.get('amount')?.invalid && financeForm.get('amount')?.touched">
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <div class="segmented-control">
+                                    <button type="button" [class.active]="financeForm.get('type')?.value === 'expense'"
+                                        (click)="financeForm.patchValue({type: 'expense'})">
+                                        Gasto
+                                    </button>
+                                    <button type="button" [class.active]="financeForm.get('type')?.value === 'income'"
+                                        (click)="financeForm.patchValue({type: 'income'})">
+                                        Ingreso
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Categoría</label>
+                            <select formControlName="category">
+                                <option value="Celebración">Celebración</option>
+                                <option value="Vestuario">Vestuario</option>
+                                <option value="Fotografía/Video">Fotografía/Video</option>
+                                <option value="Música/Animación">Música/Animación</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Regalos/Detalles">Regalos/Detalles</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+                                {{ isSubmitting() ? 'Guardando...' : (editingRecordId() ? 'Guardar Cambios' : 'Añadir Registro') }}
+                            </button>
+                            @if (editingRecordId()) {
+                            <button type="button" class="cancel-btn" (click)="cancelEdit()">Cancelar</button>
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        }
 
         <!-- List Section -->
         <section class="list-section">
             <div class="card">
                 <div class="card-header">
                     <h3>Movimientos Recientes</h3>
-                    <button class="refresh-btn" (click)="loadData()" [disabled]="isLoading()">
-                        <span [class.spinning]="isLoading()">🔄</span>
-                    </button>
+                    <div class="card-header-actions">
+                        <button class="refresh-btn" (click)="loadData()" [disabled]="isLoading()">
+                            <span [class.spinning]="isLoading()">🔄</span>
+                        </button>
+                        <button class="add-mobile-btn" (click)="openFormModal()" title="Añadir registro">➕ Añadir</button>
+                    </div>
                 </div>
 
                 <div class="table-container">
                     @if (records().length === 0 && !isLoading()) {
+
+        <!-- Delete Confirmation Modal -->
+        @if (showDeleteModal()) {
+        <div class="modal-backdrop" (click)="cancelDelete()">
+            <div class="modal-container delete-modal" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>Eliminar Registro</h3>
+                    <button class="close-btn" (click)="cancelDelete()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que querés eliminar el registro <strong>"{{ deleteTargetDesc() }}"</strong>?</p>
+                    <p class="muted">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-actions" style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1rem;">
+                    <button class="cancel-btn" (click)="cancelDelete()">Cancelar</button>
+                    <button class="btn-danger" (click)="confirmDelete()">🗑️ Eliminar</button>
+                </div>
+            </div>
+        </div>
+        }
                     <div class="empty-state">
                         <p>No hay movimientos registrados.</p>
                     </div>
@@ -184,7 +301,7 @@
                                     <button class="action-btn edit-btn" (click)="editRecord(record)" title="Editar">
                                         ✏️
                                     </button>
-                                    <button class="action-btn delete-btn" (click)="deleteRecord(record.id)"
+                                    <button class="action-btn delete-btn" (click)="promptDeleteRecord(record)"
                                         title="Eliminar">
                                         🗑️
                                     </button>
@@ -200,8 +317,8 @@
                     <div class="pagination-container">
                         <div class="pagination-info">
                             <span class="showing-text">
-                                Mostrando {{ (currentPage() - 1) * pageSize() + 1 }} - 
-                                {{ Math.min(currentPage() * pageSize(), records().length) }} 
+                                Mostrando {{ (currentPage() - 1) * pageSize() + 1 }} -
+                                {{ Math.min(currentPage() * pageSize(), records().length) }}
                                 de {{ records().length }} registros
                             </span>
                             <div class="page-size-selector">
@@ -216,8 +333,8 @@
 
                         @if (totalPages() > 1) {
                         <div class="pagination-controls">
-                            <button class="page-btn" 
-                                    [disabled]="!hasPreviousPage()" 
+                            <button class="page-btn"
+                                    [disabled]="!hasPreviousPage()"
                                     (click)="previousPage()"
                                     title="Página anterior">
                                 ‹
@@ -227,7 +344,7 @@
                                 @if (pageNum === -1) {
                                 <span class="page-ellipsis">...</span>
                                 } @else {
-                                <button class="page-btn" 
+                                <button class="page-btn"
                                         [class.active]="pageNum === currentPage()"
                                         (click)="goToPage(pageNum)">
                                     {{ pageNum }}
@@ -235,8 +352,8 @@
                                 }
                             }
 
-                            <button class="page-btn" 
-                                    [disabled]="!hasNextPage()" 
+                            <button class="page-btn"
+                                    [disabled]="!hasNextPage()"
                                     (click)="nextPage()"
                                     title="Página siguiente">
                                 ›
@@ -250,6 +367,35 @@
         </section>
     </div>
 
+    <!-- Toast notification (reusable component) -->
+    <app-toast *ngIf="showToast()"
+               [show]="showToast()"
+               [type]="toastType() || 'success'"
+               [title]="toastType() === 'success' ? 'Guardado' : 'Error'"
+               [message]="toastMessage()"
+               (closed)="hideToast()">
+    </app-toast>
+
+    <!-- Delete Confirmation Modal (global placement so it can open regardless of list state) -->
+    @if (showDeleteModal()) {
+    <div class="modal-backdrop" (click)="cancelDelete()">
+        <div class="modal-container delete-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Eliminar Registro</h3>
+                <button class="close-btn" (click)="cancelDelete()">×</button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que querés eliminar el registro <strong>"{{ deleteTargetDesc() }}"</strong>?</p>
+                <p class="muted">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-actions" style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1rem;">
+                <button class="cancel-btn" (click)="cancelDelete()">Cancelar</button>
+                <button class="btn-danger" (click)="confirmDelete()">🗑️ Eliminar</button>
+            </div>
+        </div>
+    </div>
+    }
+
     <!-- Comparison by Person Card -->
     @if (balanceByPerson().length > 0) {
     <div class="comparison-card card">
@@ -257,7 +403,7 @@
             <h3>👥 Comparación de Gastos por Persona</h3>
             <p class="comparison-subtitle">Resumen de quién ha pagado qué</p>
         </div>
-        
+
         <div class="comparison-list">
             @for (person of balanceByPerson(); track person.name) {
             <div class="person-item">
@@ -271,7 +417,7 @@
                         <span class="total-amount expense-color">{{ person.expenses | currency:'EUR' }}</span>
                     </div>
                 </div>
-                
+
                 <div class="person-details">
                     <div class="detail-row">
                         <span class="detail-label">💸 Gastos realizados</span>
@@ -287,7 +433,7 @@
 
                 <!-- Progress bar showing contribution -->
                 <div class="contribution-bar">
-                    <div class="bar-fill" 
+                    <div class="bar-fill"
                          [style.width.%]="(person.expenses / totalExpense()) * 100"
                          [class.high]="(person.expenses / totalExpense()) > 0.5"
                          [class.medium]="(person.expenses / totalExpense()) > 0.3 && (person.expenses / totalExpense()) <= 0.5"

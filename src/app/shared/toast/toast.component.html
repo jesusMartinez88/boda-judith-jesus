@@ -1,0 +1,15 @@
+@if (show) {
+<div class="app-toast" [class.success]="type === 'success'" [class.error]="type === 'error'">
+    <div class="toast-icon">
+        @if (type === 'success') {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        } @else {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12" y2="16"></line></svg>
+        }
+    </div>
+    <div class="toast-body">
+        @if (title) { <div class="toast-title">{{ title }}</div> }
+        <div class="toast-message">{{ message }}</div>
+    </div>
+</div>
+}
