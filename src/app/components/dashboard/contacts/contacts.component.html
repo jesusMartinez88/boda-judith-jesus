@@ -21,6 +21,9 @@
       <button class="btn-add" (click)="isAddingManual.set(!isAddingManual())">
         <span class="icon">{{ isAddingManual() ? '✕' : '➕' }}</span> {{ isAddingManual() ? 'Contacto' : 'Contacto' }}
       </button>
+      <button class="btn-mark-all" (click)="markAllInTab()" [disabled]="isMarkingAll()">
+        @if (isMarkingAll()) { <span class="loader-sm"></span> Marcando... } @else { <span class="icon">✅</span> Marcar todas }
+      </button>
     </div>
   </header>
 
@@ -103,16 +106,17 @@
           <div class="contact-info">
             <div class="name-row">
               <span class="contact-name">{{ contact.name }}</span>
-              @if (contact.linkSent) {
-                <span class="sent-badge">✅ Enviado</span>
-              }
+              <label class="sent-toggle" title="Marcar enviado/no enviado">
+                <input type="checkbox" [checked]="contact.linkSent" (change)="toggleLinkSent(contact)">
+                <span class="slider" aria-hidden="true"></span>
+              </label>
             </div>
             <span class="contact-phone">📱 {{ contact.countryCode }} {{ contact.phone }}</span>
             @if (contact.sentAt) {
               <span class="sent-date">Último envío: {{ contact.sentAt | date:'dd/MM HH:mm' }}</span>
             }
           </div>
-          <div class="contact-actions">
+            <div class="contact-actions">
             <button class="btn-whatsapp" (click)="sendInvitation(contact)" [disabled]="isGenerating() === contact.id">
               @if (isGenerating() === contact.id) {
                 <span class="loader-sm"></span> Generando...
@@ -127,6 +131,15 @@
         </div>
       }
     }
+
+    <!-- Toast notification for contacts -->
+    <app-toast *ngIf="showToast()"
+               [show]="showToast()"
+               [type]="toastType()"
+               [title]="toastType() === 'success' ? 'Listo' : 'Error'"
+               [message]="toastMessage()"
+               (closed)="hideToast()">
+    </app-toast>
   </div>
 
   @if (showDeleteConfirm()) {
@@ -137,7 +150,7 @@
           <h3>¿Eliminar contacto?</h3>
         </div>
         <div class="modal-body">
-          Estás a punto de eliminar a <strong>{{ contactToDelete()?.name }}</strong>. 
+          Estás a punto de eliminar a <strong>{{ contactToDelete()?.name }}</strong>.
           Esta acción no se puede deshacer.
         </div>
         <div class="modal-footer">
