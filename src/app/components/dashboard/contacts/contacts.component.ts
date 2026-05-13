@@ -60,7 +60,13 @@ export class ContactsComponent implements OnInit {
 
   async ngOnInit() {
     const cats = await this.contactService.loadCategories();
-    if (cats.length > 0) {
+    const saved = (() => {
+      try { return localStorage.getItem('contacts.activeTab'); } catch (e) { return null; }
+    })();
+
+    if (saved && cats.some(c => c.slug === saved)) {
+      this.activeTab.set(saved);
+    } else if (cats.length > 0) {
       this.activeTab.set(cats[0].slug);
     }
     this.contactService.loadContacts();
@@ -68,6 +74,7 @@ export class ContactsComponent implements OnInit {
 
   setTab(slug: string) {
     this.activeTab.set(slug);
+    try { localStorage.setItem('contacts.activeTab', slug); } catch (e) { /* ignore */ }
   }
 
   async addCategory() {

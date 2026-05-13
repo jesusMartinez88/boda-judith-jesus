@@ -136,14 +136,33 @@ export class DashboardComponent implements OnInit {
     ngOnInit() {
         this.loadStats();
         this.settingsService.loadSettings().subscribe();
+
+        // Restore persisted view and menu state
+        try {
+            const savedView = localStorage.getItem('dashboard.currentView');
+            if (savedView && ['stats','tables','settings','finances','todos','contacts'].includes(savedView)) {
+                this.currentView.set(savedView as any);
+            }
+        } catch (e) {
+            // ignore
+        }
+
+        try {
+            const menu = localStorage.getItem('dashboard.isMenuOpen');
+            if (menu === 'true') this.isMenuOpen.set(true);
+        } catch (e) {
+            // ignore
+        }
     }
 
     toggleMenu() {
         this.isMenuOpen.update(v => !v);
+        try { localStorage.setItem('dashboard.isMenuOpen', String(this.isMenuOpen())); } catch (e) { /* ignore */ }
     }
 
     closeMenu() {
         this.isMenuOpen.set(false);
+        try { localStorage.setItem('dashboard.isMenuOpen', 'false'); } catch (e) { /* ignore */ }
     }
 
     loadStats() {
@@ -202,6 +221,7 @@ export class DashboardComponent implements OnInit {
 
     setView(view: 'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts') {
         this.currentView.set(view);
+        try { localStorage.setItem('dashboard.currentView', view); } catch (e) { /* ignore */ }
         this.closeMenu();
     }
 
@@ -221,7 +241,7 @@ export class DashboardComponent implements OnInit {
     openGuestsModal(type: 'confirmed' | 'adults' | 'children' | 'unassigned' | 'transport' | 'allergies') {
         let title = '';
         let guestsList: Guest[] = [];
-        
+
         switch(type) {
             case 'confirmed':
                 title = 'Invitados Confirmados';
