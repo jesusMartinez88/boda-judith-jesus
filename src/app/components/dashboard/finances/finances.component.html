@@ -30,7 +30,13 @@
     </div>
 
     <div class="content-grid">
+        <!-- Tabs -->
+        <div class="finances-tabs">
+            <button class="tab-btn" [class.active]="activeTab() === 'movimientos'" (click)="setFinancesTab('movimientos')">Movimientos</button>
+            <button class="tab-btn" [class.active]="activeTab() === 'por-persona'" (click)="setFinancesTab('por-persona')">Gastos por Persona</button>
+        </div>
         <!-- Form Section -->
+        @if (activeTab() === 'movimientos') {
             @if (!showFormModal()) {
             <section class="form-section">
             <div class="card" [class.editing-mode]="editingRecordId() !== null">
@@ -122,6 +128,7 @@
                 </form>
             </div>
         </section>
+            }
         }
 
         <!-- Modal for form when form-section is hidden on narrower screens -->
@@ -217,6 +224,7 @@
         }
 
         <!-- List Section -->
+        @if (activeTab() === 'movimientos') {
         <section class="list-section">
             <div class="card">
                 <div class="card-header">
@@ -365,6 +373,7 @@
                 </div>
             </div>
         </section>
+        }
     </div>
 
     <!-- Toast notification (reusable component) -->
@@ -397,8 +406,9 @@
     }
 
     <!-- Comparison by Person Card -->
-    @if (balanceByPerson().length > 0) {
-    <div class="comparison-card card">
+    @if (activeTab() === 'por-persona') {
+        @if (balanceByPerson().length > 0) {
+        <div class="comparison-card card">
         <div class="comparison-header">
             <h3>👥 Comparación de Gastos por Persona</h3>
             <p class="comparison-subtitle">Resumen de quién ha pagado qué</p>
@@ -447,5 +457,6 @@
             }
         </div>
     </div>
+        }
     }
 </div>

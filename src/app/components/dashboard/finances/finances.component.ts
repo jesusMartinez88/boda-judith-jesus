@@ -143,6 +143,13 @@ export class FinancesComponent implements OnInit {
         }).sort((a, b) => b.expenses - a.expenses);
     });
 
+    // UI tab for finances: 'movimientos' | 'por-persona'
+    activeTab = signal<'movimientos' | 'por-persona'>('movimientos');
+
+    setFinancesTab(tab: 'movimientos' | 'por-persona') {
+        this.activeTab.set(tab);
+    }
+
     constructor() {
         this.financeForm = this.fb.group({
             description: ['', [Validators.required, Validators.minLength(3)]],

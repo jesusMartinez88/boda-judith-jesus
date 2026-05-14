@@ -26,6 +26,48 @@
     margin-bottom: 2rem;
 }
 
+.finances-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0 0.5rem 0;
+    grid-column: 1 / -1; /* make tabs span the full width of the content grid */
+    align-items: flex-end;
+    border-bottom: 1px solid #e2e8f0; /* separation line for tab content */
+    padding-bottom: 0.6rem;
+}
+
+/* Folder-style tab visuals */
+.finances-tabs .tab-btn {
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f1f5f9;
+    cursor: pointer;
+    font-weight: 700;
+    margin-bottom: -1px; /* overlap the card border */
+    transition: all 0.18s ease;
+}
+
+.finances-tabs .tab-btn:hover {
+    transform: translateY(-2px);
+}
+
+.finances-tabs .tab-btn.active {
+    background: white;
+    border-color: #e2e8f0;
+    border-bottom-color: white; /* visually connect to card */
+    color: #1e293b;
+    box-shadow: 0 6px 18px rgba(2,6,23,0.06);
+}
+
+@media (max-width: 640px) {
+    .finances-tabs .tab-btn {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.9rem;
+    }
+}
+
 @media (max-width: 640px) {
     .summary-grid {
         grid-template-columns: 1fr;

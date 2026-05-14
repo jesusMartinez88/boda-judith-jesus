@@ -60,9 +60,12 @@
       <div class="card">
         <div class="card-header">
           <h3>Listado de Tareas</h3>
-          <button class="refresh-btn" (click)="loadData()" [disabled]="isLoading()">
+          <div class="card-header-actions">
+            <!-- <button class="refresh-btn" (click)="loadData()" [disabled]="isLoading()">
             <span [class.spinning]="isLoading()">🔄</span>
-          </button>
+            </button> -->
+            <button class="add-mobile-btn" (click)="openFormModal()" title="Añadir tarea">➕ Añadir</button>
+          </div>
         </div>
 
         <div class="todos-list">
@@ -73,7 +76,7 @@
           </div>
           } @else {
           @for (todo of sortedTodos(); track todo.id) {
-          <div class="todo-item" [class.completed]="todo.status === 'completed'">
+          <div class="todo-item" [class.completed]="todo.status === 'completed'" [class.just-saved]="todo.id === lastSavedTodoId()">
             <div class="todo-status-indicator" [style.background-color]="getStatusColor(todo)"></div>
             <div class="todo-content">
               <div class="todo-main">
@@ -133,4 +136,58 @@
       </div>
     </div>
   }
+
+  <!-- Modal for New/Edit Task on mobile -->
+  @if (showFormModal()) {
+    <div class="modal-backdrop" (click)="closeFormModal()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ editingTodoId() ? '✏️ Editar Tarea' : 'Nueva Tarea' }}</h3>
+          <button class="close-btn" (click)="closeFormModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="todoForm" (ngSubmit)="onSubmit()" class="todo-form">
+            <div class="form-group">
+              <label>Descripción de la tarea</label>
+              <input type="text" formControlName="name" placeholder="Ej: Comprar las flores"
+                [class.error]="todoForm.get('name')?.invalid && todoForm.get('name')?.touched">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Fecha prevista</label>
+                <input type="date" formControlName="date"
+                  [class.error]="todoForm.get('date')?.invalid && todoForm.get('date')?.touched">
+              </div>
+              <div class="form-group">
+                <label>Estado</label>
+                <select formControlName="status">
+                  <option value="pending">Pendiente</option>
+                  <option value="completed">Completada</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+                {{ isSubmitting() ? 'Guardando...' : (editingTodoId() ? 'Guardar Cambios' : 'Añadir Tarea') }}
+              </button>
+              @if (editingTodoId()) {
+              <button type="button" class="cancel-btn" (click)="closeFormModal()">Cancelar</button>
+              }
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Toast notification -->
+  <app-toast *ngIf="showToast()"
+             [show]="showToast()"
+             [type]="toastType() || 'success'"
+             [title]="toastType() === 'success' ? 'Guardado' : 'Error'"
+             [message]="toastMessage()"
+             (closed)="hideToast()">
+  </app-toast>
 </div>

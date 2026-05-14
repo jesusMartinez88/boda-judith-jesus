@@ -2,11 +2,12 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TodosService, Todo } from '../../../services/todos.service';
+import { ToastComponent } from '../../../shared/toast/toast.component';
 
 @Component({
   selector: 'app-todos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DatePipe],
+  imports: [CommonModule, ReactiveFormsModule, DatePipe, ToastComponent],
   templateUrl: './todos.component.html',
   styleUrl: './todos.component.css'
 })
@@ -23,6 +24,14 @@ export class TodosComponent implements OnInit {
   // Custom delete modal state
   showDeleteModal = signal(false);
   todoToDelete = signal<Todo | null>(null);
+  // Mobile form modal
+  showFormModal = signal(false);
+  // Toast notifications
+  showToast = signal(false);
+  toastMessage = signal('');
+  toastType = signal<'success' | 'error' | null>(null);
+  // Highlight recently saved todo
+  lastSavedTodoId = signal<number | null>(null);
 
   pendingCount = computed(() => this.todos().filter(t => t.status === 'pending').length);
   completedCount = computed(() => this.todos().filter(t => t.status === 'completed').length);
@@ -100,12 +109,50 @@ export class TodosComponent implements OnInit {
       } else {
         await this.todosService.createTodo(formValue);
       }
-      this.cancelEdit();
+      // Determine which todo was saved so we can highlight it
+      let savedId: number | null = null;
+      if (this.editingTodoId()) {
+        savedId = this.editingTodoId();
+      } else {
+        const matches = this.todos().filter(t => t.name === formValue.name && t.date === formValue.date && t.id);
+        if (matches.length > 0) {
+          savedId = Math.max(...matches.map(m => m.id!));
+        }
+      }
+      if (savedId) {
+        this.lastSavedTodoId.set(savedId);
+        setTimeout(() => this.lastSavedTodoId.set(null), 2500);
+      }
+      // Close modal if open, else just reset inline form
+      if (this.showFormModal && this.showFormModal()) {
+        this.closeFormModal();
+      } else {
+        this.cancelEdit();
+      }
+      this.showAppToast('Tarea guardada correctamente', 'success');
     } catch (error) {
       console.error('Error saving todo:', error);
+      this.showAppToast('No se pudo guardar la tarea', 'error');
     } finally {
       this.isSubmitting.set(false);
     }
+  }
+
+  showAppToast(message: string, type: 'success' | 'error') {
+    this.toastMessage.set(message);
+    this.toastType.set(type);
+    this.showToast.set(true);
+    setTimeout(() => {
+      this.showToast.set(false);
+      this.toastMessage.set('');
+      this.toastType.set(null);
+    }, 3500);
+  }
+
+  hideToast() {
+    this.showToast.set(false);
+    this.toastMessage.set('');
+    this.toastType.set(null);
   }
 
   editTodo(todo: Todo) {
@@ -115,6 +162,14 @@ export class TodosComponent implements OnInit {
       date: todo.date,
       status: todo.status
     });
+    // If on narrow screens, open modal for editing
+    try {
+      if (window && window.innerWidth && window.innerWidth <= 1200) {
+        this.openFormModal();
+      }
+    } catch (e) {
+      // ignore (server side or unexpected)
+    }
   }
 
   cancelEdit() {
@@ -145,8 +200,10 @@ export class TodosComponent implements OnInit {
       try {
         await this.todosService.deleteTodo(todo.id);
         this.closeDeleteModal();
+        this.showAppToast('Tarea eliminada', 'success');
       } catch (error) {
         console.error('Error deleting todo:', error);
+        this.showAppToast('No se pudo eliminar la tarea', 'error');
       }
     }
   }
@@ -154,5 +211,14 @@ export class TodosComponent implements OnInit {
   closeDeleteModal() {
     this.showDeleteModal.set(false);
     this.todoToDelete.set(null);
+  }
+
+  openFormModal() {
+    this.showFormModal.set(true);
+  }
+
+  closeFormModal() {
+    this.showFormModal.set(false);
+    this.cancelEdit();
   }
 }

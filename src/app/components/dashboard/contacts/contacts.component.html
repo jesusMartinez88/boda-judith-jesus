@@ -16,13 +16,10 @@
         <span class="icon">📱</span> Importar
       </button>
       <button class="btn-add-cat" (click)="isAddingCategory.set(!isAddingCategory())">
-        <span class="icon">📁</span> {{ isAddingCategory() ? '✕' : 'Nueva Pestaña' }}
+        <span class="icon">📁</span> {{ isAddingCategory() ? '✕' : '➕' }} Nueva Pestaña
       </button>
       <button class="btn-add" (click)="isAddingManual.set(!isAddingManual())">
-        <span class="icon">{{ isAddingManual() ? '✕' : '➕' }}</span> {{ isAddingManual() ? 'Contacto' : 'Contacto' }}
-      </button>
-      <button class="btn-mark-all" (click)="markAllInTab()" [disabled]="isMarkingAll()">
-        @if (isMarkingAll()) { <span class="loader-sm"></span> Marcando... } @else { <span class="icon">✅</span> Marcar todas }
+        <span class="icon">{{ isAddingManual() ? '✕' : '➕' }}</span> Contacto
       </button>
     </div>
   </header>
@@ -93,6 +90,9 @@
       <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Buscar contacto...">
     </div>
   </div>
+  <button class="btn-mark-all" (click)="markAllInTab()" [disabled]="isMarkingAll()">
+        @if (isMarkingAll()) { <span class="loader-sm"></span> Marcando... } @else { <span class="icon">✅</span> Marcar todas }
+      </button>
 
   <div class="contacts-grid">
     @if (filteredContacts().length === 0) {
