@@ -255,10 +255,11 @@ export class TablesComponent implements OnInit {
     }
 
     async onDrop(event: CdkDragDrop<any>) {
-        // Resetear el estado de recepción inmediatamente
-        this.isReceivingGuest.set(false);
-        
         const guest = event.item.data as Guest;
+        const guestId = this.guestKey(guest);
+
+        if (!guestId) return;
+
         let targetData = event.container.data;
 
         // Normalizar destino
@@ -298,9 +299,6 @@ export class TablesComponent implements OnInit {
 
         if (!guest) return;
 
-        const guestId = guest.id || guest.email || guest.phone;
-        if (!guestId) return;
-
         // Si ya hay alguien en ese asiento de esa mesa, y venimos de otro sitio, swap
         if (tableId !== null && seatNumber !== null) {
             const existingGuest = this.getGuestAtSeat(tableId, seatNumber);
@@ -314,16 +312,16 @@ export class TablesComponent implements OnInit {
                     // IMPORTANTE: Primero mover al invitado existente a un lugar temporal (cola de recepción)
                     // para liberar el asiento y evitar problemas de capacidad
                     await this.guestService.updateGuestTable(existingGuestId, null, null);
-                    
+
                     // Luego mover al invitado arrastrado al nuevo asiento
                     await this.guestService.updateGuestTable(guestId, tableId, seatNumber);
-                    
+
                     // Finalmente mover al invitado que estaba al asiento original del arrastrado
                     await this.guestService.updateGuestTable(existingGuestId, prevTableId, prevSeatNumber);
 
                     // Trigger sit-down animation for both guests
                     if (tableId !== null) {
-                        const sid = guest.id ?? guest.email ?? guest.phone;
+                        const sid = this.guestKey(guest);
                         if (sid) {
                             this.newlySeatedIds.update(s => new Set([...s, sid]));
                             setTimeout(() => {
@@ -352,7 +350,7 @@ export class TablesComponent implements OnInit {
 
             // Trigger sit-down animation
             if (tableId !== null) {
-                const sid = guest.id ?? guest.email ?? guest.phone;
+                const sid = this.guestKey(guest);
                 if (sid) {
                     this.newlySeatedIds.update(s => new Set([...s, sid]));
                     setTimeout(() => {

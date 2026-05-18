@@ -125,18 +125,16 @@ export class GuestService {
       }
       this.guests.update((current: Guest[]) => [...current, guest]);
 
-      const result = await firstValueFrom(this.http.post(this.apiUrl, guest));
-
-      // If server returns an ID, update the local guest object and state
-      /* const newId = (result && (result as Guest).id);
-      const seatNumber = (result && (result as Guest).seatNumber); */
-      const guestResponse: Guest = { ...(result as Guest) };
-      if (guestResponse) {
-        // Algunos backends devuelven sólo un subconjunto de campos en el POST.
-        // Para no perder datos del "optimistic update", mezclamos respuesta + datos originales.
-        const merged: Guest = { ...guest, ...guestResponse };
+      const response = await firstValueFrom(this.http.post(this.apiUrl, guest));
+      
+      // La respuesta tiene formato { success: true, data: { id: 75, ... }, message: "..." }
+      // Necesitamos extraer data.id para actualizar el guest local
+      const responseData = response as any;
+      if (responseData && responseData.data && responseData.data.id) {
+        // Actualizar el guest con el nuevo ID
+        const guestWithId = { ...guest, id: responseData.data.id };
         this.guests.update((current: Guest[]) =>
-          current.map(g => g === guest ? merged : g)
+          current.map(g => g.name === guest.name && g.email === guest.email && g.phone === guest.phone ? guestWithId : g)
         );
       }
 
@@ -153,7 +151,7 @@ export class GuestService {
         colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff']
       });
 
-      return result;
+      return responseData;
     } catch (error) {
       console.error('Error registering guest:', error);
       // Si falla el servidor, intentar guardar en Google Sheets vía JSONP
