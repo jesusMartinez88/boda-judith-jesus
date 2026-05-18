@@ -283,6 +283,24 @@
               }
             }
 
+            @if (showExitConfirm()) {
+              <div class="modal-backdrop" (click)="cancelExit()">
+                <div class="modal-container confirm-exit-modal" (click)="$event.stopPropagation()">
+                  <div class="modal-header">
+                    <h3>¿Deseas salir de la aplicación?</h3>
+                    <button class="close-btn" (click)="cancelExit()">×</button>
+                  </div>
+                  <div class="modal-body">
+                    <p>Si sales volverás a la pantalla de acceso. ¿Estás seguro?</p>
+                  </div>
+                  <div class="modal-actions">
+                    <button class="btn-secondary-modal" (click)="cancelExit()">No</button>
+                    <button class="btn-danger" (click)="confirmExit()">Sí, salir</button>
+                  </div>
+                </div>
+              </div>
+            }
+
           }
 
           @if (currentView() === 'tables') {

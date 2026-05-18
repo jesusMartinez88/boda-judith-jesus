@@ -233,6 +233,7 @@ export class ContactsComponent implements OnInit {
 
       await this.contactService.patchContact(contact.id, {
         linkSent: true,
+        invitationStatus: 'sent',
         sentAt: new Date().toISOString()
       });
 
@@ -295,6 +296,28 @@ export class ContactsComponent implements OnInit {
     }, 3500);
   }
 
+  async setInvitationStatus(contact: Contact, status: 'not_sent' | 'sent' | 'responded') {
+    if (!contact?.id) return;
+    try {
+      const updateData: any = {
+        invitationStatus: status,
+        linkSent: status !== 'not_sent'
+      };
+      if (status === 'sent' && !contact.sentAt) {
+        updateData.sentAt = new Date().toISOString();
+      }
+      if (status === 'responded' && !contact.respondedAt) {
+        updateData.respondedAt = new Date().toISOString();
+      }
+      await this.contactService.patchContact(contact.id, updateData);
+      const statusLabel = status === 'not_sent' ? 'No enviado' : status === 'sent' ? 'Enviado' : 'Respondido';
+      this.showAppToast(`Estado cambiado a: ${statusLabel}`, 'success');
+    } catch (err) {
+      console.error('Error changing invitation status:', err);
+      this.showAppToast('No se pudo cambiar el estado. Intenta de nuevo.', 'error');
+    }
+  }
+
   hideToast() {
     this.showToast.set(false);
     this.toastMessage.set('');
@@ -306,6 +329,12 @@ export class ContactsComponent implements OnInit {
 
   getTotalCount(slug: string) {
     return this.contacts().filter(c => c.side === slug).length;
+  }
+
+  getInvitationStatus(linkSent: boolean, invitationStatus?: string): string {
+    if (invitationStatus === 'responded') return 'responded';
+    if (invitationStatus === 'sent' || linkSent) return 'sent';
+    return 'not-sent';
   }
 
   async generateGenericInvitation() {
@@ -372,5 +401,11 @@ export class ContactsComponent implements OnInit {
     this.showGenericInvitation.set(false);
     this.genericInvitationText.set('');
     this.copySuccess.set(false);
+  }
+
+  openWhatsApp(contact: Contact) {
+    const fullPhone = `${contact.countryCode.replace('+', '')}${contact.phone}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${fullPhone}`;
+    window.open(whatsappUrl, '_blank');
   }
 }

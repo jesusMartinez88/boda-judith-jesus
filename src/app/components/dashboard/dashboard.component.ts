@@ -1,4 +1,6 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, HostListener } from '@angular/core';
+import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 import { StatsService, WeddingStats } from '../../services/stats.service';
 import { AuthService } from '../../services/auth.service';
@@ -26,6 +28,8 @@ export class DashboardComponent implements OnInit {
     private authService = inject(AuthService);
     private settingsService = inject(SettingsService);
     versionService = inject(VersionService);
+    private router = inject(Router);
+    private location = inject(Location);
 
     stats = signal<WeddingStats | null>(null);
     allergiesCount = signal<number | null>(null);
@@ -132,6 +136,7 @@ export class DashboardComponent implements OnInit {
     error = signal<string | null>(null);
     currentView = signal<'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts'>('stats');
     isMenuOpen = signal(false);
+    showExitConfirm = signal(false);
 
     ngOnInit() {
         this.loadStats();
@@ -153,6 +158,72 @@ export class DashboardComponent implements OnInit {
         } catch (e) {
             // ignore
         }
+
+        // Intercept browser back (popstate) using a native listener and Angular's
+        // Location service. This lets us act before Router starts a navigation
+        // and avoids using setTimeout hacks.
+        // Push a guard state so the first "back" pops to this entry and
+        // allows us to intercept the action and show a modal instead of
+        // leaving the app.
+        try {
+            // Push two states: first the guard, then a normal empty state on top.
+            // When the user presses back, the popped state's `event.state` will
+            // be the guard state, which we can detect reliably.
+            history.pushState({ dashboardGuard: true }, '', window.location.href);
+            history.pushState({}, '', window.location.href);
+        } catch (e) {
+            // ignore
+        }
+
+        // Fallback native listeners for extra visibility in some browsers/UI
+        this._nativePopListener = (ev: PopStateEvent) => {
+            this.onPopState(ev);
+        };
+        window.addEventListener('popstate', this._nativePopListener);
+    }
+
+    private _nativePopListener: ((e: PopStateEvent) => void) | null = null;
+    private _beforeUnloadListener: ((e: BeforeUnloadEvent) => void) | null = null;
+
+    ngOnDestroy() {
+        if (this._nativePopListener) {
+            window.removeEventListener('popstate', this._nativePopListener);
+            this._nativePopListener = null;
+        }
+        if (this._beforeUnloadListener) {
+            window.removeEventListener('beforeunload', this._beforeUnloadListener);
+            this._beforeUnloadListener = null;
+        }
+    }
+
+    @HostListener('window:popstate', ['$event'])
+    onPopState(ev: PopStateEvent) {
+        const target = this.location.path() || '/';
+
+        // If the popstate event's state is our guard, the user pressed back
+        // from the app shell — show exit confirmation and re-insert the
+        // top-of-stack empty state to keep the user on the dashboard.
+        if (ev && (ev.state as any)?.dashboardGuard === true) {
+            try { history.pushState({}, '', window.location.href); } catch (e) { /* ignore */ }
+            this.showExitConfirm.set(true);
+            return;
+        }
+
+        // Otherwise, ignore (internal navigations will proceed normally).
+    }
+
+    confirmExit() {
+        this.showExitConfirm.set(false);
+        // perform logout and navigate to login
+        this.authService.logout();
+        // navigate to login (replace history) then allow one back to proceed
+        this.router.navigate(['/login'], { replaceUrl: true }).then(() => {
+            try { history.back(); } catch (e) { /* ignore */ }
+        });
+    }
+
+    cancelExit() {
+        this.showExitConfirm.set(false);
     }
 
     toggleMenu() {
@@ -226,7 +297,8 @@ export class DashboardComponent implements OnInit {
     }
 
     logout() {
-        this.authService.logout();
+        this.closeMenu();
+        this.showExitConfirm.set(true);
     }
 
     openDeclinedGuestsModal() {

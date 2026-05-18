@@ -32,7 +32,7 @@ export class LoginComponent {
     // CAPTCHA properties
     captchaQuestion = signal('');
     private correctCaptchaAnswer: number = 0;
-    
+
     private messageTimers: ReturnType<typeof setTimeout>[] = [];
 
     constructor() {
@@ -72,7 +72,9 @@ export class LoginComponent {
                     this.clearLoadingMessages();
                     // Notificar al servicio PWA que el usuario se ha logueado
                     this.pwaService.onUserLoggedIn();
-                    this.router.navigate(['/dashboard']);
+                    // Usar replaceUrl para que la página de login no quede en el historial
+                    // y al pulsar "atrás" no vuelva al login
+                    this.router.navigate(['/dashboard'], { replaceUrl: true });
                 },
                 error: (err) => {
                     this.clearLoadingMessages();

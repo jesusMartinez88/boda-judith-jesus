@@ -102,19 +102,23 @@
       </div>
     } @else {
       @for (contact of filteredContacts(); track contact.id) {
-        <div class="contact-card" [class.sent]="contact.linkSent">
+        <div class="contact-card" [class.not-sent]="(!contact.invitationStatus || contact.invitationStatus === 'not_sent') && !contact.linkSent" [class.sent]="contact.invitationStatus === 'sent' || (contact.invitationStatus !== 'responded' && contact.linkSent)" [class.responded]="contact.invitationStatus === 'responded'">
           <div class="contact-info">
             <div class="name-row">
               <span class="contact-name">{{ contact.name }}</span>
-              <label class="sent-toggle" title="Marcar enviado/no enviado">
-                <input type="checkbox" [checked]="contact.linkSent" (change)="toggleLinkSent(contact)">
-                <span class="slider" aria-hidden="true"></span>
-              </label>
+              <button class="btn-chat-whatsapp" (click)="openWhatsApp(contact)" title="Abrir chat en WhatsApp">
+                💬
+              </button>
             </div>
-            <span class="contact-phone">📱 {{ contact.countryCode }} {{ contact.phone }}</span>
+            <span class="contact-phone">📱 {{ contact.countryCode }} {{ contact.phone }} </span>
             @if (contact.sentAt) {
               <span class="sent-date">Último envío: {{ contact.sentAt | date:'dd/MM HH:mm' }}</span>
             }
+            <div class="contact-status-indicators">
+              <button class="status-pill not-sent" [class.active]="(!contact.invitationStatus || contact.invitationStatus === 'not_sent') && !contact.linkSent" (click)="setInvitationStatus(contact, 'not_sent')">No enviado</button>
+              <button class="status-pill sent" [class.active]="contact.invitationStatus === 'sent' || (contact.invitationStatus !== 'responded' && contact.linkSent)" (click)="setInvitationStatus(contact, 'sent')">Enviado</button>
+              <button class="status-pill responded" [class.active]="contact.invitationStatus === 'responded'" (click)="setInvitationStatus(contact, 'responded')">Respondido</button>
+            </div>
           </div>
             <div class="contact-actions">
             <button class="btn-whatsapp" (click)="sendInvitation(contact)" [disabled]="isGenerating() === contact.id">

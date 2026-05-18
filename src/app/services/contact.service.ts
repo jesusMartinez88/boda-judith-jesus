@@ -10,9 +10,13 @@ export interface Contact {
   countryCode: string;
   side: string;
   linkSent: boolean;
+  invitationStatus?: InvitationStatus;
   sentAt?: string;
+  respondedAt?: string;
   createdAt?: string;
 }
+
+export type InvitationStatus = 'not_sent' | 'sent' | 'responded';
 
 export interface ContactCategory {
   id?: number;
