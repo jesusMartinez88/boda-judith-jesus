@@ -67,14 +67,5 @@
   "overrides": {
     "undici": ">=7.24.5",
     "picomatch": ">=4.0.4"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "core-js",
-      "esbuild",
-      "lmdb",
-      "msgpackr-extract"
-    ]
   }
 }
