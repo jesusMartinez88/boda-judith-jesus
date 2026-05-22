@@ -4,13 +4,6 @@ minimumReleaseAge: 4320
 ignoredBuiltDependencies: []
 strictDepBuilds: true
 
-onlyBuiltDependencies:
-  - "@parcel/watcher"
-  - "core-js"
-  - "esbuild"
-  - "lmdb"
-  - "msgpackr-extract"
-
 allowBuilds:
   core-js: true
   lmdb: true
