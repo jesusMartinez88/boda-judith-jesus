@@ -1,0 +1,6 @@
+minimumReleaseAgeExclude: []
+
+minimumReleaseAge: 4320
+ignoredBuiltDependencies: []
+onlyBuiltDependencies: []
+strictDepBuilds: true
