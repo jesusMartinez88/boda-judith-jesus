@@ -10,3 +10,9 @@ onlyBuiltDependencies:
   - "esbuild"
   - "lmdb"
   - "msgpackr-extract"
+
+allowBuilds:
+  core-js: true
+  lmdb: true
+  msgpackr-extract: true
+  parcel-watcher: true

@@ -69,7 +69,7 @@
     "picomatch": ">=4.0.4"
   },
   "pnpm": {
-    "allowedBuilds": [
+    "onlyBuiltDependencies": [
       "@parcel/watcher",
       "core-js",
       "esbuild",
