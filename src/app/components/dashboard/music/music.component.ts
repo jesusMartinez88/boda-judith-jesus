@@ -1,17 +1,15 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, effect, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer } from '@angular/platform-browser';
 import { MusicPlaylistService, MusicSong } from '../../../services/music-playlist.service';
-import { ToastComponent } from '../../../shared/toast/toast.component';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
-declare var YT: any;
-
+declare const YT: any;
 @Component({
   selector: 'app-music',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ToastComponent, DragDropModule],
+  imports: [CommonModule, ReactiveFormsModule, DragDropModule],
   templateUrl: './music.component.html',
   styleUrl: './music.component.css'
 })
@@ -30,12 +28,12 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   isSubmitting = signal(false);
   currentPlayingId = signal<number | null | undefined>(null);
   songToDelete = signal<MusicSong | null>(null);
-  
+
   // Estado del reproductor
   isVideoExpanded = signal(false);
   private player: any = null;
   private apiReady = false;
-  
+
   // Búsqueda
   searchQuery = signal('');
 
@@ -50,9 +48,9 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   filteredSongs = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     if (!query) return this.songs();
-    
-    return this.songs().filter(song => 
-      song.title.toLowerCase().includes(query) || 
+
+    return this.songs().filter(song =>
+      song.title.toLowerCase().includes(query) ||
       song.artist.toLowerCase().includes(query) ||
       (song.note && song.note.toLowerCase().includes(query))
     );
@@ -62,10 +60,10 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   safeYoutubeUrl = computed(() => {
     const id = this.currentPlayingId();
     if (!id) return null;
-    
+
     const song = this.songs().find(s => s.id === id);
     if (!song || !song.youtubeId) return null;
-    
+
     const url = `https://www.youtube.com/embed/${song.youtubeId}?enablejsapi=1&autoplay=1&origin=${window.location.origin}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   });
@@ -98,7 +96,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
     effect(() => {
       const id = this.currentPlayingId();
       const song = this.currentSong();
-      
+
       if (id && this.player && this.player.loadVideoById) {
         if (song && song.youtubeId) {
           this.player.loadVideoById(song.youtubeId);
@@ -306,7 +304,6 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
       if (isFirstPlay) {
         this.initPlayer();
       }
-      // Activamos el keep-alive inmediatamente en el primer clic para asegurar el contexto de audio
       this.startKeepAlive();
     }
   }
