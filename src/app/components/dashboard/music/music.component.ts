@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, effect, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MusicPlaylistService, MusicSong } from '../../../services/music-playlist.service';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
-declare const YT: any;
+declare var YT: any;
+
 @Component({
   selector: 'app-music',
   standalone: true,
@@ -28,12 +29,13 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   isSubmitting = signal(false);
   currentPlayingId = signal<number | null | undefined>(null);
   songToDelete = signal<MusicSong | null>(null);
-
+  
   // Estado del reproductor
   isVideoExpanded = signal(false);
   private player: any = null;
   private apiReady = false;
-
+  private isAttemptingPlay = false;
+  
   // Búsqueda
   searchQuery = signal('');
 
@@ -48,9 +50,9 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   filteredSongs = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     if (!query) return this.songs();
-
-    return this.songs().filter(song =>
-      song.title.toLowerCase().includes(query) ||
+    
+    return this.songs().filter(song => 
+      song.title.toLowerCase().includes(query) || 
       song.artist.toLowerCase().includes(query) ||
       (song.note && song.note.toLowerCase().includes(query))
     );
@@ -60,10 +62,10 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   safeYoutubeUrl = computed(() => {
     const id = this.currentPlayingId();
     if (!id) return null;
-
+    
     const song = this.songs().find(s => s.id === id);
     if (!song || !song.youtubeId) return null;
-
+    
     const url = `https://www.youtube.com/embed/${song.youtubeId}?enablejsapi=1&autoplay=1&origin=${window.location.origin}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   });
@@ -96,7 +98,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
     effect(() => {
       const id = this.currentPlayingId();
       const song = this.currentSong();
-
+      
       if (id && this.player && this.player.loadVideoById) {
         if (song && song.youtubeId) {
           this.player.loadVideoById(song.youtubeId);
@@ -113,6 +115,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
     this.musicService.loadSongs();
     this.initYoutubeApi();
     this.setupMediaSessionHandlers();
+    this.setupVisibilityHandler();
   }
 
   ngAfterViewInit() {
@@ -126,13 +129,35 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.player) {
       this.player.destroy();
     }
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  // --- Lógica de Visibilidad (Intento de evitar pausa al bloquear) ---
+  private setupVisibilityHandler() {
+    document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+  }
+
+  private handleVisibilityChange() {
+    if (document.visibilityState === 'hidden' && this.currentPlayingId()) {
+      // Si se oculta (bloqueo o cambio de app), forzamos el keep-alive
+      this.startKeepAlive();
+      
+      // Pequeño retardo para intentar forzar la reproducción si YouTube intenta pausar
+      setTimeout(() => {
+        if (this.player && this.player.getPlayerState() === 2) { // Si está pausado
+          this.player.playVideo();
+        }
+      }, 100);
+    }
   }
 
   // --- Lógica de Keep-Alive (Android Background) ---
   private startKeepAlive() {
     if (this.keepAliveAudio && this.keepAliveAudio.nativeElement) {
+      // Forzamos el volumen y la reproducción en bucle
+      this.keepAliveAudio.nativeElement.volume = 0.01; // Casi inaudible pero activo
       this.keepAliveAudio.nativeElement.play().catch(err => {
-        console.warn('Keep-alive audio failed to play (user interaction might be needed):', err);
+        console.warn('Keep-alive audio failed to play:', err);
       });
     }
   }
@@ -140,6 +165,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   private stopKeepAlive() {
     if (this.keepAliveAudio && this.keepAliveAudio.nativeElement) {
       this.keepAliveAudio.nativeElement.pause();
+      this.keepAliveAudio.nativeElement.currentTime = 0;
     }
   }
 
@@ -147,11 +173,19 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   private setupMediaSessionHandlers() {
     if ('mediaSession' in navigator) {
       navigator.mediaSession.setActionHandler('play', () => {
-        const song = this.currentSong();
-        if (song) this.playSong(song);
+        if (this.player) {
+          this.player.playVideo();
+          this.startKeepAlive();
+        } else {
+          const song = this.currentSong();
+          if (song) this.playSong(song);
+        }
       });
       navigator.mediaSession.setActionHandler('pause', () => {
-        this.stopPlayback();
+        if (this.player) {
+          this.player.pauseVideo();
+          this.stopKeepAlive();
+        }
       });
       navigator.mediaSession.setActionHandler('previoustrack', () => {
         this.previousSong();
@@ -169,7 +203,8 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
         artist: song.artist,
         album: 'Boda Judith & Jesús',
         artwork: [
-          { src: `https://img.youtube.com/vi/${song.youtubeId}/hqdefault.jpg`, sizes: '480x360', type: 'image/jpeg' }
+          { src: `https://img.youtube.com/vi/${song.youtubeId}/hqdefault.jpg`, sizes: '480x360', type: 'image/jpeg' },
+          { src: `https://img.youtube.com/vi/${song.youtubeId}/maxresdefault.jpg`, sizes: '1280x720', type: 'image/jpeg' }
         ]
       });
       navigator.mediaSession.playbackState = 'playing';
@@ -212,6 +247,14 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
               this.startKeepAlive();
             } else if (event.data === 2) { // PAUSED
               if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+              // Si se pausa estando en segundo plano, intentamos re-activar si fue por bloqueo
+              if (document.visibilityState === 'hidden' && !this.isAttemptingPlay) {
+                this.isAttemptingPlay = true;
+                setTimeout(() => {
+                  if (this.player) this.player.playVideo();
+                  this.isAttemptingPlay = false;
+                }, 500);
+              }
             }
           },
           'onError': (error: any) => {
@@ -297,7 +340,17 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
 
   playSong(song: MusicSong) {
     if (this.currentPlayingId() === song.id) {
-      this.stopPlayback();
+      // Si ya está sonando, pausamos tanto YouTube como el Keep-Alive
+      if (this.player) {
+        const state = this.player.getPlayerState();
+        if (state === 1) { // Playing
+          this.player.pauseVideo();
+          this.stopKeepAlive();
+        } else {
+          this.player.playVideo();
+          this.startKeepAlive();
+        }
+      }
     } else {
       const isFirstPlay = !this.currentPlayingId();
       this.currentPlayingId.set(song.id);
