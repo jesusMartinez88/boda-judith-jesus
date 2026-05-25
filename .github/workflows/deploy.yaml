@@ -38,7 +38,7 @@ jobs:
         run: |
           sed -i "s|<head>|<head><script>window.NG_APP_SHEETURL='${{ secrets.NG_APP_SHEETURL }}';</script>|g" src/index.html
       - name: Build
-        run: pnpm run build -- --configuration production --base-href /boda-judith-jesus/
+        run: pnpm run build --base-href /boda-judith-jesus/
         env:
           NG_APP_SHEETURL: ${{ secrets.NG_APP_SHEETURL }}
       - name: Deploy to Github pages
