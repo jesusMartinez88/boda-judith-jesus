@@ -1,102 +1,102 @@
 .gifts-section {
-    padding: 80px 20px;
-    background-color: #fffafb;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  padding: 80px 20px;
+  background-color: #fffafb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .gifts-card {
-    background: white;
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    max-width: 600px;
-    width: 100%;
-    text-align: center;
-    border: 1px solid #ffeef1;
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid #ffeef1;
 }
 
 .icon-container {
-    margin-bottom: 20px;
-    color: #ff69b4;
+  margin-bottom: 20px;
+  color: #ff69b4;
 }
 
 .gift-icon {
-    filter: drop-shadow(0 4px 6px rgba(255, 105, 180, 0.2));
+  filter: drop-shadow(0 4px 6px rgba(255, 105, 180, 0.2));
 }
 
 .section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.5rem;
-    color: #333;
-    margin-bottom: 15px;
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 15px;
 }
 
 .section-description {
-    font-size: 1.1rem;
-    color: #666;
-    line-height: 1.6;
-    margin-bottom: 30px;
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 30px;
 }
 
 .account-container {
-    background: #fdf2f5;
-    padding: 25px;
-    border-radius: 15px;
-    margin-bottom: 25px;
-    border: 1px dashed #ffb6c1;
+  background: #fdf2f5;
+  padding: 25px;
+  border-radius: 15px;
+  margin-bottom: 25px;
+  border: 1px dashed #ffb6c1;
 }
 
 .account-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
 .account-item:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .label {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #999;
-    margin-bottom: 5px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #999;
+  margin-bottom: 5px;
 }
 
 .value {
-    font-size: 1.2rem;
-    color: #444;
-    font-weight: 500;
+  font-size: 1.2rem;
+  color: #444;
+  font-weight: 500;
 }
 
 .iban {
-    font-family: 'Courier New', Courier, monospace;
-    font-weight: bold;
-    letter-spacing: 1px;
-    color: #d13d7c;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #d13d7c;
 }
 
 .thanks-text {
-    font-size: 1.2rem;
-    font-style: italic;
-    color: #ff69b4;
-    margin-top: 20px;
+  font-size: 1.2rem;
+  font-style: italic;
+  color: #ff69b4;
+  margin-top: 20px;
 }
 
 @media (max-width: 768px) {
-    .gifts-card {
-        padding: 30px 20px;
-    }
+  .gifts-card {
+    padding: 30px 20px;
+  }
 
-    .section-title {
-        font-size: 2rem;
-    }
+  .section-title {
+    font-size: 2rem;
+  }
 
-    .value {
-        font-size: 1.1rem;
-    }
+  .value {
+    font-size: 1.1rem;
+  }
 }

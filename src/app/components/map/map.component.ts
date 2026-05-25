@@ -5,11 +5,12 @@ import L from 'leaflet';
   selector: 'app-map',
   standalone: true,
   templateUrl: './map.component.html',
-  styleUrl: './map.component.css'
+  styleUrl: './map.component.css',
 })
 export class MapComponent implements OnInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
-  private map: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private map!: L.Map ;
 
   ngOnInit() {
     setTimeout(() => this.initializeMap(), 100);
@@ -24,7 +25,7 @@ export class MapComponent implements OnInit {
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
+      maxZoom: 19,
     }).addTo(this.map);
 
     // Agregar marcador personalizado
@@ -33,7 +34,7 @@ export class MapComponent implements OnInit {
       className: 'custom-marker-container',
       iconSize: [40, 40],
       iconAnchor: [20, 40],
-      popupAnchor: [0, -40]
+      popupAnchor: [0, -40],
     });
 
     L.marker([lat, lng], { icon: customIcon })

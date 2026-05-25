@@ -1,5 +1,5 @@
 /* Global Styles */
-@import "tailwindcss";
+@import 'tailwindcss';
 
 * {
   margin: 0;
@@ -9,7 +9,8 @@
 
 html {
   scroll-behavior: smooth;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 body {
@@ -153,7 +154,6 @@ select:focus {
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 1;
@@ -194,7 +194,8 @@ select:focus {
   align-items: center !important;
   justify-content: center !important;
   border-radius: 50% !important;
-  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4),
+  box-shadow:
+    0 10px 25px rgba(236, 72, 153, 0.4),
     0 15px 35px rgba(0, 0, 0, 0.1) !important;
   background: white !important;
   width: 64px !important;

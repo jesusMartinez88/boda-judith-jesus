@@ -26,6 +26,7 @@
 ## 🎯 Funcionalidades
 
 ### Instalación
+
 - Solo se muestra en dispositivos móviles o pantallas pequeñas (< 1024px)
 - Solo se activa después de un login exitoso
 - Detecta automáticamente si la app no está instalada
@@ -34,6 +35,7 @@
 - Si rechaza, no se vuelve a mostrar por 24 horas
 
 ### Actualizaciones
+
 - Verifica actualizaciones cada hora
 - Cuando hay nueva versión, muestra un prompt
 - El usuario puede actualizar inmediatamente o más tarde
@@ -73,18 +75,21 @@ Luego actualizar `public/manifest.json` con estos iconos.
 ## 🧪 Probar la PWA
 
 ### En desarrollo:
+
 ```bash
 npm run build
 npx http-server dist/boda-judith-jesus/browser -p 8080
 ```
 
 ### En Chrome DevTools:
+
 1. Abre DevTools (F12)
 2. Ve a Application > Service Workers
 3. Ve a Application > Manifest
 4. Prueba "Add to Home Screen"
 
 ### En móvil:
+
 1. Abre la app en Chrome/Safari
 2. Espera 3 segundos
 3. Verás el prompt de instalación
@@ -93,6 +98,7 @@ npx http-server dist/boda-judith-jesus/browser -p 8080
 ## 🚀 Deploy
 
 El service worker solo funciona en:
+
 - HTTPS (producción)
 - localhost (desarrollo)
 

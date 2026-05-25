@@ -1,0 +1,39 @@
+name: Dependabot Auto-Bump
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  bump-version:
+    # Solo se ejecuta si la PR es de dependabot
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Necesario para hacer commit en la PR
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Necesario para poder hacer commit en la rama de la PR
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref }}
+
+      # INSTALAR NODE Y PNPM
+      - name: Setup Environment
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Bump version and sync
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Incrementamos la versión
+          pnpm version patch --no-git-tag-version
+
+          # Ejecutamos tu script de sincronización
+          pnpm run version:sync
+
+          # Hacemos commit de los cambios (package.json, lockfile, sw.js)
+          git add .
+          git commit -m "chore: bump version and sync after dependabot update"
+          git push

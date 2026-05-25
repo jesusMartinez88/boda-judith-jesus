@@ -1,85 +1,85 @@
 /* ===== MENU COLORS (Internal Variables) ===== */
 .menu-vegetarian {
-    --menu-color: #22c55e;
+  --menu-color: #22c55e;
 }
 
 .menu-vegan {
-    --menu-color: #10b981;
+  --menu-color: #10b981;
 }
 
 .menu-celiac {
-    --menu-color: #f59e0b;
+  --menu-color: #f59e0b;
 }
 
 .menu-lactose {
-    --menu-color: #3b82f6;
+  --menu-color: #3b82f6;
 }
 
 .menu-nuts {
-    --menu-color: #ef4444;
+  --menu-color: #ef4444;
 }
 
 .menu-kid {
-    --menu-color: #ec4899;
+  --menu-color: #ec4899;
 }
 
 .menu-normal {
-    --menu-color: #cbd5e1;
+  --menu-color: #cbd5e1;
 }
 
 /* Light gray for normal as per user preference */
 
 /* ===== TABLES LEGEND ===== */
 .tables-legend {
-    background: white;
-    padding: 1.5rem 2rem;
-    border-radius: 20px;
-    border: 1px solid #f1f5f9;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    margin-top: 2rem;
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 20px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  margin-top: 2rem;
 }
 
 .legend-header h4 {
-    font-family: 'Playfair Display', serif;
-    margin: 0 0 1rem 0;
-    color: #475569;
-    font-size: 1rem;
+  font-family: 'Playfair Display', serif;
+  margin: 0 0 1rem 0;
+  color: #475569;
+  font-size: 1rem;
 }
 
 .legend-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
 }
 
 .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 .legend-color {
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
-    background: var(--menu-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--menu-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .legend-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
 }
 
 @media (max-width: 640px) {
-    .tables-legend {
-        padding: 1.25rem;
-    }
+  .tables-legend {
+    padding: 1.25rem;
+  }
 
-    .legend-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 1rem;
-    }
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+  }
 }

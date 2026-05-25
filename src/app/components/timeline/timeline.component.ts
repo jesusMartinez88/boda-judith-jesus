@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 
-
 interface Event {
   time: string;
   title: string;
@@ -15,7 +14,7 @@ interface Event {
   standalone: true,
   imports: [],
   templateUrl: './timeline.component.html',
-  styleUrl: './timeline.component.css'
+  styleUrl: './timeline.component.css',
 })
 export class TimelineComponent {
   events: Event[] = [
@@ -25,7 +24,7 @@ export class TimelineComponent {
       description: 'Ceremonia en Blanca. ¡El momento esperado!',
       location: 'Iglesia de Blanca',
       locationUrl: 'https://www.google.com/maps/dir/?api=1&destination=38.1804621,-1.375567',
-      icon: '💍'
+      icon: '💍',
     },
     {
       time: '21:00',
@@ -33,7 +32,7 @@ export class TimelineComponent {
       description: 'Aperitivos y bebidas en un ambiente relajado',
       location: 'Pericon Azahar',
       locationUrl: 'https://www.google.com/maps/dir/?api=1&destination=38.2151126,-1.3497794',
-      icon: '🥂'
+      icon: '🥂',
     },
     {
       time: '22:30',
@@ -41,7 +40,7 @@ export class TimelineComponent {
       description: 'Cena de gala con menú especial',
       location: 'Pericon Azahar',
       locationUrl: 'https://www.google.com/maps/dir/?api=1&destination=38.2151126,-1.3497794',
-      icon: '🍽️'
+      icon: '🍽️',
     },
     {
       time: '00:30',
@@ -49,7 +48,7 @@ export class TimelineComponent {
       description: 'Barra libre y diversión toda la noche',
       location: 'Pericon Azahar',
       locationUrl: 'https://www.google.com/maps/dir/?api=1&destination=38.2151126,-1.3497794',
-      icon: '🎉'
-    }
+      icon: '🎉',
+    },
   ];
 }

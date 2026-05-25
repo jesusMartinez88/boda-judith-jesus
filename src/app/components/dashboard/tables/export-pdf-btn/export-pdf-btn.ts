@@ -7,7 +7,7 @@ import html2canvas from 'html2canvas';
   standalone: true,
   imports: [],
   templateUrl: './export-pdf-btn.html',
-  styleUrl: './export-pdf-btn.css'
+  styleUrl: './export-pdf-btn.css',
 })
 export class ExportPdfBtnComponent {
   @Input({ required: true }) hallElement!: HTMLElement | undefined;
@@ -25,7 +25,7 @@ export class ExportPdfBtnComponent {
       const canvas = await html2canvas(element, {
         scale: 2, // Buena resolución
         useCORS: true,
-        backgroundColor: '#f8fafc' // Fondo del dashboard
+        backgroundColor: '#f8fafc', // Fondo del dashboard
       });
 
       const imgData = canvas.toDataURL('image/png');

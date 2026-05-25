@@ -14,7 +14,7 @@ interface Photo {
   standalone: true,
   imports: [],
   templateUrl: './gallery.component.html',
-  styleUrl: './gallery.component.css'
+  styleUrl: './gallery.component.css',
 })
 export class GalleryComponent implements AfterViewInit, OnDestroy {
   @ViewChild('sliderTrack') sliderTrack!: ElementRef;
@@ -25,50 +25,50 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
       title: 'El comienzo',
       placeholder: 'assets/fotos/foto12.jpg',
       description: 'Todo empezó por una casualidad',
-      date: '2018'
+      date: '2018',
     },
     {
       id: 2,
       title: 'Viajes inolvidables',
       placeholder: 'assets/fotos/foto20.jpeg',
       description: 'Nuestro primer viaje juntos fue el inicio de mil aventuras más.',
-      date: '2018'
+      date: '2018',
     },
     {
       id: 3,
       title: 'Cómplices',
       placeholder: 'assets/fotos/foto2.jpeg',
       description: 'Entre risas y momentos compartidos, supimos que era para siempre.',
-      date: '2022'
+      date: '2022',
     },
     {
       id: 4,
       title: 'Sumando aventuras',
       placeholder: 'assets/fotos/foto19.jpeg',
       description: 'Una escapada diferente.',
-      date: '2023'
+      date: '2023',
     },
     {
       id: 5,
       title: 'La gran pregunta',
       placeholder: 'assets/fotos/foto17.jpeg',
       description: 'Un día cualquiera que se convirtió en el más importante de nuestras vidas.',
-      date: '2025'
+      date: '2025',
     },
     {
       id: 6,
       title: 'Hacia el altar',
       placeholder: 'assets/fotos/foto1.jpeg',
       description: 'Contando los días para decir "Sí, quiero" rodeados de nuestra gente.',
-      date: '2025'
+      date: '2025',
     },
     {
       id: 7,
       title: 'Ya falta poco...',
       placeholder: 'assets/fotos/foto18.jpeg',
       description: 'Nuestra fecha mas esperada .',
-      date: '2026'
-    }
+      date: '2026',
+    },
   ];
 
   sliderImages = [
@@ -105,7 +105,6 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
 
     this.ctx = gsap.context(() => {
       const track = this.sliderTrack.nativeElement;
-      const items = track.querySelectorAll('.slider-item');
 
       // Calculate total width of one set of items
       const totalWidth = track.scrollWidth / 2;
@@ -117,7 +116,7 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
         repeat: -1,
         onReverseComplete: () => {
           gsap.set(track, { x: 0 });
-        }
+        },
       });
 
       // Pause/Resume on hover

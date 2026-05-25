@@ -1,131 +1,133 @@
 :host {
-    grid-column: 1 / -1;
-    width: 100%;
+  grid-column: 1 / -1;
+  width: 100%;
 }
 
 /* Progress Card */
 .stats-card.progress-card {
-    grid-column: 1 / -1;
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    color: white;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 2.5rem;
-    border-radius: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: white;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 .progress-info h3 {
-    color: #94a3b8;
-    margin-bottom: 0.5rem;
-    font-size: 1.1rem;
-    margin-top: 0;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  margin-top: 0;
 }
 
 .progress-info .progress-value {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin: 0;
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0;
 }
 
 .progress-visual {
-    flex: 1;
-    max-width: 600px;
-    margin-left: 3rem;
+  flex: 1;
+  max-width: 600px;
+  margin-left: 3rem;
 }
 
 .progress-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.8rem;
-    font-weight: 600;
-    font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .percentage-badge {
-    background: #ec4899;
-    padding: 0.2rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
+  background: #ec4899;
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
 }
 
 .progress-bar-bg {
-    height: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-    position: relative;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
 }
 
 /* base bar (responses) placed absolutely so that confirmed bar can float on top */
 .progress-bar-fill {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    background: linear-gradient(90deg, #ec4899 0%, #db2777 100%);
-    border-radius: 10px;
-    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
-    z-index: 1;
-    opacity: 0.5; /* make underlying bar less intense */
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #ec4899 0%, #db2777 100%);
+  border-radius: 10px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
+  z-index: 1;
+  opacity: 0.5; /* make underlying bar less intense */
 }
 
 .progress-bar-fill.confirmed {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
-    opacity: 1;
-    z-index: 2;
-    /* no margin hack */
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+  opacity: 1;
+  z-index: 2;
+  /* no margin hack */
 }
 
 .progress-legend {
-    display: flex;
-    gap: 1.5rem;
-    margin-top: 1rem;
-    font-size: 0.8rem;
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  font-size: 0.8rem;
 }
 
 .legend-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 0.5rem;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
 }
 
 .dot-total {
-    background: #ec4899;
+  background: #ec4899;
 }
 
 .dot-confirmed {
-    background: #10b981;
+  background: #10b981;
 }
 
 .dot-declined {
-    background: #64748b; /* neutral gray for declines */
+  background: #64748b; /* neutral gray for declines */
 }
 
 @media (max-width: 1024px) {
-    .stats-card.progress-card {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 1.5rem;
-    }
+  .stats-card.progress-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.5rem;
+  }
 
-    .progress-visual {
-        margin-left: 0;
-        margin-top: 1.5rem;
-        max-width: 100%;
-    }
+  .progress-visual {
+    margin-left: 0;
+    margin-top: 1.5rem;
+    max-width: 100%;
+  }
 
-    .progress-info .progress-value {
-        font-size: 2rem;
-    }
+  .progress-info .progress-value {
+    font-size: 2rem;
+  }
 }

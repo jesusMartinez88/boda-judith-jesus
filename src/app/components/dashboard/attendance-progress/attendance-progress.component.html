@@ -1,27 +1,36 @@
 @if (totalEstimatedGuests() > 0) {
   <div class="stats-card progress-card">
-      <div class="progress-info">
-          <h3>Progreso de Respuestas</h3>
-          <p class="progress-value">{{ (stats()?.confirmed || 0) + (stats()?.declined || 0) }} / {{ totalEstimatedGuests() }}</p>
-          <div class="progress-legend">
-            <span><span class="legend-dot dot-confirmed"></span>Confirmados {{stats()?.confirmed}}</span>
-            <span><span class="legend-dot dot-total"></span>No asisten {{stats()?.declined}}</span>
-            @if (stats()?.declined !== undefined) {
-              <span><span class="legend-dot dot-declined"></span>Sin respuesta {{ totalEstimatedGuests() - (stats()?.confirmed || 0) - (stats()?.declined || 0) }}</span>
-            }
-          </div>
+    <div class="progress-info">
+      <h3>Progreso de Respuestas</h3>
+      <p class="progress-value">
+        {{ (stats()?.confirmed || 0) + (stats()?.declined || 0) }} / {{ totalEstimatedGuests() }}
+      </p>
+      <div class="progress-legend">
+        <span
+          ><span class="legend-dot dot-confirmed"></span>Confirmados {{ stats()?.confirmed }}</span
+        >
+        <span><span class="legend-dot dot-total"></span>No asisten {{ stats()?.declined }}</span>
+        @if (stats()?.declined !== undefined) {
+          <span
+            ><span class="legend-dot dot-declined"></span>Sin respuesta
+            {{
+              totalEstimatedGuests() - (stats()?.confirmed || 0) - (stats()?.declined || 0)
+            }}</span
+          >
+        }
       </div>
-      <div class="progress-visual">
-          <div class="progress-labels">
-              <span>Respuestas</span>
-              <span class="percentage-badge">{{ attendancePercentage() }}%</span>
-          </div>
-          <div class="progress-bar-bg">
-              <!-- RSVP Bar (Pending + Confirmed) -->
-              <div class="progress-bar-fill" [style.width.%]="attendancePercentage()"></div>
-              <!-- Only Confirmed Bar (Overlaid) -->
-              <div class="progress-bar-fill confirmed" [style.width.%]="confirmedPercentage()"></div>
-          </div>
+    </div>
+    <div class="progress-visual">
+      <div class="progress-labels">
+        <span>Respuestas</span>
+        <span class="percentage-badge">{{ attendancePercentage() }}%</span>
       </div>
+      <div class="progress-bar-bg">
+        <!-- RSVP Bar (Pending + Confirmed) -->
+        <div class="progress-bar-fill" [style.width.%]="attendancePercentage()"></div>
+        <!-- Only Confirmed Bar (Overlaid) -->
+        <div class="progress-bar-fill confirmed" [style.width.%]="confirmedPercentage()"></div>
+      </div>
+    </div>
   </div>
 }

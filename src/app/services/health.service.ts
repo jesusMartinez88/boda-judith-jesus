@@ -1,15 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { resource } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class HealthService {
-  constructor(private http: HttpClient) { }
-
+  private readonly http = inject(HttpClient);
   private baseUrl = environment.apiBaseUrl;
 
   warmUpResource = resource({
@@ -20,7 +19,7 @@ export class HealthService {
       } catch {
         console.log('Servidor warm-up iniciado (error silencioso)');
       }
-    }
+    },
   });
 
   warmUpServer(): void {

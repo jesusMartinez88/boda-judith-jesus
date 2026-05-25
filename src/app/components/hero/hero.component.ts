@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
   standalone: true,
   imports: [CountdownComponent],
   templateUrl: './hero.component.html',
-  styleUrl: './hero.component.css'
+  styleUrl: './hero.component.css',
 })
 export class HeroComponent implements AfterViewInit, OnDestroy {
   @ViewChild('heroContent') heroContent!: ElementRef;
@@ -23,7 +23,14 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   @ViewChild('heroOverlay') heroOverlay!: ElementRef;
   @ViewChild('particlesCanvas') particlesCanvas!: ElementRef<HTMLCanvasElement>;
 
-  private particles: Array<{ x: number; y: number; size: number; speedX: number; speedY: number; opacity: number }> = [];
+  private particles: {
+    x: number;
+    y: number;
+    size: number;
+    speedX: number;
+    speedY: number;
+    opacity: number;
+  }[] = [];
   private animationFrameId?: number;
 
   ngAfterViewInit() {
@@ -36,11 +43,17 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
-    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
   }
 
   private initAnimations() {
-    if (!this.heroTitle || !this.heroSubtitle || !this.heroLocation || !this.heroCta || !this.countdownWrapper) {
+    if (
+      !this.heroTitle ||
+      !this.heroSubtitle ||
+      !this.heroLocation ||
+      !this.heroCta ||
+      !this.countdownWrapper
+    ) {
       console.warn('HeroComponent: Some elements not found for animations');
       return;
     }
@@ -48,41 +61,60 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 1.2 } });
 
     // Configurar estado inicial de todos los elementos
-    gsap.set([
-      this.heroTitle.nativeElement,
-      this.heroSubtitle.nativeElement,
-      this.heroLocation.nativeElement,
-      this.countdownWrapper.nativeElement,
-      this.heroCta.nativeElement
-    ], {
-      opacity: 0,
-      y: 50
-    });
+    gsap.set(
+      [
+        this.heroTitle.nativeElement,
+        this.heroSubtitle.nativeElement,
+        this.heroLocation.nativeElement,
+        this.countdownWrapper.nativeElement,
+        this.heroCta.nativeElement,
+      ],
+      {
+        opacity: 0,
+        y: 50,
+      },
+    );
 
     // Animación de entrada secuencial
     tl.to(this.heroTitle.nativeElement, {
       opacity: 1,
       y: 0,
-      delay: 0.5
+      delay: 0.5,
     })
-      .to(this.heroSubtitle.nativeElement, {
-        opacity: 1,
-        y: 0
-      }, '-=0.8')
-      .to(this.heroLocation.nativeElement, {
-        opacity: 1,
-        y: 0
-      }, '-=0.8')
-      .to(this.countdownWrapper.nativeElement, {
-        opacity: 1,
-        y: 0
-      }, '-=0.8')
-      .to(this.heroCta.nativeElement, {
-        opacity: 1,
-        y: 0,
-        duration: 1,
-        ease: 'back.out(1.7)'
-      }, '-=0.6');
+      .to(
+        this.heroSubtitle.nativeElement,
+        {
+          opacity: 1,
+          y: 0,
+        },
+        '-=0.8',
+      )
+      .to(
+        this.heroLocation.nativeElement,
+        {
+          opacity: 1,
+          y: 0,
+        },
+        '-=0.8',
+      )
+      .to(
+        this.countdownWrapper.nativeElement,
+        {
+          opacity: 1,
+          y: 0,
+        },
+        '-=0.8',
+      )
+      .to(
+        this.heroCta.nativeElement,
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          ease: 'back.out(1.7)',
+        },
+        '-=0.6',
+      );
   }
 
   private initScrollEffects() {
@@ -99,8 +131,8 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
         trigger: this.heroBackground.nativeElement,
         start: 'top top',
         end: 'bottom top',
-        scrub: 1
-      }
+        scrub: 1,
+      },
     });
 
     // Efecto de zoom out en el contenido
@@ -112,20 +144,21 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
         trigger: this.heroContent.nativeElement,
         start: 'top top',
         end: 'bottom top',
-        scrub: 1
-      }
+        scrub: 1,
+      },
     });
 
     // Morphing de colores en el overlay
     gsap.to(this.heroOverlay.nativeElement, {
-      background: 'linear-gradient(135deg, rgba(190, 24, 93, 0.7) 0%, rgba(219, 39, 119, 0.8) 100%)',
+      background:
+        'linear-gradient(135deg, rgba(190, 24, 93, 0.7) 0%, rgba(219, 39, 119, 0.8) 100%)',
       ease: 'none',
       scrollTrigger: {
         trigger: this.heroOverlay.nativeElement,
         start: 'top top',
         end: 'bottom top',
-        scrub: 1
-      }
+        scrub: 1,
+      },
     });
 
     // NO hay animación de desaparición para el título - debe permanecer visible
@@ -149,14 +182,14 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
         size: Math.random() * 3 + 1,
         speedX: (Math.random() - 0.5) * 0.5,
         speedY: (Math.random() - 0.5) * 0.5,
-        opacity: Math.random() * 0.5 + 0.2
+        opacity: Math.random() * 0.5 + 0.2,
       });
     }
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      this.particles.forEach(particle => {
+      this.particles.forEach((particle) => {
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;

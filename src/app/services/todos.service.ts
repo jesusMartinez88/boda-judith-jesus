@@ -13,7 +13,7 @@ export interface Todo {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TodosService {
   private apiUrl = `${environment.apiBaseUrl}/api/todos`;
@@ -26,8 +26,8 @@ export class TodosService {
   async loadTodos(): Promise<Todo[]> {
     this.isLoading.set(true);
     try {
-      const response = await firstValueFrom(this.http.get<any>(this.apiUrl));
-      const list = response.data || response;
+      const response = await firstValueFrom(this.http.get<Todo[] | { data: Todo[] }>(this.apiUrl));
+      const list = response && 'data' in response ? response.data : response;
       const finalItems = Array.isArray(list) ? list : [];
       this.todos.set(finalItems);
       return finalItems;
@@ -39,9 +39,9 @@ export class TodosService {
     }
   }
 
-  async createTodo(todo: Todo): Promise<any> {
+  async createTodo(todo: Todo): Promise<Todo> {
     try {
-      const result = await firstValueFrom(this.http.post(this.apiUrl, todo));
+      const result = await firstValueFrom(this.http.post<Todo>(this.apiUrl, todo));
       await this.loadTodos(); // Refresh list
       return result;
     } catch (error) {
@@ -50,9 +50,9 @@ export class TodosService {
     }
   }
 
-  async updateTodo(id: number, todo: Partial<Todo>): Promise<any> {
+  async updateTodo(id: number, todo: Partial<Todo>): Promise<Todo> {
     try {
-      const result = await firstValueFrom(this.http.patch(`${this.apiUrl}/${id}`, todo));
+      const result = await firstValueFrom(this.http.patch<Todo>(`${this.apiUrl}/${id}`, todo));
       await this.loadTodos(); // Refresh list
       return result;
     } catch (error) {
@@ -61,9 +61,9 @@ export class TodosService {
     }
   }
 
-  async deleteTodo(id: number): Promise<any> {
+  async deleteTodo(id: number): Promise<unknown> {
     try {
-      const result = await firstValueFrom(this.http.delete(`${this.apiUrl}/${id}`));
+      const result = await firstValueFrom(this.http.delete<unknown>(`${this.apiUrl}/${id}`));
       await this.loadTodos(); // Refresh list
       return result;
     } catch (error) {

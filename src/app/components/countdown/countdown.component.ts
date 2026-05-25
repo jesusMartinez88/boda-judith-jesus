@@ -1,4 +1,12 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  AfterViewInit,
+  ElementRef,
+  ViewChild,
+  signal,
+} from '@angular/core';
 import { gsap } from 'gsap';
 
 interface TimeRemaining {
@@ -13,7 +21,7 @@ interface TimeRemaining {
   standalone: true,
   imports: [],
   templateUrl: './countdown.component.html',
-  styleUrl: './countdown.component.css'
+  styleUrl: './countdown.component.css',
 })
 export class CountdownComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('countdownContainer') countdownContainer!: ElementRef;
@@ -24,10 +32,10 @@ export class CountdownComponent implements OnInit, OnDestroy, AfterViewInit {
     days: 0,
     hours: 0,
     minutes: 0,
-    seconds: 0
+    seconds: 0,
   });
 
-  private intervalId: any;
+  private intervalId!: ReturnType<typeof setInterval>;
   private weddingDate = new Date('2026-07-11T18:00:00').getTime();
   private ctx?: gsap.Context;
 
@@ -72,17 +80,21 @@ export class CountdownComponent implements OnInit, OnDestroy, AfterViewInit {
       tl.to(this.countdownHeader.nativeElement, {
         opacity: 1,
         y: 0,
-        delay: 0.2
+        delay: 0.2,
       });
 
       if (items.length > 0) {
-        tl.to(items, {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          stagger: 0.1,
-          ease: 'back.out(1.7)'
-        }, '-=0.5');
+        tl.to(
+          items,
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            stagger: 0.1,
+            ease: 'back.out(1.7)',
+          },
+          '-=0.5',
+        );
       }
     }, this.countdownContainer.nativeElement);
   }
@@ -96,7 +108,7 @@ export class CountdownComponent implements OnInit, OnDestroy, AfterViewInit {
         days: 0,
         hours: 0,
         minutes: 0,
-        seconds: 0
+        seconds: 0,
       });
       return;
     }
@@ -108,7 +120,12 @@ export class CountdownComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const current = this.timeRemaining();
     // Update if any value actually changed (more robust than just seconds)
-    if (current.days !== days || current.hours !== hours || current.minutes !== minutes || current.seconds !== seconds) {
+    if (
+      current.days !== days ||
+      current.hours !== hours ||
+      current.minutes !== minutes ||
+      current.seconds !== seconds
+    ) {
       this.timeRemaining.set({ days, hours, minutes, seconds });
 
       if (current.seconds !== seconds) {
@@ -121,14 +138,16 @@ export class CountdownComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!this.countdownGrid) return;
 
     // Pulse effect on seconds change
-    const secondEl = this.countdownGrid.nativeElement.querySelector('.countdown-item:last-child .countdown-number');
+    const secondEl = this.countdownGrid.nativeElement.querySelector(
+      '.countdown-item:last-child .countdown-number',
+    );
     if (secondEl) {
       gsap.to(secondEl, {
         scale: 1.1,
         duration: 0.1,
         yoyo: true,
         repeat: 1,
-        ease: 'power1.inOut'
+        ease: 'power1.inOut',
       });
     }
   }

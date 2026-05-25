@@ -9,6 +9,6 @@ import { PwaPromptComponent } from './components/pwa-prompt/pwa-prompt.component
   template: `
     <router-outlet></router-outlet>
     <app-pwa-prompt></app-pwa-prompt>
-  `
+  `,
 })
-export class App { }
+export class App {}

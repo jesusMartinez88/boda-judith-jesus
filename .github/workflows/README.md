@@ -11,6 +11,7 @@ Este directorio contiene los workflows de CI/CD para el proyecto.
 **Propósito:** Construir y desplegar la aplicación a GitHub Pages
 
 **Pasos:**
+
 1. Checkout del código
 2. Setup de Node.js
 3. Instalación de dependencias
@@ -20,6 +21,7 @@ Este directorio contiene los workflows de CI/CD para el proyecto.
 7. Deploy a GitHub Pages
 
 **Variables requeridas:**
+
 - `NG_APP_SHEETURL` (secret)
 - `GH_TOKEN` (secret)
 
@@ -30,9 +32,11 @@ Este directorio contiene los workflows de CI/CD para el proyecto.
 **Propósito:** Incrementar la versión del proyecto de forma automatizada
 
 **Parámetros:**
+
 - `version_type`: patch | minor | major
 
 **Pasos:**
+
 1. Checkout del código
 2. Setup de Node.js
 3. Configuración de Git
@@ -44,6 +48,7 @@ Este directorio contiene los workflows de CI/CD para el proyecto.
 9. Creación de GitHub Release
 
 **Resultado:**
+
 - Nueva versión en `main`
 - Tag de git creado
 - GitHub Release publicado
@@ -61,6 +66,7 @@ Este directorio contiene los workflows de CI/CD para el proyecto.
 5. Click en **"Run workflow"**
 
 El workflow se ejecutará y:
+
 - Incrementará la versión
 - Actualizará todos los archivos necesarios
 - Creará un commit y tag
@@ -127,6 +133,7 @@ Los workflows necesitan los siguientes permisos:
 ## Monitoreo
 
 Puedes ver el estado de los workflows en:
+
 - Pestaña **Actions** del repositorio
 - Badge de status en el README (si está configurado)
 - Notificaciones de GitHub (si están habilitadas)

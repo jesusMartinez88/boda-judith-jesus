@@ -11,28 +11,28 @@ import { ContactComponent } from '../contact/contact.component';
 import { CalendarComponent } from '../calendar/calendar.component';
 
 @Component({
-    selector: 'app-home',
-    standalone: true,
-    imports: [
-        HeroComponent,
-        GalleryComponent,
-        TimelineComponent,
-        MapComponent,
-        RsvpFormComponent,
-        MusicPlayerComponent,
-        GiftsComponent,
-        ContactComponent,
-        CalendarComponent
-    ],
-    templateUrl: './home.component.html',
-    styleUrl: './home.component.css'
+  selector: 'app-home',
+  standalone: true,
+  imports: [
+    HeroComponent,
+    GalleryComponent,
+    TimelineComponent,
+    MapComponent,
+    RsvpFormComponent,
+    MusicPlayerComponent,
+    GiftsComponent,
+    ContactComponent,
+    CalendarComponent,
+  ],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css',
 })
 export class HomeComponent implements OnInit {
-    ngOnInit() {
-        AOS.init({
-            duration: 1000,
-            once: true,
-            easing: 'ease-out-cubic'
-        });
-    }
+  ngOnInit() {
+    AOS.init({
+      duration: 1000,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+  }
 }

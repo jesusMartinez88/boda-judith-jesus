@@ -24,9 +24,9 @@ export const WEDDING_CONFIG = {
 
   // Colores principales
   colors: {
-    primary: '#ec4899',      // Rosa principal
-    secondary: '#be185d',    // Rosa oscuro
-    accent: '#f472b6',       // Rosa claro
+    primary: '#ec4899', // Rosa principal
+    secondary: '#be185d', // Rosa oscuro
+    accent: '#f472b6', // Rosa claro
   },
 
   // Cronograma de eventos
@@ -36,29 +36,29 @@ export const WEDDING_CONFIG = {
       title: 'Ceremonia',
       description: 'Ceremonia en blanca. ¡El momento esperado!',
       location: 'Iglesia del Blanca',
-      icon: '💍'
+      icon: '💍',
     },
     {
       time: '21:00',
       title: 'Cóctel',
       description: 'Aperitivos y bebidas en un ambiente relajado',
       location: 'Pericon Azahar (Abarán)',
-      icon: '🥂'
+      icon: '🥂',
     },
     {
       time: '22:30',
       title: 'Cena',
       description: 'Cena de gala con menú especial',
       location: 'Pericon Azahar (Abarán)',
-      icon: '🍽️'
+      icon: '🍽️',
     },
     {
       time: '00:30',
       title: 'Barra Libre & Fiesta',
       description: 'Barra libre y diversión toda la noche',
       location: 'Pericon Azahar (Abarán)',
-      icon: '🎉'
-    }
+      icon: '🎉',
+    },
   ],
 
   // Configuración de API
@@ -90,8 +90,8 @@ export const WEDDING_CONFIG = {
       'assets/fotos/foto4.jpg',
       'assets/fotos/foto5.jpg',
       'assets/fotos/foto6.jpg',
-    ]
-  }
+    ],
+  },
 };
 
 export default WEDDING_CONFIG;

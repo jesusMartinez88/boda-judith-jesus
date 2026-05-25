@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,23 +26,19 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'latest'
-
       - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Install dependencies
-        run: npm ci
+      # 1. INSTALAR NODE Y PNPM
+      - name: Setup Environment
+        uses: ./.github/actions/setup-pnpm
 
       - name: Bump version
         run: |
-          npm version ${{ inputs.version_type }} -m "chore: bump version to %s"
-          npm run version:sync
+          pnpm version ${{ inputs.version_type }} -m "chore: bump version to %s"
+          pnpm run version:sync
 
       - name: Get new version
         id: version
@@ -67,14 +63,14 @@ jobs:
           release_name: Release v${{ steps.version.outputs.new_version }}
           body: |
             ## Cambios en v${{ steps.version.outputs.new_version }}
-            
+
             Esta versión fue generada automáticamente.
-            
+
             ### Archivos actualizados:
             - package.json
             - package-lock.json
             - sw.js (Service Worker cache)
-            
+
             version.service.ts lee la versión directamente de package.json
           draft: false
           prerelease: false

@@ -1,97 +1,97 @@
 /* ===== HEADER ===== */
 .tables-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 1.5rem 2rem;
-    border-radius: 24px;
-    box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.08);
-    border: 1px solid #f1f5f9;
-    position: relative;
-    z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem 2rem;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+  position: relative;
+  z-index: 10;
 }
 
 .title-group h2 {
-    font-family: 'Playfair Display', serif;
-    margin: 0;
-    color: #1e293b;
-    font-size: 1.8rem;
+  font-family: 'Playfair Display', serif;
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.8rem;
 }
 
 .title-group p {
-    color: #64748b;
-    font-size: 0.9rem;
-    margin: 0.2rem 0 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0.2rem 0 0 0;
 }
 
 .header-actions {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 .btn-add-table {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    color: white;
-    padding: 0.75rem 1.4rem;
-    border-radius: 14px;
-    border: none;
-    font-weight: 700;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    max-height: 44px;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 8px 20px -5px rgba(15, 23, 42, 0.25);
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: white;
+  padding: 0.75rem 1.4rem;
+  border-radius: 14px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-height: 44px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 8px 20px -5px rgba(15, 23, 42, 0.25);
 }
 
 .btn-add-table:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 25px -8px rgba(15, 23, 42, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px -8px rgba(15, 23, 42, 0.35);
 }
 
 .btn-toggle-layout {
-    background: white;
-    color: #475569;
-    padding: 0.75rem 1.4rem;
-    border-radius: 14px;
-    border: 2px solid #e2e8f0;
-    font-weight: 700;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    max-height: 44px;
-    cursor: pointer;
-    transition: all 0.3s;
+  background: white;
+  color: #475569;
+  padding: 0.75rem 1.4rem;
+  border-radius: 14px;
+  border: 2px solid #e2e8f0;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-height: 44px;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
 .btn-toggle-layout:hover {
-    border-color: #ec4899;
-    color: #ec4899;
+  border-color: #ec4899;
+  color: #ec4899;
 }
 
 .btn-toggle-layout.active {
-    background: #fdf2f8;
-    border-color: #ec4899;
-    color: #db2777;
-    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.1);
+  background: #fdf2f8;
+  border-color: #ec4899;
+  color: #db2777;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.1);
 }
 
 @media (max-width: 640px) {
-    .tables-header {
-        flex-direction: column;
-        gap: 1.2rem;
-        align-items: stretch;
-        padding: 1.25rem;
-    }
+  .tables-header {
+    flex-direction: column;
+    gap: 1.2rem;
+    align-items: stretch;
+    padding: 1.25rem;
+  }
 
-    .btn-add-table {
-        justify-content: center;
-        width: 100%;
-    }
+  .btn-add-table {
+    justify-content: center;
+    width: 100%;
+  }
 }

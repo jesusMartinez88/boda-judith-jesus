@@ -1,12 +1,12 @@
 version: 2
 updates:
   #Cada semana, Dependabot revisará las dependencias de npm y creará un PR si hay actualizaciones disponibles.
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     #Agrupa todas las dependencias en un solo PR
     groups:
       dependencies:
         patterns:
-          - "*"
+          - '*'

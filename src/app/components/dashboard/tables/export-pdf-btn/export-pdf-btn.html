@@ -1,10 +1,15 @@
-<button class="btn-export-pdf" (click)="exportHallToPdf()" title="Exportar salón a PDF" [disabled]="isExportingPdf()">
-    <span class="icon">📄</span> Exportar a PDF
+<button
+  class="btn-export-pdf"
+  (click)="exportHallToPdf()"
+  title="Exportar salón a PDF"
+  [disabled]="isExportingPdf()"
+>
+  <span class="icon">📄</span> Exportar a PDF
 </button>
 
 @if (isExportingPdf()) {
-<div class="pdf-loading-overlay">
+  <div class="pdf-loading-overlay">
     <div class="spinner"></div>
     <p>Generando PDF, por favor espera...</p>
-</div>
+  </div>
 }

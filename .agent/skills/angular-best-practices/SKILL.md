@@ -44,10 +44,11 @@ const userResource = resource({
   loader: ({ params, abortSignal }) => fetch(`/api/users/${params.id}`, { signal: abortSignal }),
 });
 
-const userName = computed(() => userResource.hasValue() ? userResource.value().name : undefined);
+const userName = computed(() => (userResource.hasValue() ? userResource.value().name : undefined));
 ```
 
 Key `resource` patterns:
+
 - `params` returns `undefined` → loader doesn't run, status becomes `'idle'`
 - Use `abortSignal` to cancel in-flight requests
 - Check `hasValue()` before accessing `value()` to handle loading/error states
@@ -82,7 +83,7 @@ export class UserService {
 export const routes: Routes = [
   {
     path: 'admin',
-    loadComponent: () => import('./admin/admin.page').then(m => m.AdminPage),
+    loadComponent: () => import('./admin/admin.page').then((m) => m.AdminPage),
   },
 ];
 ```

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import packageJson from '../../../package.json';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class VersionService {
   private readonly version = packageJson.version;

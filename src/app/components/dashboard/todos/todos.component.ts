@@ -9,7 +9,7 @@ import { ToastComponent } from '../../../shared/toast/toast.component';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, DatePipe, ToastComponent],
   templateUrl: './todos.component.html',
-  styleUrl: './todos.component.css'
+  styleUrl: './todos.component.css',
 })
 export class TodosComponent implements OnInit {
   private todosService = inject(TodosService);
@@ -33,8 +33,8 @@ export class TodosComponent implements OnInit {
   // Highlight recently saved todo
   lastSavedTodoId = signal<number | null>(null);
 
-  pendingCount = computed(() => this.todos().filter(t => t.status === 'pending').length);
-  completedCount = computed(() => this.todos().filter(t => t.status === 'completed').length);
+  pendingCount = computed(() => this.todos().filter((t) => t.status === 'pending').length);
+  completedCount = computed(() => this.todos().filter((t) => t.status === 'completed').length);
 
   sortedTodos = computed(() => {
     return [...this.todos()].sort((a, b) => {
@@ -51,7 +51,7 @@ export class TodosComponent implements OnInit {
     this.todoForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       date: ['', [Validators.required]],
-      status: ['pending']
+      status: ['pending'],
     });
   }
 
@@ -89,7 +89,8 @@ export class TodosComponent implements OnInit {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) return '(¡Es hoy!)';
-    if (diffDays < 0) return `(Hace ${Math.abs(diffDays)} ${Math.abs(diffDays) === 1 ? 'día' : 'días'})`;
+    if (diffDays < 0)
+      return `(Hace ${Math.abs(diffDays)} ${Math.abs(diffDays) === 1 ? 'día' : 'días'})`;
     if (diffDays === 1) return '(Mañana)';
     return `(En ${diffDays} días)`;
   }
@@ -114,9 +115,11 @@ export class TodosComponent implements OnInit {
       if (this.editingTodoId()) {
         savedId = this.editingTodoId();
       } else {
-        const matches = this.todos().filter(t => t.name === formValue.name && t.date === formValue.date && t.id);
+        const matches = this.todos().filter(
+          (t) => t.name === formValue.name && t.date === formValue.date && t.id,
+        );
         if (matches.length > 0) {
-          savedId = Math.max(...matches.map(m => m.id!));
+          savedId = Math.max(...matches.map((m) => m.id!));
         }
       }
       if (savedId) {
@@ -160,14 +163,14 @@ export class TodosComponent implements OnInit {
     this.todoForm.patchValue({
       name: todo.name,
       date: todo.date,
-      status: todo.status
+      status: todo.status,
     });
     // If on narrow screens, open modal for editing
     try {
       if (window && window.innerWidth && window.innerWidth <= 1200) {
         this.openFormModal();
       }
-    } catch (e) {
+    } catch {
       // ignore (server side or unexpected)
     }
   }
@@ -187,7 +190,7 @@ export class TodosComponent implements OnInit {
   }
 
   async deleteTodo(id: number) {
-    const todo = this.todos().find(t => t.id === id);
+    const todo = this.todos().find((t) => t.id === id);
     if (todo) {
       this.todoToDelete.set(todo);
       this.showDeleteModal.set(true);
