@@ -21,7 +21,7 @@ export class SettingsService {
     loadSettings() {
         return this.http.get<AppSettings>(`${this.baseUrl}/api/settings`).pipe(
             tap(s => {
-                let data = (s as any).data || s;
+                const data = (s as any).data || s;
                 const newSettings: AppSettings = { ...this.settings() };
 
                 // Si es un array (común en algunas APIs de configuración)

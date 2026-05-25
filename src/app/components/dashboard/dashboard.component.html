@@ -36,6 +36,9 @@
       <a class="nav-item" [class.active]="currentView() === 'todos'" (click)="setView('todos')">
         <span class="icon">📝</span> Tareas
       </a>
+      <a class="nav-item" [class.active]="currentView() === 'music'" (click)="setView('music')">
+        <span class="icon">🎵</span> Música
+      </a>
       <a class="nav-item" [class.active]="currentView() === 'contacts'" (click)="setView('contacts')">
         <span class="icon">📱</span> Invitaciones
       </a>
@@ -319,8 +322,12 @@
             <app-todos></app-todos>
           }
 
-          @if (currentView() === 'contacts') {
+@if (currentView() === 'contacts') {
             <app-contacts></app-contacts>
+          }
+
+          @if (currentView() === 'music') {
+            <app-music></app-music>
           }
 
           <footer class="content-footer">

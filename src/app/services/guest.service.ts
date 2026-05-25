@@ -26,7 +26,7 @@ export interface Guest {
   notes?: string;
 }
 
-declare var window: any;
+declare let window: any;
 
 @Injectable({
   providedIn: 'root'
@@ -77,11 +77,11 @@ export class GuestService {
         guest.tableId = (tVal !== undefined && tVal !== null && !isNaN(Number(tVal)) && Number(tVal) !== 0) ? Number(tVal) : null;
 
         // Normalización de seatNumber (Prioridad camelCase del servidor)
-        let sVal = guest.seatNumber ?? guest.seat_number;
+        const sVal = guest.seatNumber ?? guest.seat_number;
         guest.seatNumber = (sVal !== undefined && sVal !== null) ? Number(sVal) : null;
 
         // Normalización de needsTransport
-        let transportVal = guest.needsTransport ?? guest.needs_transport ?? guest.needTransport;
+        const transportVal = guest.needsTransport ?? guest.needs_transport ?? guest.needTransport;
         guest.needsTransport = transportVal === true || transportVal === 1 || transportVal === '1' || transportVal === 'true';
 
         return guest;

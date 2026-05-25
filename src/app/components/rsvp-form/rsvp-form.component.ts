@@ -76,7 +76,7 @@ export class RsvpFormComponent {
     this.submitSuccess.set(false);
 
     try {
-      let guestData: Guest = { ...this.form.value };
+      const guestData: Guest = { ...this.form.value };
       if (!guestData.attendance) {
         guestData.attending = 0;
       } else {
@@ -247,7 +247,7 @@ export class RsvpFormComponent {
         next: (chunk: string) => {
           this.streamingText.update(prev => prev + chunk);
 
-          let display = this.streamingText()
+          const display = this.streamingText()
             .replace('MENSAJE:', '')
             .replace('CANCION:', '\n🎵 ');
 
@@ -284,7 +284,7 @@ export class RsvpFormComponent {
         next: (chunk: string) => {
           this.streamingText.update(prev => prev + chunk);
 
-          let display = this.streamingText()
+          const display = this.streamingText()
             .replace('MENSAJE:', '')
             .replace('CANCION:', '\n🎵 ');
 

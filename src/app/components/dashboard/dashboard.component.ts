@@ -14,15 +14,16 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TodosComponent } from './todos/todos.component';
 import { VersionService } from '../../services/version.service';
 import { ContactsComponent } from './contacts/contacts.component';
+import { MusicComponent } from './music/music.component';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [TablesComponent, SettingsComponent, FinancesComponent, AttendanceProgressComponent, DragDropModule, TodosComponent, ContactsComponent],
+    imports: [TablesComponent, SettingsComponent, FinancesComponent, AttendanceProgressComponent, DragDropModule, TodosComponent, ContactsComponent, MusicComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
     private statsService = inject(StatsService);
     private guestService = inject(GuestService);
     private authService = inject(AuthService);
@@ -134,7 +135,7 @@ export class DashboardComponent implements OnInit {
 
     isLoading = signal(true);
     error = signal<string | null>(null);
-    currentView = signal<'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts'>('stats');
+    currentView = signal<'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts' | 'music'>('stats');
     isMenuOpen = signal(false);
     showExitConfirm = signal(false);
 
@@ -145,7 +146,7 @@ export class DashboardComponent implements OnInit {
         // Restore persisted view and menu state
         try {
             const savedView = localStorage.getItem('dashboard.currentView');
-            if (savedView && ['stats','tables','settings','finances','todos','contacts'].includes(savedView)) {
+            if (savedView && ['stats','tables','settings','finances','todos','contacts','music'].includes(savedView)) {
                 this.currentView.set(savedView as any);
             }
         } catch (e) {
@@ -290,7 +291,7 @@ export class DashboardComponent implements OnInit {
         });
     }
 
-    setView(view: 'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts') {
+    setView(view: 'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts' | 'music') {
         this.currentView.set(view);
         try { localStorage.setItem('dashboard.currentView', view); } catch (e) { /* ignore */ }
         this.closeMenu();

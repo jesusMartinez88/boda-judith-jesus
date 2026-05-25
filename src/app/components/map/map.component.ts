@@ -9,7 +9,7 @@ import L from 'leaflet';
 })
 export class MapComponent implements OnInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   private map!: L.Map ;
 
   ngOnInit() {

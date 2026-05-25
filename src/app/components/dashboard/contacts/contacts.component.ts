@@ -163,7 +163,7 @@ export class ContactsComponent implements OnInit {
    */
   parsePhoneNumber(rawPhone: string): { countryCode: string; phone: string } {
     // Limpiar: eliminar espacios, guiones, paréntesis
-    let clean = rawPhone.replace(/[\s\-\(\)]/g, '');
+    const clean = rawPhone.replace(/[\s\-\(\)]/g, '');
 
     let countryCode = '+34'; // Por defecto España
     let phone = clean;
@@ -207,7 +207,7 @@ export class ContactsComponent implements OnInit {
 
   isValidPhone(phone: string): boolean {
     // Limpiar espacios y prefijos comunes (+34, 34)
-    let clean = phone.replace(/\s/g, '').replace(/^\+34|^34/, '');
+    const clean = phone.replace(/\s/g, '').replace(/^\+34|^34/, '');
     const regex = /^[67]\d{8}$/;
     return regex.test(clean);
   }

@@ -260,7 +260,7 @@ export class TablesComponent implements OnInit {
 
         if (!guestId) return;
 
-        let targetData = event.container.data;
+        const targetData = event.container.data;
 
         // Normalizar destino
         let tableId: number | null = null;
