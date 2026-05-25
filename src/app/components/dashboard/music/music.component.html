@@ -1,4 +1,9 @@
 <div class="music-section animate-fade-in">
+  <!-- Audio Keep-Alive Element (Hidden) -->
+  <audio #keepAliveAudio loop preload="auto" style="display: none;">
+    <source src="assets/audio/silence.mp3" type="audio/mpeg">
+  </audio>
+
   <header class="section-header">
     <div class="header-content">
       <div class="section-icon-wrapper">
@@ -76,11 +81,9 @@
           @for (song of filteredSongs(); track song.id; let i = $index) {
             <div class="song-row" [class.playing]="currentPlayingId() === song.id" cdkDrag [cdkDragData]="song">
               
-              <!-- Columna Unificada con Icono de Arrastre en Color Vibrante -->
               <div class="col-index-drag">
                 <div class="drag-handle-wrapper" cdkDragHandle title="Arrastrar para reordenar">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Usamos el color verde Spotify brillante para máxima visibilidad -->
                     <circle cx="9" cy="5" r="2.5" fill="#1db954"/>
                     <circle cx="9" cy="12" r="2.5" fill="#1db954"/>
                     <circle cx="9" cy="19" r="2.5" fill="#1db954"/>
@@ -294,7 +297,7 @@
         </div>
         <div class="modal-body text-center">
           <div class="warning-icon-wrapper">
-            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-circle"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-circle"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12 y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
           </div>
           <div class="delete-content">
             <p class="delete-question">¿Estás seguro de que quieres eliminar esta canción?</p>

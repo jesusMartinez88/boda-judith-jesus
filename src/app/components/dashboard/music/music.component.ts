@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed, effect, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, effect, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -6,7 +6,7 @@ import { MusicPlaylistService, MusicSong } from '../../../services/music-playlis
 import { ToastComponent } from '../../../shared/toast/toast.component';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
-declare let YT: any;
+declare var YT: any;
 
 @Component({
   selector: 'app-music',
@@ -19,6 +19,8 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   private musicService = inject(MusicPlaylistService);
   private fb = inject(FormBuilder);
   private sanitizer = inject(DomSanitizer);
+
+  @ViewChild('keepAliveAudio') keepAliveAudio!: ElementRef<HTMLAudioElement>;
 
   // Signals para el estado de la UI
   songs = this.musicService.songs;
@@ -37,7 +39,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   // Búsqueda
   searchQuery = signal('');
 
-  // Canción actual computada (Necesaria para el HTML)
+  // Canción actual computada
   currentSong = computed(() => {
     const id = this.currentPlayingId();
     if (!id) return null;
@@ -95,11 +97,16 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
 
     effect(() => {
       const id = this.currentPlayingId();
+      const song = this.currentSong();
+      
       if (id && this.player && this.player.loadVideoById) {
-        const song = this.songs().find(s => s.id === id);
         if (song && song.youtubeId) {
           this.player.loadVideoById(song.youtubeId);
+          this.updateMediaSession(song);
+          this.startKeepAlive();
         }
+      } else if (!id) {
+        this.stopKeepAlive();
       }
     });
   }
@@ -107,6 +114,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit() {
     this.musicService.loadSongs();
     this.initYoutubeApi();
+    this.setupMediaSessionHandlers();
   }
 
   ngAfterViewInit() {
@@ -116,8 +124,57 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy() {
+    this.stopPlayback();
     if (this.player) {
       this.player.destroy();
+    }
+  }
+
+  // --- Lógica de Keep-Alive (Android Background) ---
+  private startKeepAlive() {
+    if (this.keepAliveAudio && this.keepAliveAudio.nativeElement) {
+      this.keepAliveAudio.nativeElement.play().catch(err => {
+        console.warn('Keep-alive audio failed to play (user interaction might be needed):', err);
+      });
+    }
+  }
+
+  private stopKeepAlive() {
+    if (this.keepAliveAudio && this.keepAliveAudio.nativeElement) {
+      this.keepAliveAudio.nativeElement.pause();
+    }
+  }
+
+  // --- Media Session API (Controles en Pantalla de Bloqueo) ---
+  private setupMediaSessionHandlers() {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => {
+        const song = this.currentSong();
+        if (song) this.playSong(song);
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        this.stopPlayback();
+      });
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        this.previousSong();
+      });
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        this.nextSong();
+      });
+    }
+  }
+
+  private updateMediaSession(song: MusicSong) {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.title,
+        artist: song.artist,
+        album: 'Boda Judith & Jesús',
+        artwork: [
+          { src: `https://img.youtube.com/vi/${song.youtubeId}/hqdefault.jpg`, sizes: '480x360', type: 'image/jpeg' }
+        ]
+      });
+      navigator.mediaSession.playbackState = 'playing';
     }
   }
 
@@ -150,8 +207,13 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
       this.player = new YT.Player('youtube-player-iframe', {
         events: {
           'onStateChange': (event: any) => {
-            if (event.data === 0) {
+            if (event.data === 0) { // ENDED
               this.nextSong();
+            } else if (event.data === 1) { // PLAYING
+              if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+              this.startKeepAlive();
+            } else if (event.data === 2) { // PAUSED
+              if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
             }
           },
           'onError': (error: any) => {
@@ -244,6 +306,8 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
       if (isFirstPlay) {
         this.initPlayer();
       }
+      // Activamos el keep-alive inmediatamente en el primer clic para asegurar el contexto de audio
+      this.startKeepAlive();
     }
   }
 
@@ -277,6 +341,10 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   stopPlayback() {
     this.currentPlayingId.set(null);
     this.isVideoExpanded.set(false);
+    this.stopKeepAlive();
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'none';
+    }
     if (this.player) {
       this.player.destroy();
       this.player = null;
@@ -289,13 +357,10 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Funcionalidad Drag and Drop
   drop(event: CdkDragDrop<MusicSong[]>) {
-    // Solo permitimos reordenar si no hay búsqueda activa para evitar confusiones
     if (this.searchQuery().trim() !== '') return;
 
     const currentSongs = [...this.songs()];
     moveItemInArray(currentSongs, event.previousIndex, event.currentIndex);
-    
-    // Actualizar el servicio para persistir el orden
     this.musicService.updateOrder(currentSongs);
   }
 }
