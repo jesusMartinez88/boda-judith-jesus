@@ -33,7 +33,7 @@ jobs:
 
       # 1. INSTALAR NODE Y PNPM
       - name: Setup Environment
-        uses: ./.github/actions/setup-pnpm
+        uses: ./.github/workflows/setup-pnpm
 
       - name: Bump version
         run: |
