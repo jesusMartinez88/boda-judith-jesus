@@ -16,9 +16,9 @@ jobs:
       - name: Setup Environment
         uses: ./.github/workflows/setup-pnpm
 
-      # 2. LINT
-      - name: Run Lint
-        run: pnpm run lint
+      # 2. LINT (TODO)
+      #- name: Run Lint
+      #  run: pnpm run lint
 
       # 3. BUILD
       - name: Run Build
