@@ -550,6 +550,87 @@
   cursor: pointer;
 }
 
+/* Delete modal */
+.delete-modal {
+  max-width: 440px;
+  padding: 28px;
+  border: 1px solid #e2e8f0;
+}
+
+.delete-modal-body {
+  text-align: center;
+}
+
+.alert-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 16px;
+  position: relative;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #ef4444;
+  background: radial-gradient(circle at 35% 30%, #fff5f5 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+    0 10px 24px rgba(239, 68, 68, 0.18);
+}
+
+.alert-icon::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 1px dashed rgba(239, 68, 68, 0.35);
+  pointer-events: none;
+}
+
+.delete-modal h4 {
+  margin: 0 0 8px;
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: #1e293b;
+}
+
+.delete-modal p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.delete-modal p strong {
+  color: #334155;
+}
+
+.delete-modal-actions {
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.btn-danger {
+  padding: 10px 24px;
+  border-radius: 50px;
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(220, 38, 38, 0.28);
+}
+
+.btn-danger:focus-visible,
+.btn-cancel:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
 /* Responsive */
 @media (max-width: 992px) {
   .table-header, .row-main-content, .cdk-drag-preview .row-main-content {
@@ -623,5 +704,42 @@
   .video-container {
     width: 160px;
     height: 90px;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    margin-top: -252px;
+  }
+  .nav-btn[title="Anterior"] {
+      translate: 50px;
+  }
+  .nav-btn[title="Siguiente"] {
+      translate: -50px;
+  }
+
+  .delete-modal {
+    margin: 16px;
+    padding: 24px 20px;
+  }
+
+  .delete-modal h4 {
+    font-size: 22px;
+  }
+
+  .delete-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .delete-modal-actions .btn-cancel,
+  .delete-modal-actions .btn-danger {
+    width: 100%;
+    justify-content: center;
   }
 }
