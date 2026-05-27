@@ -11,6 +11,24 @@ import { TablesHeaderComponent } from './tables-header/tables-header.component';
 import { ExportPdfBtnComponent } from './export-pdf-btn/export-pdf-btn';
 import { GuestFormModalComponent } from '../../../shared/components/guest-form-modal/guest-form-modal.component';
 
+export interface HallSearchResult {
+    guest: Guest;
+    location: 'seated' | 'queue';
+    tableId: number | null;
+    tableName: string | null;
+    seatNumber: number | null;
+}
+
+type TableWithGuests = {
+    id: number;
+    name: string | undefined;
+    capacity: number;
+    shape: string;
+    posX: number | undefined;
+    posY: number | undefined;
+    guests: Guest[];
+};
+
 @Component({
     selector: 'app-tables',
     standalone: true,
@@ -74,7 +92,18 @@ export class TablesComponent implements OnInit {
 
     searchTerm = signal<string>('');
     searchControl = new FormControl<string>('', { nonNullable: true });
+    hallSearchTerm = signal<string>('');
+    hallSearchControl = new FormControl<string>('', { nonNullable: true });
+    highlightedTableId = signal<number | null>(null);
+    isQueueHighlighted = signal<boolean>(false);
+    selectedTablePanelId = signal<number | null>(null);
+    showAssignSeatModal = signal<boolean>(false);
+    assignSearchTerm = signal<string>('');
+    assignSearchControl = new FormControl<string>('', { nonNullable: true });
+    selectedGuestToAssign = signal<Guest | null>(null);
+    selectedSeatToAssign = signal<number | null>(null);
     isEditLayoutMode = signal<boolean>(true);
+    private tableWasDragged = false;
 
     private capacityControls = new Map<number, FormControl<number>>();
     private capacitySubs = new Map<number, Subscription>();
@@ -144,6 +173,91 @@ export class TablesComponent implements OnInit {
         );
     });
 
+    hallSearchResults = computed((): HallSearchResult[] => {
+        const term = this.hallSearchTerm().toLowerCase().trim();
+        if (!term) return [];
+
+        const attending = this.guests().filter(g => g.attending !== 0 && g.attendance !== false);
+        const tableConfigs = this.tableService.tables();
+        const tableNameById = new Map(
+            tableConfigs.map(t => [Number(t.id), t.name || `Mesa ${t.id}`])
+        );
+        const validTableIds = new Set(tableConfigs.map(t => Number(t.id)));
+
+        return attending
+            .filter(g =>
+                g.name.toLowerCase().includes(term) ||
+                (g.email && g.email.toLowerCase().includes(term)) ||
+                (g.phone && g.phone.includes(term))
+            )
+            .map(guest => {
+                const tableId = Number(guest.tableId || 0);
+                const hasSeat = guest.seatNumber !== null && guest.seatNumber !== undefined;
+                const isSeated = tableId > 0 && validTableIds.has(tableId) && hasSeat;
+
+                if (isSeated) {
+                    return {
+                        guest,
+                        location: 'seated' as const,
+                        tableId,
+                        tableName: tableNameById.get(tableId) ?? `Mesa ${tableId}`,
+                        seatNumber: guest.seatNumber ?? null
+                    };
+                }
+
+                return {
+                    guest,
+                    location: 'queue' as const,
+                    tableId: null,
+                    tableName: null,
+                    seatNumber: null
+                };
+            });
+    });
+
+    selectedTablePanelData = computed((): (TableWithGuests & { sortedGuests: Guest[] }) | null => {
+        const tableId = this.selectedTablePanelId();
+        if (tableId === null) return null;
+
+        const table = this.tables().find(t => t.id === tableId);
+        if (!table) return null;
+
+        const sortedGuests = [...table.guests].sort(
+            (a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0)
+        );
+
+        return { ...table, sortedGuests };
+    });
+
+    selectedTableFreeSeats = computed((): number[] => {
+        const panel = this.selectedTablePanelData();
+        if (!panel) return [];
+
+        const occupied = new Set<number>();
+        panel.sortedGuests.forEach(g => {
+            const n = g.seatNumber;
+            if (n !== null && n !== undefined) occupied.add(Number(n));
+        });
+
+        const free: number[] = [];
+        for (let i = 1; i <= panel.capacity; i++) {
+            if (!occupied.has(i)) free.push(i);
+        }
+        return free;
+    });
+
+    assignableGuests = computed((): Guest[] => {
+        const term = this.assignSearchTerm().toLowerCase().trim();
+        const list = this.unassignedGuests();
+        if (!term) return list;
+
+        return list.filter(g =>
+            g.name.toLowerCase().includes(term) ||
+            (g.email && g.email.toLowerCase().includes(term)) ||
+            (g.phone && g.phone.includes(term))
+        );
+    });
+
     hallHeight = computed(() => {
         const currentTables = this.tables();
         if (currentTables.length === 0) return 1200;
@@ -180,8 +294,169 @@ export class TablesComponent implements OnInit {
 
     ngOnInit() {
         this.loadData();
-        // Reactive search input -> signal
         this.searchControl.valueChanges.subscribe(v => this.searchTerm.set((v ?? '').toString()));
+        this.hallSearchControl.valueChanges.subscribe(v => this.hallSearchTerm.set((v ?? '').toString()));
+        this.assignSearchControl.valueChanges.subscribe(v => this.assignSearchTerm.set((v ?? '').toString()));
+    }
+
+    getHallSearchLocationMessage(result: HallSearchResult): string {
+        if (result.location === 'seated' && result.tableName) {
+            const seatInfo = result.seatNumber ? ` (asiento ${result.seatNumber})` : '';
+            return `${result.guest.name} está sentado en ${result.tableName}${seatInfo}`;
+        }
+        return `${result.guest.name} está en cola de recepción (sin asiento)`;
+    }
+
+    onHallSearchSelect(result: HallSearchResult) {
+        this.locateGuest(result);
+    }
+
+    onHallSearchKeydown(event: KeyboardEvent) {
+        if (event.key !== 'Enter') return;
+        const results = this.hallSearchResults();
+        if (results.length === 1) {
+            this.locateGuest(results[0]);
+        }
+    }
+
+    locateGuest(result: HallSearchResult) {
+        if (result.location === 'seated' && result.tableId !== null) {
+            this.highlightTable(result.tableId);
+            this.scrollToTable(result.tableId);
+            return;
+        }
+        this.highlightQueue();
+    }
+
+    highlightTable(tableId: number) {
+        this.highlightedTableId.set(tableId);
+        setTimeout(() => this.highlightedTableId.set(null), 3000);
+    }
+
+    scrollToTable(tableId: number) {
+        setTimeout(() => {
+            const el = document.querySelector(`[data-table-id="${tableId}"]`);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        }, 50);
+    }
+
+    highlightQueue() {
+        this.isQueueHighlighted.set(true);
+        setTimeout(() => this.isQueueHighlighted.set(false), 3000);
+        document.querySelector('.reception-queue')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    openTablePanel(table: TableWithGuests) {
+        this.selectedTablePanelId.set(table.id);
+    }
+
+    closeTablePanel() {
+        this.selectedTablePanelId.set(null);
+    }
+
+    onTableDragStarted() {
+        this.tableWasDragged = true;
+    }
+
+    onTableSurfaceClick(event: MouseEvent, table: TableWithGuests) {
+        const target = event.target as HTMLElement;
+        if (
+            target.closest('.table-config-overlay') ||
+            target.closest('.edit-table-input') ||
+            target.closest('.table-num')
+        ) {
+            return;
+        }
+
+        if (this.tableWasDragged) {
+            this.tableWasDragged = false;
+            return;
+        }
+
+        this.openTablePanel(table);
+    }
+
+    onTablePanelEdit(guest: Guest, event: MouseEvent) {
+        event.stopPropagation();
+        this.openEditModal(guest);
+    }
+
+    onTablePanelDelete(guest: Guest, event: MouseEvent) {
+        event.stopPropagation();
+        this.deleteGuest(guest);
+    }
+
+    async onTablePanelUnseat(guest: Guest, event: MouseEvent) {
+        event.stopPropagation();
+        const guestId = this.guestKey(guest);
+        if (!guestId) return;
+
+        try {
+            await this.guestService.updateGuestTable(guestId, null, null);
+        } catch (error) {
+            console.error('Error unseating guest:', error);
+            this.triggerAlert('Error', 'No se pudo enviar el invitado a la cola. Por favor, inténtalo de nuevo.');
+        }
+    }
+
+    openAssignSeatModalForSelectedTable() {
+        const panel = this.selectedTablePanelData();
+        if (!panel) return;
+
+        if (this.selectedTableFreeSeats().length === 0) {
+            this.triggerAlert('Mesa completa', 'No hay asientos libres en esta mesa.');
+            return;
+        }
+
+        this.selectedGuestToAssign.set(null);
+        this.selectedSeatToAssign.set(this.selectedTableFreeSeats()[0] ?? null);
+        this.assignSearchControl.setValue('');
+        this.showAssignSeatModal.set(true);
+    }
+
+    closeAssignSeatModal() {
+        this.showAssignSeatModal.set(false);
+        this.selectedGuestToAssign.set(null);
+        this.selectedSeatToAssign.set(null);
+    }
+
+    selectGuestToAssign(guest: Guest) {
+        this.selectedGuestToAssign.set(guest);
+    }
+
+    isGuestSelectedForAssign(guest: Guest): boolean {
+        const selected = this.selectedGuestToAssign();
+        if (!selected) return false;
+        return this.guestKey(selected) === this.guestKey(guest);
+    }
+
+    onAssignSeatChange(value: string) {
+        const n = Number(value);
+        this.selectedSeatToAssign.set(Number.isFinite(n) ? n : null);
+    }
+
+    async confirmAssignSeat() {
+        const panel = this.selectedTablePanelData();
+        const guest = this.selectedGuestToAssign();
+        const seat = this.selectedSeatToAssign();
+
+        if (!panel || !guest || seat === null) return;
+
+        const guestId = this.guestKey(guest);
+        if (!guestId) return;
+
+        if (!this.selectedTableFreeSeats().includes(seat)) {
+            this.triggerAlert('Asiento no disponible', 'Ese asiento ya no está libre. Elige otro.');
+            return;
+        }
+
+        try {
+            await this.guestService.updateGuestTable(guestId, panel.id, seat);
+            this.closeAssignSeatModal();
+        } catch (error) {
+            console.error('Error assigning guest seat:', error);
+            this.triggerAlert('Error', 'No se pudo asignar el asiento. Por favor, inténtalo de nuevo.');
+        }
     }
 
     getCapacityControl(tableId: number, initialCapacity: number): FormControl<number> {
@@ -479,7 +754,10 @@ export class TablesComponent implements OnInit {
     }
 
     onTableDragEnded(event: any, tableId: number) {
-        if (!this.isEditLayoutMode()) return;
+        if (!this.isEditLayoutMode()) {
+            this.tableWasDragged = false;
+            return;
+        }
 
         const element = event.source.getRootElement();
         const parentElement = document.querySelector('.tables-grid');
@@ -505,6 +783,10 @@ export class TablesComponent implements OnInit {
         this.tableService.updateTable(tableId, { posX, posY }).subscribe({
             error: (err) => console.error('Error saving table position:', err)
         });
+
+        setTimeout(() => {
+            this.tableWasDragged = false;
+        }, 150);
     }
 
     toggleEditLayout() {
