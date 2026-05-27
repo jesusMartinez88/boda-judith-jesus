@@ -61,7 +61,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   });
 
   // URL segura computada
-  safeYoutubeUrl = computed(() => {
+  safeYoutubeUrl = computed<SafeResourceUrl | null>(() => {
     const id = this.currentPlayingId();
     if (!id) return null;
     
@@ -111,7 +111,9 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit() {
-    this.musicService.loadSongs();
+    this.musicService.loadSongs().catch((error) => {
+      console.error('Error loading songs:', error);
+    });
     this.initYoutubeApi();
     this.setupMediaSessionHandlers();
     this.setupReactiveVisibility();
@@ -317,6 +319,11 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   playSong(song: MusicSong) {
+    if (!song.youtubeId) {
+      console.warn('Song has no valid YouTube ID:', song);
+      return;
+    }
+
     if (this.currentPlayingId() === song.id) {
       if (this.player) {
         const state = this.player.getPlayerState();
@@ -375,6 +382,8 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.searchQuery().trim() !== '') return;
     const currentSongs = [...this.songs()];
     moveItemInArray(currentSongs, event.previousIndex, event.currentIndex);
-    this.musicService.updateOrder(currentSongs);
+    this.musicService.updateOrder(currentSongs).catch((error) => {
+      console.error('Error updating songs order:', error);
+    });
   }
 }

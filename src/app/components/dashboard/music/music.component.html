@@ -146,13 +146,15 @@
 
             <div class="video-controls-wrapper">
               <div class="youtube-wrapper" [class.expanded]="isVideoExpanded()">
-                <iframe
-                  id="youtube-player-iframe"
-                  [src]="safeYoutubeUrl()"
-                  frameborder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen>
-                </iframe>
+                @if (safeYoutubeUrl(); as youtubeUrl) {
+                  <iframe
+                    id="youtube-player-iframe"
+                    [src]="youtubeUrl"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                  </iframe>
+                }
               </div>
             </div>
 

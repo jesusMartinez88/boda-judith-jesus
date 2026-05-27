@@ -1,7 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface MusicSong {
@@ -25,48 +24,21 @@ export class MusicPlaylistService {
   songs = signal<MusicSong[]>([]);
   isLoading = signal<boolean>(false);
 
-  // Variable para evitar múltiples intentos fallidos seguidos al backend
-  private apiAvailable = true;
-
   async loadSongs(): Promise<MusicSong[]> {
     this.isLoading.set(true);
     try {
-      let finalItems: MusicSong[] = [];
+      const response = await firstValueFrom(this.http.get<MusicSong[] | { data: MusicSong[] }>(this.apiUrl));
+      const finalItems = this.unwrapListResponse(response);
 
-      if (this.apiAvailable) {
-        try {
-          const response = await firstValueFrom(
-            this.http.get<MusicSong[] | { data: MusicSong[] }>(this.apiUrl).pipe(
-              catchError(err => {
-                if (err.status === 404 || err.status === 0) this.apiAvailable = false;
-                throw err;
-              })
-            )
-          );
-          const list = response && 'data' in response ? response.data : response;
-          finalItems = Array.isArray(list) ? list : [];
-        } catch {
-          const local = localStorage.getItem('wedding_music_playlist');
-          finalItems = local ? JSON.parse(local) : [];
-        }
-      } else {
-        const local = localStorage.getItem('wedding_music_playlist');
-        finalItems = local ? JSON.parse(local) : [];
-      }
-
-      // Ordenar por el campo 'order'
       finalItems.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-      const itemsWithIds = finalItems.map(song => ({
-        ...song,
-        youtubeId: song.youtubeId || this.extractYoutubeId(song.youtubeUrl)
-      }));
+      const itemsWithIds = finalItems.map((song) => this.normalizeSong(song));
 
       this.songs.set(itemsWithIds);
-      this.saveToLocal(itemsWithIds);
       return itemsWithIds;
     } catch (error) {
-      return [];
+      console.error('Error loading music playlist:', error);
+      throw error;
     } finally {
       this.isLoading.set(false);
     }
@@ -74,34 +46,22 @@ export class MusicPlaylistService {
 
   async addSong(song: MusicSong): Promise<MusicSong> {
     try {
-      song.youtubeId = this.extractYoutubeId(song.youtubeUrl);
-      const currentSongs = this.songs();
-      song.order = currentSongs.length > 0 ? Math.max(...currentSongs.map(s => s.order || 0)) + 1 : 0;
+      const songToCreate: MusicSong = {
+        ...song,
+        youtubeId: this.extractYoutubeId(song.youtubeUrl)
+      };
 
-      let result: MusicSong;
-      if (this.apiAvailable) {
-        try {
-          result = await firstValueFrom(this.http.post<MusicSong>(this.apiUrl, song));
-        } catch (apiError) {
-          result = {
-            ...song,
-            id: Date.now(),
-            addedAt: new Date().toISOString()
-          };
-        }
-      } else {
-        result = {
-          ...song,
-          id: Date.now(),
-          addedAt: new Date().toISOString()
-        };
-      }
+      const currentSongs = this.songs();
+      songToCreate.order = currentSongs.length > 0 ? Math.max(...currentSongs.map(s => s.order || 0)) + 1 : 0;
+
+      const response = await firstValueFrom(this.http.post<MusicSong | { data: MusicSong }>(this.apiUrl, songToCreate));
+      const result = this.normalizeSong(this.unwrapItemResponse(response, songToCreate));
 
       const updatedSongs = [...this.songs(), result];
       this.songs.set(updatedSongs);
-      this.saveToLocal(updatedSongs);
       return result;
     } catch (error) {
+      console.error('Error creating song:', error);
       throw error;
     }
   }
@@ -112,26 +72,18 @@ export class MusicPlaylistService {
         songUpdate.youtubeId = this.extractYoutubeId(songUpdate.youtubeUrl);
       }
 
-      let result: MusicSong;
-      if (this.apiAvailable) {
-        try {
-          result = await firstValueFrom(this.http.patch<MusicSong>(`${this.apiUrl}/${id}`, songUpdate));
-        } catch (apiError) {
-          const current = this.songs();
-          const index = current.findIndex(s => s.id === id);
-          result = index !== -1 ? { ...current[index], ...songUpdate } : { ...songUpdate as MusicSong };
-        }
-      } else {
-        const current = this.songs();
-        const index = current.findIndex(s => s.id === id);
-        result = index !== -1 ? { ...current[index], ...songUpdate } : { ...songUpdate as MusicSong };
-      }
+      const current = this.songs();
+      const currentSong = current.find(s => s.id === id);
+      const optimisticSong: MusicSong = currentSong ? { ...currentSong, ...songUpdate } : { ...songUpdate as MusicSong };
+
+      const response = await firstValueFrom(this.http.patch<MusicSong | { data: MusicSong }>(`${this.apiUrl}/${id}`, songUpdate));
+      const result = this.normalizeSong(this.unwrapItemResponse(response, optimisticSong));
 
       const updatedSongs = this.songs().map(s => s.id === id ? result : s);
       this.songs.set(updatedSongs);
-      this.saveToLocal(updatedSongs);
       return result;
     } catch (error) {
+      console.error('Error updating song:', error);
       throw error;
     }
   }
@@ -142,32 +94,32 @@ export class MusicPlaylistService {
       order: index
     }));
 
+    const previousSongs = this.songs();
     this.songs.set(orderedSongs);
-    this.saveToLocal(orderedSongs);
 
-    if (this.apiAvailable) {
-      try {
-        await firstValueFrom(this.http.put(`${this.apiUrl}/reorder`, { songs: orderedSongs }));
-      } catch (apiError) {
-        // Silenciamos el error si no hay backend
+    try {
+      const response = await firstValueFrom(
+        this.http.put<MusicSong[] | { data: MusicSong[] }>(`${this.apiUrl}/reorder`, { songs: orderedSongs })
+      );
+      const resultSongs = this.unwrapListResponse(response).map((song) => this.normalizeSong(song));
+      if (resultSongs.length > 0) {
+        this.songs.set(resultSongs);
       }
+    } catch (error) {
+      this.songs.set(previousSongs);
+      console.error('Error reordering songs:', error);
+      throw error;
     }
   }
 
   async removeSong(id: number): Promise<void> {
     try {
-      if (this.apiAvailable) {
-        try {
-          await firstValueFrom(this.http.delete(`${this.apiUrl}/${id}`));
-        } catch (apiError) {
-          // Error de API silenciado
-        }
-      }
+      await firstValueFrom(this.http.delete(`${this.apiUrl}/${id}`));
 
       const filteredSongs = this.songs().filter(s => s.id !== id);
       this.songs.set(filteredSongs);
-      this.saveToLocal(filteredSongs);
     } catch (error) {
+      console.error('Error deleting song:', error);
       throw error;
     }
   }
@@ -179,11 +131,47 @@ export class MusicPlaylistService {
     return (match && match[2].length === 11) ? match[2] : undefined;
   }
 
-  private saveToLocal(songs: MusicSong[]) {
-    try {
-      localStorage.setItem('wedding_music_playlist', JSON.stringify(songs));
-    } catch (e) {
-      // Error local silenciado
+  private unwrapListResponse(response: MusicSong[] | { data: MusicSong[] }): MusicSong[] {
+    if (Array.isArray(response)) {
+      return response;
     }
+
+    if (response && typeof response === 'object' && Array.isArray(response.data)) {
+      return response.data;
+    }
+
+    return [];
+  }
+
+  private unwrapItemResponse(response: MusicSong | { data: MusicSong }, fallback: MusicSong): MusicSong {
+    if (response && typeof response === 'object' && 'data' in response && response.data) {
+      return response.data;
+    }
+
+    if (response && typeof response === 'object') {
+      return response as MusicSong;
+    }
+
+    return fallback;
+  }
+
+  private normalizeSong(song: MusicSong): MusicSong {
+    const rawSong = song as MusicSong & {
+      youtube_url?: string;
+      youtube_id?: string;
+      added_at?: string;
+      order_index?: number;
+    };
+
+    const youtubeUrl = rawSong.youtubeUrl || rawSong.youtube_url || '';
+    const youtubeId = rawSong.youtubeId || rawSong.youtube_id || this.extractYoutubeId(youtubeUrl);
+
+    return {
+      ...song,
+      youtubeUrl,
+      youtubeId,
+      addedAt: song.addedAt || rawSong.added_at,
+      order: song.order ?? rawSong.order_index,
+    };
   }
 }
