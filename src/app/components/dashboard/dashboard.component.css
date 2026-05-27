@@ -484,6 +484,25 @@
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
+  position: relative;
+}
+
+.edit-icon-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  padding: 0.2rem;
+}
+
+.edit-icon-btn:hover {
+  opacity: 1;
+  transform: scale(1.15) rotate(10deg);
 }
 
 .declined-item:hover {

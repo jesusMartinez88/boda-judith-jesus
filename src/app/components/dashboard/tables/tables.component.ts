@@ -9,11 +9,12 @@ import { firstValueFrom, Subscription } from 'rxjs';
 import { TablesLegendComponent } from './tables-legend/tables-legend.component';
 import { TablesHeaderComponent } from './tables-header/tables-header.component';
 import { ExportPdfBtnComponent } from './export-pdf-btn/export-pdf-btn';
+import { GuestFormModalComponent } from '../../../shared/components/guest-form-modal/guest-form-modal.component';
 
 @Component({
     selector: 'app-tables',
     standalone: true,
-    imports: [ReactiveFormsModule, TablesLegendComponent, TablesHeaderComponent, DragDropModule, ExportPdfBtnComponent],
+    imports: [ReactiveFormsModule, TablesLegendComponent, TablesHeaderComponent, DragDropModule, ExportPdfBtnComponent, GuestFormModalComponent],
     templateUrl: './tables.component.html',
     styleUrl: './tables.component.css'
 })
@@ -39,19 +40,7 @@ export class TablesComponent implements OnInit {
 
     // Modal para nuevo/editar invitado
     showAddModal = signal(false);
-    isEditingGuest = signal(false);
-    editingGuestId = signal<string | null>(null);
-    guestForm: FormGroup = this.fb.group({
-        name: ['', [Validators.required, Validators.minLength(3)]],
-        email: ['', [Validators.email]],
-        phone: [''],
-        attendance: [true],
-        isAdult: [1, [Validators.required]],
-        mealType: ['normal', [Validators.required]],
-        allergies: [''],
-        notes: [''],
-        needsTransport: [false]
-    });
+    selectedGuestForModal = signal<Guest | null>(null);
 
     // Modal para nueva mesa
     showCreateTableModal = signal(false);
@@ -391,90 +380,18 @@ export class TablesComponent implements OnInit {
     }
 
     openAddModal() {
-        this.isEditingGuest.set(false);
-        this.editingGuestId.set(null);
-        this.guestForm.reset({
-            name: '',
-            email: '',
-            phone: '',
-            attendance: true,
-            isAdult: 1,
-            mealType: 'normal',
-            allergies: '',
-            notes: '',
-            needsTransport: false
-        });
+        this.selectedGuestForModal.set(null);
         this.showAddModal.set(true);
     }
 
     closeAddModal() {
         this.showAddModal.set(false);
-        this.isEditingGuest.set(false);
-        this.editingGuestId.set(null);
+        this.selectedGuestForModal.set(null);
     }
 
     openEditModal(guest: Guest) {
-        this.isEditingGuest.set(true);
-        this.editingGuestId.set(guest.id || null);
-        this.guestForm.reset({
-            name: guest.name || '',
-            email: guest.email || '',
-            phone: guest.phone || '',
-            attendance: guest.attendance !== false && guest.attending !== 0,
-            isAdult: (guest.isAdult ?? 1),
-            mealType: guest.mealType || 'normal',
-            allergies: guest.allergies || '',
-            notes: guest.notes || '',
-            needsTransport: !!guest.needsTransport
-        });
+        this.selectedGuestForModal.set(guest);
         this.showAddModal.set(true);
-    }
-
-    async saveGuest() {
-        if (this.guestForm.invalid) {
-            this.guestForm.markAllAsTouched();
-            this.triggerAlert('Nombre Requerido', 'Por favor, rellena al menos el nombre del invitado.');
-            return;
-        }
-
-        try {
-            this.isLoading.set(true);
-
-            const formValue = this.guestForm.value as any;
-            const isAdult = Number(formValue.isAdult) === 1;
-            const guestData: Guest = {
-                name: (formValue.name || '').trim(),
-                email: (formValue.email || '').trim(),
-                phone: (formValue.phone || '').trim(),
-                attendance: formValue.attendance !== false,
-                isAdult: isAdult ? 1 : 0,
-                adults: isAdult ? 1 : 0,
-                children: isAdult ? 0 : 1,
-                attending: (formValue.attendance === false) ? 0 : 1,
-                mealType: formValue.mealType || 'normal',
-                allergies: formValue.allergies || '',
-                notes: formValue.notes || '',
-                needsTransport: !!formValue.needsTransport,
-                isSavedInBbdd: false
-            };
-
-            if (this.isEditingGuest() && this.editingGuestId()) {
-                await this.guestService.updateGuest(this.editingGuestId()!, guestData);
-            } else {
-                // No mandar email en alta manual desde mesas
-                (guestData as any).sendEmail = false;
-                await this.guestService.registerGuest(guestData);
-            }
-
-            // Al guardar, el servicio ya actualiza la señal
-
-            this.closeAddModal();
-        } catch (error) {
-            console.error('Error saving guest:', error);
-            this.triggerAlert('Error de Guardado', 'Hubo un problema al guardar los datos. Por favor, inténtalo de nuevo.');
-        } finally {
-            this.isLoading.set(false);
-        }
     }
 
     triggerAlert(title: string, message: string) {

@@ -7,20 +7,20 @@
   <header class="section-header">
     <div class="header-content">
       <div class="section-icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-music"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-music"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       </div>
       <div>
         <h1>Lista de Música</h1>
-        <p>Organiza los momentos musicales de tu gran día</p>
+        <p>Organiza los momentos musicales de tu boda</p>
       </div>
     </div>
     <div class="header-actions">
       <button class="btn-secondary-custom" (click)="playAll()" [disabled]="filteredSongs().length === 0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play-circle"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play-circle"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
         Reproducir Todo
       </button>
       <button class="btn-primary-custom" (click)="openAddModal()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
         Añadir Canción
       </button>
     </div>
@@ -34,71 +34,51 @@
       </span>
       <input 
         type="text" 
-        placeholder="Buscar por título, artista o nota..." 
+        placeholder="Buscar canciones..." 
         [value]="searchQuery()"
         (input)="onSearch($event)"
         class="search-input"
       >
       @if (searchQuery()) {
         <button class="clear-search" (click)="searchQuery.set('')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       }
     </div>
     <div class="songs-count">
-      {{ filteredSongs().length }} {{ filteredSongs().length === 1 ? 'canción' : 'canciones' }}
+      {{ filteredSongs().length }} canciones
     </div>
   </div>
 
-  <div class="spotify-container" [class.expanded-video]="isVideoExpanded()">
-    <!-- Spotify Style Table -->
+  <div class="spotify-container">
     <div class="playlist-table">
       <div class="table-header">
-        <div class="col-index-drag">#</div>
+        <div class="col-index">#</div>
         <div class="col-title">Título</div>
         <div class="col-artist">Artista</div>
         <div class="col-note">Nota / Momento</div>
-        <div class="col-actions"></div>
+        <div class="col-actions">Acciones</div>
       </div>
 
       <div class="table-body" cdkDropList (cdkDropListDropped)="drop($event)" [cdkDropListDisabled]="searchQuery() !== ''">
-        @if (isLoading()) {
-          <div class="loading-row">
-            <div class="loader-small"></div>
-            <span>Cargando playlist...</span>
-          </div>
-        } @else if (filteredSongs().length === 0) {
-          <div class="empty-row">
-            @if (searchQuery()) {
-              <p>No se encontraron canciones que coincidan con "{{ searchQuery() }}"</p>
-              <button class="btn-link" (click)="searchQuery.set('')">Ver todas las canciones</button>
-            } @else {
-              <p>No hay canciones en la lista. ¡Añade la primera!</p>
-              <button class="btn-link" (click)="openAddModal()">Añadir canción ahora</button>
-            }
-          </div>
-        } @else {
-          @for (song of filteredSongs(); track song.id; let i = $index) {
-            <div class="song-row" [class.playing]="currentPlayingId() === song.id" cdkDrag [cdkDragData]="song">
-              
-              <div class="col-index-drag">
-                <div class="drag-handle-wrapper" cdkDragHandle title="Arrastrar para reordenar">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="9" cy="5" r="2.5" fill="#1db954"/>
-                    <circle cx="9" cy="12" r="2.5" fill="#1db954"/>
-                    <circle cx="9" cy="19" r="2.5" fill="#1db954"/>
-                    <circle cx="15" cy="5" r="2.5" fill="#1db954"/>
-                    <circle cx="15" cy="12" r="2.5" fill="#1db954"/>
-                    <circle cx="15" cy="19" r="2.5" fill="#1db954"/>
+        @for (song of filteredSongs(); track song.id; let i = $index) {
+          <div class="song-row" [class.playing]="currentPlayingId() === song.id" cdkDrag [cdkDragData]="song">
+            
+            <div class="row-main-content">
+              <div class="col-index">
+                <div class="drag-handle" cdkDragHandle>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="9" cy="5" r="2" fill="currentColor"/>
+                    <circle cx="9" cy="12" r="2" fill="currentColor"/>
+                    <circle cx="9" cy="19" r="2" fill="currentColor"/>
+                    <circle cx="15" cy="5" r="2" fill="currentColor"/>
+                    <circle cx="15" cy="12" r="2" fill="currentColor"/>
+                    <circle cx="15" cy="19" r="2" fill="currentColor"/>
                   </svg>
                 </div>
-                <div class="index-number">
+                <div class="number">
                   @if (currentPlayingId() === song.id) {
-                    <div class="playing-bars">
-                      <div class="bar"></div>
-                      <div class="bar"></div>
-                      <div class="bar"></div>
-                    </div>
+                    <div class="playing-bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
                   } @else {
                     {{ i + 1 }}
                   }
@@ -106,173 +86,118 @@
               </div>
 
               <div class="col-title">
-                <div class="song-info">
-                  <span class="song-name">{{ song.title }}</span>
-                  <span class="mobile-artist">{{ song.artist }}</span>
-                </div>
+                <span class="song-name">{{ song.title }}</span>
               </div>
-              <div class="col-artist">{{ song.artist }}</div>
+
+              <div class="col-artist">
+                <span class="song-artist">{{ song.artist }}</span>
+              </div>
+
               <div class="col-note">
-                <span class="note-tag" [class.has-note]="song.note">
-                  {{ song.note || 'Sin nota' }}
-                </span>
+                @if (song.note) {
+                  <div class="note-box">{{ song.note }}</div>
+                }
               </div>
+
               <div class="col-actions">
-                <button class="action-btn play" (click)="playSong(song)" [title]="currentPlayingId() === song.id ? 'Pausar' : 'Reproducir'">
+                <button class="action-btn play" (click)="playSong(song)">
                   @if (currentPlayingId() === song.id) {
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></svg>
                   } @else {
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
                   }
                 </button>
-                <button class="action-btn edit" (click)="editSong(song)" title="Editar">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                <button class="action-btn edit" (click)="editSong(song)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                 </button>
-                <button class="action-btn delete" (click)="confirmDelete(song)" title="Eliminar">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                <button class="action-btn delete" (click)="confirmDelete(song)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                 </button>
               </div>
-              
-              <div *cdkDragPlaceholder class="drag-placeholder"></div>
             </div>
-          }
+
+            <!-- Full Width Note for Mobile -->
+            @if (song.note) {
+              <div class="row-note-mobile">
+                <div class="note-box-mobile">{{ song.note }}</div>
+              </div>
+            }
+            
+            <div *cdkDragPlaceholder class="drag-placeholder"></div>
+          </div>
         }
       </div>
     </div>
 
-    <!-- YouTube Player Integration -->
+    <!-- YouTube Player -->
     @if (currentPlayingId()) {
-      <div class="mini-player animate-slide-up" [class.expanded]="isVideoExpanded()">
+      <div class="mini-player" [class.expanded]="isVideoExpanded()">
         <div class="player-info">
           <div class="playing-now">
-            <span class="label">Sonando ahora</span>
+            <span class="label">Sonando</span>
             <span class="title">{{ currentSong()?.title }}</span>
             <span class="artist-mini">{{ currentSong()?.artist }}</span>
           </div>
           
           <div class="player-controls">
-            <button class="nav-btn" (click)="previousSong()" [disabled]="!hasPrevious()" title="Anterior">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-skip-back"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/></svg>
+            <button class="nav-btn" (click)="previousSong()" [disabled]="!hasPrevious()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/></svg>
             </button>
             
-            <div class="video-controls-wrapper">
-              <div class="youtube-wrapper" [class.expanded]="isVideoExpanded()">
-                <iframe 
-                  id="youtube-player-iframe"
-                  [src]="safeYoutubeUrl()" 
-                  frameborder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowfullscreen>
-                </iframe>
-              </div>
-              <button class="expand-btn" (click)="toggleVideoExpand()" [title]="isVideoExpanded() ? 'Reducir' : 'Ampliar'">
+            <div class="video-container">
+              <div id="youtube-player-iframe"></div>
+              <button class="expand-btn" (click)="toggleVideoExpand()">
                 @if (isVideoExpanded()) {
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minimize-2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" x2="21" y1="10" y2="3"/><line x1="3" x2="10" y1="21" y2="14"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" x2="21" y1="10" y2="3"/><line x1="3" x2="10" y1="21" y2="14"/></svg>
                 } @else {
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize-2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg>
                 }
               </button>
             </div>
 
-            <button class="nav-btn" (click)="nextSong()" [disabled]="!hasNext()" title="Siguiente">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-skip-forward"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></svg>
+            <button class="nav-btn" (click)="nextSong()" [disabled]="!hasNext()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></svg>
             </button>
           </div>
         </div>
-        <button class="close-player" (click)="stopPlayback()" title="Cerrar reproductor">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        <button class="close-player" (click)="stopPlayback()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       </div>
     }
   </div>
 
-  <!-- Add/Edit Modal -->
+  <!-- Modal Add/Edit -->
   @if (showModal()) {
     <div class="modal-backdrop" (click)="closeModal()">
-      <div class="modal-container custom-modal" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h3>
-            <span class="header-icon">
-              @if (isEditing()) {
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-              } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-music-2"><circle cx="8" cy="18" r="4"/><path d="M12 18V2l7 4"/></svg>
-              }
-            </span>
-            {{ isEditing() ? 'Editar Canción' : 'Añadir Nueva Canción' }}
-          </h3>
-          <button class="close-btn" (click)="closeModal()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-          </button>
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-head">
+          <h3>{{ isEditing() ? 'Editar Canción' : 'Añadir Canción' }}</h3>
+          <button class="close-btn" (click)="closeModal()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
         </div>
         <form [formGroup]="musicForm" (ngSubmit)="onSubmit()" class="modal-body">
           <div class="form-grid">
             <div class="form-group">
-              <label for="title">Título de la canción</label>
-              <input 
-                type="text" 
-                id="title" 
-                formControlName="title" 
-                placeholder="Ej: Perfect"
-                [class.invalid]="musicForm.get('title')?.invalid && musicForm.get('title')?.touched"
-              >
-              @if (musicForm.get('title')?.invalid && musicForm.get('title')?.touched) {
-                <span class="error-text">El título es obligatorio</span>
-              }
+              <label>Título</label>
+              <input type="text" formControlName="title" placeholder="Ej: Perfect">
             </div>
-            
             <div class="form-group">
-              <label for="artist">Artista</label>
-              <input 
-                type="text" 
-                id="artist" 
-                formControlName="artist" 
-                placeholder="Ej: Ed Sheeran"
-                [class.invalid]="musicForm.get('artist')?.invalid && musicForm.get('artist')?.touched"
-              >
-              @if (musicForm.get('artist')?.invalid && musicForm.get('artist')?.touched) {
-                <span class="error-text">El artista es obligatorio</span>
-              }
+              <label>Artista</label>
+              <input type="text" formControlName="artist" placeholder="Ej: Ed Sheeran">
             </div>
-
-            <div class="form-group full-width">
-              <label for="youtubeUrl">URL de YouTube</label>
-              <div class="input-with-icon">
-                <span class="input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-youtube"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 2-2 103.38 103.38 0 0 1 15 0 2 2 0 0 1 2 2 24.12 24.12 0 0 1 0 10 2 2 0 0 1-2 2 103.38 103.38 0 0 1-15 0 2 2 0 0 1-2-2Z"/><path d="m10 15 5-3-5-3z"/></svg>
-                </span>
-                <input 
-                  type="text" 
-                  id="youtubeUrl" 
-                  formControlName="youtubeUrl" 
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  [class.invalid]="musicForm.get('youtubeUrl')?.invalid && musicForm.get('youtubeUrl')?.touched"
-                >
-              </div>
-              @if (musicForm.get('youtubeUrl')?.invalid && musicForm.get('youtubeUrl')?.touched) {
-                <span class="error-text">Introduce una URL válida de YouTube</span>
-              }
+            <div class="form-group full">
+              <label>URL YouTube</label>
+              <input type="text" formControlName="youtubeUrl" placeholder="https://www.youtube.com/watch?v=...">
             </div>
-
-            <div class="form-group full-width">
-              <label for="note">Nota / Momento especial</label>
-              <textarea 
-                id="note" 
-                formControlName="note" 
-                placeholder="Ej: Canción para la entrada, regalo padres, primer baile..."
-                rows="3"
-              ></textarea>
+            <div class="form-group full">
+              <label>Nota / Momento</label>
+              <textarea formControlName="note" placeholder="Ej: Regalo padres..." rows="2"></textarea>
             </div>
           </div>
-          
-          <div class="modal-footer-custom">
+          <div class="modal-foot">
             <button type="button" class="btn-cancel" (click)="closeModal()">Cancelar</button>
-            <button type="submit" class="btn-save-custom" [disabled]="musicForm.invalid || isSubmitting()">
-              @if (isSubmitting()) {
-                <span class="loader-button"></span> Guardando...
-              } @else {
-                {{ isEditing() ? 'Actualizar' : 'Añadir a la Lista' }}
-              }
+            <button type="submit" class="btn-save" [disabled]="musicForm.invalid || isSubmitting()">
+              {{ isSubmitting() ? 'Guardando...' : (isEditing() ? 'Actualizar' : 'Añadir') }}
             </button>
           </div>
         </form>
@@ -280,37 +205,18 @@
     </div>
   }
 
-  <!-- Delete Confirmation Modal -->
+  <!-- Delete Modal -->
   @if (songToDelete()) {
     <div class="modal-backdrop" (click)="songToDelete.set(null)">
-      <div class="modal-container confirm-modal-custom" (click)="$event.stopPropagation()">
-        <div class="modal-header delete-header">
-          <h3>
-            <span class="header-icon-delete">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-            </span>
-            Eliminar Canción
-          </h3>
-          <button class="close-btn" (click)="songToDelete.set(null)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-          </button>
-        </div>
+      <div class="modal-card mini" (click)="$event.stopPropagation()">
         <div class="modal-body text-center">
-          <div class="warning-icon-wrapper">
-            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-circle"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+          <div class="alert-icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></div>
+          <h4>¿Eliminar canción?</h4>
+          <p>Se borrará <strong>{{ songToDelete()?.title }}</strong> de la lista.</p>
+          <div class="modal-foot">
+            <button class="btn-cancel" (click)="songToDelete.set(null)">No, volver</button>
+            <button class="btn-danger" (click)="deleteSong()">Sí, eliminar</button>
           </div>
-          <div class="delete-content">
-            <p class="delete-question">¿Estás seguro de que quieres eliminar esta canción?</p>
-            <div class="song-to-delete-info">
-              <span class="delete-song-title">{{ songToDelete()?.title }}</span>
-              <span class="delete-song-artist">{{ songToDelete()?.artist }}</span>
-            </div>
-            <p class="delete-warning">Esta acción es permanente y no se puede deshacer.</p>
-          </div>
-        </div>
-        <div class="modal-footer-custom delete-footer">
-          <button class="btn-cancel" (click)="songToDelete.set(null)">Cancelar</button>
-          <button class="btn-danger-custom" (click)="deleteSong()">Eliminar definitivamente</button>
         </div>
       </div>
     </div>

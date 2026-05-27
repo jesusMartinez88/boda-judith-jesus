@@ -15,11 +15,12 @@ import { TodosComponent } from './todos/todos.component';
 import { VersionService } from '../../services/version.service';
 import { ContactsComponent } from './contacts/contacts.component';
 import { MusicComponent } from './music/music.component';
+import { GuestFormModalComponent } from '../../shared/components/guest-form-modal/guest-form-modal.component';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [TablesComponent, SettingsComponent, FinancesComponent, AttendanceProgressComponent, DragDropModule, TodosComponent, ContactsComponent, MusicComponent],
+    imports: [TablesComponent, SettingsComponent, FinancesComponent, AttendanceProgressComponent, DragDropModule, TodosComponent, ContactsComponent, MusicComponent, GuestFormModalComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })
@@ -84,6 +85,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
     modalShowActions = signal(false); // Para mostrar/ocultar botones de acción
 
     showDeclinedGuestsModal = signal(false);
+
+    showEditGuestModal = signal(false);
+    selectedGuestForEdit = signal<Guest | null>(null);
+
+    searchQuery = signal('');
+
+    filteredModalGuestsList = computed(() => {
+        const query = this.searchQuery().toLowerCase().trim();
+        const list = this.modalGuestsList();
+        if (!query) return list;
+        return list.filter(g => 
+            g.name.toLowerCase().includes(query) || 
+            (g.phone && g.phone.toLowerCase().includes(query)) ||
+            (g.email && g.email.toLowerCase().includes(query))
+        );
+    });
+
+    filteredDeclinedGuestsList = computed(() => {
+        const query = this.searchQuery().toLowerCase().trim();
+        const list = this.declinedGuestsList();
+        if (!query) return list;
+        return list.filter(g => 
+            g.name.toLowerCase().includes(query) || 
+            (g.phone && g.phone.toLowerCase().includes(query)) ||
+            (g.email && g.email.toLowerCase().includes(query))
+        );
+    });
 
     // Automatic count based on the shared signal in GuestService
     unassignedGuestsCount = computed(() => {
@@ -303,11 +331,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     openDeclinedGuestsModal() {
+        this.searchQuery.set('');
         this.showDeclinedGuestsModal.set(true);
     }
 
     closeDeclinedGuestsModal() {
         this.showDeclinedGuestsModal.set(false);
+        this.searchQuery.set('');
+    }
+
+    openEditGuestModal(guest: Guest) {
+        this.selectedGuestForEdit.set(guest);
+        this.showEditGuestModal.set(true);
+    }
+
+    closeEditGuestModal() {
+        this.showEditGuestModal.set(false);
+        this.selectedGuestForEdit.set(null);
     }
 
     // Métodos para abrir el modal genérico con diferentes listas
@@ -345,12 +385,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.modalTitle.set(title);
         this.modalGuestsList.set(guestsList);
         this.modalShowActions.set(false); // Sin botones de acción
+        this.searchQuery.set('');
         this.showGuestsModal.set(true);
     }
 
     closeGuestsModal() {
         this.showGuestsModal.set(false);
         this.modalGuestsList.set([]);
+        this.searchQuery.set('');
     }
 
     async moveDeclinedToUnassigned(guest: Guest) {

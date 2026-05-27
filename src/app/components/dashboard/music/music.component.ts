@@ -4,6 +4,8 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MusicPlaylistService, MusicSong } from '../../../services/music-playlist.service';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { fromEvent, Subject, timer } from 'rxjs';
+import { takeUntil, filter, switchMap } from 'rxjs/operators';
 
 declare var YT: any;
 
@@ -18,6 +20,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   private musicService = inject(MusicPlaylistService);
   private fb = inject(FormBuilder);
   private sanitizer = inject(DomSanitizer);
+  private destroy$ = new Subject<void>();
 
   @ViewChild('keepAliveAudio') keepAliveAudio!: ElementRef<HTMLAudioElement>;
 
@@ -34,7 +37,6 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   isVideoExpanded = signal(false);
   private player: any = null;
   private apiReady = false;
-  private isAttemptingPlay = false;
   
   // Búsqueda
   searchQuery = signal('');
@@ -95,17 +97,14 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
       note: ['']
     });
 
+    // Manejo reactivo de cambios de canción
     effect(() => {
-      const id = this.currentPlayingId();
       const song = this.currentSong();
-      
-      if (id && this.player && this.player.loadVideoById) {
-        if (song && song.youtubeId) {
-          this.player.loadVideoById(song.youtubeId);
-          this.updateMediaSession(song);
-          this.startKeepAlive();
-        }
-      } else if (!id) {
+      if (song && this.player && this.player.loadVideoById) {
+        this.player.loadVideoById(song.youtubeId);
+        this.updateMediaSession(song);
+        this.startKeepAlive();
+      } else if (!song) {
         this.stopKeepAlive();
       }
     });
@@ -115,7 +114,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
     this.musicService.loadSongs();
     this.initYoutubeApi();
     this.setupMediaSessionHandlers();
-    this.setupVisibilityHandler();
+    this.setupReactiveVisibility();
   }
 
   ngAfterViewInit() {
@@ -126,72 +125,61 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.stopPlayback();
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.player) {
       this.player.destroy();
     }
-    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
-  // --- Lógica de Visibilidad (Intento de evitar pausa al bloquear) ---
-  private setupVisibilityHandler() {
-    document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
-  }
-
-  private handleVisibilityChange() {
-    if (document.visibilityState === 'hidden' && this.currentPlayingId()) {
-      // Si se oculta (bloqueo o cambio de app), forzamos el keep-alive
-      this.startKeepAlive();
-      
-      // Pequeño retardo para intentar forzar la reproducción si YouTube intenta pausar
-      setTimeout(() => {
-        if (this.player && this.player.getPlayerState() === 2) { // Si está pausado
+  // --- Lógica Reactiva de Visibilidad ---
+  private setupReactiveVisibility() {
+    fromEvent(document, 'visibilitychange')
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(() => document.visibilityState === 'hidden' && !!this.currentPlayingId()),
+        switchMap(() => timer(200)) 
+      )
+      .subscribe(() => {
+        this.startKeepAlive();
+        if (this.player && this.player.getPlayerState() === 2) {
           this.player.playVideo();
         }
-      }, 100);
-    }
+      });
   }
 
-  // --- Lógica de Keep-Alive (Android Background) ---
+  // --- Lógica de Keep-Alive ---
   private startKeepAlive() {
-    if (this.keepAliveAudio && this.keepAliveAudio.nativeElement) {
-      // Forzamos el volumen y la reproducción en bucle
-      this.keepAliveAudio.nativeElement.volume = 0.01; // Casi inaudible pero activo
-      this.keepAliveAudio.nativeElement.play().catch(err => {
-        console.warn('Keep-alive audio failed to play:', err);
-      });
+    if (this.keepAliveAudio?.nativeElement) {
+      this.keepAliveAudio.nativeElement.volume = 0.01;
+      this.keepAliveAudio.nativeElement.play().catch(() => {});
     }
   }
 
   private stopKeepAlive() {
-    if (this.keepAliveAudio && this.keepAliveAudio.nativeElement) {
+    if (this.keepAliveAudio?.nativeElement) {
       this.keepAliveAudio.nativeElement.pause();
       this.keepAliveAudio.nativeElement.currentTime = 0;
     }
   }
 
-  // --- Media Session API (Controles en Pantalla de Bloqueo) ---
+  // --- Media Session API ---
   private setupMediaSessionHandlers() {
     if ('mediaSession' in navigator) {
-      navigator.mediaSession.setActionHandler('play', () => {
-        if (this.player) {
-          this.player.playVideo();
-          this.startKeepAlive();
-        } else {
-          const song = this.currentSong();
-          if (song) this.playSong(song);
+      const actions: [MediaSessionAction, () => void][] = [
+        ['play', () => { this.player?.playVideo(); this.startKeepAlive(); }],
+        ['pause', () => { this.player?.pauseVideo(); this.stopKeepAlive(); }],
+        ['previoustrack', () => this.previousSong()],
+        ['nexttrack', () => this.nextSong()],
+        ['stop', () => this.stopPlayback()]
+      ];
+
+      actions.forEach(([action, handler]) => {
+        try {
+          navigator.mediaSession.setActionHandler(action, handler);
+        } catch (e) {
+          console.warn(`Action ${action} not supported`);
         }
-      });
-      navigator.mediaSession.setActionHandler('pause', () => {
-        if (this.player) {
-          this.player.pauseVideo();
-          this.stopKeepAlive();
-        }
-      });
-      navigator.mediaSession.setActionHandler('previoustrack', () => {
-        this.previousSong();
-      });
-      navigator.mediaSession.setActionHandler('nexttrack', () => {
-        this.nextSong();
       });
     }
   }
@@ -212,58 +200,50 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   initYoutubeApi() {
-    if ((window as any).YT && (window as any).YT.Player) {
+    if ((window as any).YT?.Player) {
       this.apiReady = true;
       return;
     }
 
     (window as any).onYouTubeIframeAPIReady = () => {
       this.apiReady = true;
-      if (this.currentPlayingId()) {
-        this.initPlayer();
-      }
+      if (this.currentPlayingId()) this.initPlayer();
     };
 
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    document.head.appendChild(tag);
   }
 
   initPlayer() {
     if (!this.apiReady) return;
 
-    setTimeout(() => {
+    timer(500).pipe(takeUntil(this.destroy$)).subscribe(() => {
       const iframe = document.getElementById('youtube-player-iframe');
       if (!iframe) return;
 
       this.player = new YT.Player('youtube-player-iframe', {
         events: {
           'onStateChange': (event: any) => {
-            if (event.data === 0) { // ENDED
+            const state = event.data;
+            if (state === 0) { // ENDED
               this.nextSong();
-            } else if (event.data === 1) { // PLAYING
+            } else if (state === 1) { // PLAYING
               if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
               this.startKeepAlive();
-            } else if (event.data === 2) { // PAUSED
+            } else if (state === 2) { // PAUSED
               if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
-              // Si se pausa estando en segundo plano, intentamos re-activar si fue por bloqueo
-              if (document.visibilityState === 'hidden' && !this.isAttemptingPlay) {
-                this.isAttemptingPlay = true;
-                setTimeout(() => {
-                  if (this.player) this.player.playVideo();
-                  this.isAttemptingPlay = false;
-                }, 500);
+              if (document.visibilityState === 'hidden') {
+                timer(300).pipe(takeUntil(this.destroy$)).subscribe(() => {
+                  if (this.player?.getPlayerState() === 2) this.player.playVideo();
+                });
               }
             }
           },
-          'onError': (error: any) => {
-            console.error('Error en el reproductor de YouTube:', error);
-            setTimeout(() => this.nextSong(), 2000);
-          }
+          'onError': () => timer(2000).pipe(takeUntil(this.destroy$)).subscribe(() => this.nextSong())
         }
       });
-    }, 500);
+    });
   }
 
   onSearch(event: Event) {
@@ -325,13 +305,11 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
 
   async deleteSong() {
     const song = this.songToDelete();
-    if (!song || !song.id) return;
+    if (!song?.id) return;
 
     try {
       await this.musicService.removeSong(song.id);
-      if (this.currentPlayingId() === song.id) {
-        this.stopPlayback();
-      }
+      if (this.currentPlayingId() === song.id) this.stopPlayback();
       this.songToDelete.set(null);
     } catch (error) {
       console.error('Error deleting song:', error);
@@ -340,31 +318,21 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
 
   playSong(song: MusicSong) {
     if (this.currentPlayingId() === song.id) {
-      // Si ya está sonando, pausamos tanto YouTube como el Keep-Alive
       if (this.player) {
         const state = this.player.getPlayerState();
-        if (state === 1) { // Playing
-          this.player.pauseVideo();
-          this.stopKeepAlive();
-        } else {
-          this.player.playVideo();
-          this.startKeepAlive();
-        }
+        state === 1 ? this.player.pauseVideo() : this.player.playVideo();
       }
     } else {
       const isFirstPlay = !this.currentPlayingId();
       this.currentPlayingId.set(song.id);
-      if (isFirstPlay) {
-        this.initPlayer();
-      }
+      if (isFirstPlay) this.initPlayer();
       this.startKeepAlive();
     }
   }
 
   playAll() {
     if (this.filteredSongs().length > 0) {
-      const firstSong = this.filteredSongs()[0];
-      this.playSong(firstSong);
+      this.playSong(this.filteredSongs()[0]);
     }
   }
 
@@ -392,9 +360,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
     this.currentPlayingId.set(null);
     this.isVideoExpanded.set(false);
     this.stopKeepAlive();
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.playbackState = 'none';
-    }
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
     if (this.player) {
       this.player.destroy();
       this.player = null;
@@ -405,10 +371,8 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
     this.isVideoExpanded.update(v => !v);
   }
 
-  // Funcionalidad Drag and Drop
   drop(event: CdkDragDrop<MusicSong[]>) {
     if (this.searchQuery().trim() !== '') return;
-
     const currentSongs = [...this.songs()];
     moveItemInArray(currentSongs, event.previousIndex, event.currentIndex);
     this.musicService.updateOrder(currentSongs);

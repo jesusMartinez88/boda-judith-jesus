@@ -199,13 +199,18 @@
                       <button class="close-btn" (click)="closeDeclinedGuestsModal()">×</button>
                     </div>
                     <div class="modal-body">
-                      @if (declinedGuestsList().length === 0) {
+                      <div class="search-container" style="margin-bottom: 1rem; position: relative;">
+                        <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Buscar invitado..." style="width: 100%; padding: 0.5rem 0.75rem 0.5rem 2rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
+                        <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.85rem;">🔍</span>
+                      </div>
+
+                      @if (filteredDeclinedGuestsList().length === 0) {
                         <div style="text-align: center; padding: 2rem; color: #64748b;">
-                          <p style="margin: 0; font-size: 0.95rem;">No hay invitados marcados como que no asisten.</p>
+                          <p style="margin: 0; font-size: 0.95rem;">No se encontraron invitados.</p>
                         </div>
                       } @else {
                         <ul class="declined-list">
-                          @for (guest of declinedGuestsList(); track guest.id) {
+                          @for (guest of filteredDeclinedGuestsList(); track guest.id) {
                             <li class="declined-item">
                               <div class="declined-main">
                                 <span class="name">{{ guest.name }}</span>
@@ -250,14 +255,23 @@
                       <button class="close-btn" (click)="closeGuestsModal()">×</button>
                     </div>
                     <div class="modal-body">
-                      @if (modalGuestsList().length === 0) {
+                      <div class="search-container" style="margin-bottom: 1rem; position: relative;">
+                        <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Buscar invitado..." style="width: 100%; padding: 0.5rem 0.75rem 0.5rem 2rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
+                        <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.85rem;">🔍</span>
+                      </div>
+
+                      @if (filteredModalGuestsList().length === 0) {
                         <div style="text-align: center; padding: 2rem; color: #64748b;">
-                          <p style="margin: 0; font-size: 0.95rem;">No hay invitados en esta categoría.</p>
+                          <p style="margin: 0; font-size: 0.95rem;">No se encontraron invitados.</p>
                         </div>
                       } @else {
                         <ul class="declined-list">
-                          @for (guest of modalGuestsList(); track guest.id) {
+                          @for (guest of filteredModalGuestsList(); track guest.id) {
                             <li class="declined-item">
+                              <button type="button" class="edit-icon-btn" title="Editar invitado"
+                                (click)="openEditGuestModal(guest); $event.stopPropagation()">
+                                📝
+                              </button>
                               <div class="declined-main">
                                 <span class="name">{{ guest.name }} {{ guest.phone ? ' - 📱' + guest.phone : '' }}</span>
                                 @if (guest.email) {
@@ -305,6 +319,11 @@
             }
 
           }
+
+<!-- Modal para Editar Invitado -->
+@if (showEditGuestModal()) {
+  <app-guest-form-modal [guest]="selectedGuestForEdit()" (close)="closeEditGuestModal()"></app-guest-form-modal>
+}
 
           @if (currentView() === 'tables') {
             <app-tables></app-tables>
