@@ -6,6 +6,11 @@ import { catchError, throwError } from 'rxjs';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = localStorage.getItem('auth_token');
+  
+  // 1. Si la petición va hacia la API de Google/YouTube, déjala pasar limpia
+  if (req.url.includes('googleapis.com')) {
+    return next(req);
+  }
 
   let request = req;
   if (token) {

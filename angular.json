@@ -73,7 +73,7 @@
           },
           "defaultConfiguration": "production",
           "ngxEnv": {
-            "prefix": "^(SHEETURL|NG_APP_)",
+            "prefix": "^(SHEETURL|YOUTUBE_API_KEY|NG_APP_)",
             "runtime": false
           }
         },

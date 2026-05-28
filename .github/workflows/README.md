@@ -23,6 +23,7 @@ Este directorio contiene los workflows de CI/CD para el proyecto.
 **Variables requeridas:**
 
 - `NG_APP_SHEETURL` (secret)
+- `YOUTUBE_API_KEY` (secret)
 - `GH_TOKEN` (secret)
 
 ### 2. Version Bump (`version-bump.yaml`)

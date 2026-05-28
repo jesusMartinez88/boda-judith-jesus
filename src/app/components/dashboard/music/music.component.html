@@ -190,7 +190,79 @@
             </div>
             <div class="form-group full">
               <label>URL YouTube</label>
-              <input type="text" formControlName="youtubeUrl" placeholder="https://www.youtube.com/watch?v=...">
+              <div class="youtube-input-mode-toggle">
+                <button type="button" class="mode-btn" [class.active]="!useManualUrl()" (click)="toggleUrlMode()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  Buscar
+                </button>
+                <button type="button" class="mode-btn" [class.active]="useManualUrl()" (click)="toggleUrlMode()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                  Pegar URL
+                </button>
+              </div>
+              
+              @if (!useManualUrl()) {
+                <div class="youtube-search-wrapper">
+                  <div class="search-input-container">
+                    <span class="search-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    </span>
+                    <input
+                      type="text"
+                      [value]="youtubeSearchQuery()"
+                      (input)="onYouTubeSearch($any($event.target).value)"
+                      placeholder="Buscar video en YouTube..."
+                      class="youtube-search-input"
+                    >
+                    @if (youtubeSearchQuery()) {
+                      <button type="button" class="clear-search-btn" (click)="clearYouTubeSearch()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                      </button>
+                    }
+                  </div>
+                  
+                  @if (showSearchDropdown()) {
+                    <div class="search-dropdown">
+                      @if (isSearching()) {
+                        <div class="search-loading">
+                          <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+                            <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1">
+                              <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+                            </path>
+                          </svg>
+                          <span>Buscando videos...</span>
+                        </div>
+                      } @else if (searchError()) {
+                        <div class="search-error">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                          <span>{{ searchError() }}</span>
+                        </div>
+                      } @else if (youtubeSearchResults().length > 0) {
+                        <div class="search-results">
+                          @for (video of youtubeSearchResults(); track video.id) {
+                            <div class="search-result-item" (click)="selectVideo(video)">
+                              <img [src]="video.thumbnail" alt="" class="search-result-thumbnail" loading="lazy">
+                              <div class="search-result-info">
+                                <div class="search-result-title">{{ video.title }}</div>
+                                <button type="button" class="search-select-btn">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                                </button>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      } @else {
+                        <div class="search-no-results">
+                          <span>No se encontraron videos</span>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <input type="text" formControlName="youtubeUrl" placeholder="https://www.youtube.com/watch?v=...">
+              }
             </div>
             <div class="form-group full">
               <label>Nota / Momento</label>
