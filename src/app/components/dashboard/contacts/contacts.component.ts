@@ -21,6 +21,7 @@ export class ContactsComponent implements OnInit {
 
   activeTab = signal<string>('novio');
   searchQuery = signal('');
+  statusFilter = signal<'all' | 'not_sent' | 'sent' | 'responded'>('all');
   isAddingManual = signal(false);
   isAddingCategory = signal(false);
   isGenerating = signal<number | null>(null);
@@ -52,10 +53,19 @@ export class ContactsComponent implements OnInit {
   filteredContacts = computed(() => {
     const query = this.searchQuery().toLowerCase();
     const tab = this.activeTab();
-    return this.contacts().filter(c =>
-      c.side === tab &&
-      (c.name.toLowerCase().includes(query) || c.phone.includes(query))
-    );
+    const status = this.statusFilter();
+    return this.contacts().filter(c => {
+      const matchesTab = c.side === tab;
+      const matchesSearch = c.name.toLowerCase().includes(query) || c.phone.includes(query);
+      
+      let matchesStatus = true;
+      if (status !== 'all') {
+        const contactStatus = this.getInvitationStatus(c.linkSent, c.invitationStatus);
+        matchesStatus = contactStatus === status;
+      }
+      
+      return matchesTab && matchesSearch && matchesStatus;
+    });
   });
 
   async ngOnInit() {
@@ -334,7 +344,7 @@ export class ContactsComponent implements OnInit {
   getInvitationStatus(linkSent: boolean, invitationStatus?: string): string {
     if (invitationStatus === 'responded') return 'responded';
     if (invitationStatus === 'sent' || linkSent) return 'sent';
-    return 'not-sent';
+    return 'not_sent';
   }
 
   async generateGenericInvitation() {

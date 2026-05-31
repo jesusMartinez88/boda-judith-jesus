@@ -85,13 +85,21 @@
         </button>
       }
     </div>
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Buscar contacto...">
+    <div class="search-and-filter">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Buscar contacto...">
+      </div>
+      <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" class="status-select">
+        <option value="all">Todos</option>
+        <option value="not_sent">No enviado</option>
+        <option value="sent">Enviado</option>
+        <option value="responded">Respondido</option>
+      </select>
     </div>
   </div>
   <button class="btn-mark-all" (click)="markAllInTab()" [disabled]="isMarkingAll()">
-        @if (isMarkingAll()) { <span class="loader-sm"></span> Marcando... } @else { <span class="icon">✅</span> Marcar todas }
+        @if (isMarkingAll()) { <span class="loader-sm"></span> Marcando... } @else { <span class="icon">✅</span> Marcar todas como enviadas }
       </button>
 
   <div class="contacts-grid">

@@ -274,6 +274,30 @@
   outline: none;
 }
 
+.search-and-filter {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.status-select {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  font-size: 0.85rem;
+  background-color: white;
+  cursor: pointer;
+  font-weight: 500;
+  color: #475569;
+  outline: none;
+  white-space: nowrap;
+}
+
+.status-select:focus {
+  border-color: #be185d;
+  box-shadow: 0 0 0 3px rgba(190, 24, 93, 0.1);
+}
+
 .contacts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
