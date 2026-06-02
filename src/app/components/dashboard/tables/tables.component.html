@@ -1,5 +1,5 @@
 <div class="tables-view">
-    <app-tables-header [isEditMode]="isEditLayoutMode()" (toggleEditMode)="toggleEditLayout()"
+    <app-tables-header [isEditMode]="isEditLayoutMode()" [totalTables]="tables().length" (toggleEditMode)="toggleEditLayout()"
         (addTable)="openCreateTableModal()">
         <app-export-pdf-btn [hallElement]="hall"></app-export-pdf-btn>
     </app-tables-header>

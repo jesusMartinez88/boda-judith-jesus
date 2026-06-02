@@ -9,6 +9,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 })
 export class TablesHeaderComponent {
   @Input() isEditMode = false;
+  @Input() totalTables = 0;
   @Output() addTable = new EventEmitter<void>();
   @Output() toggleEditMode = new EventEmitter<void>();
 
