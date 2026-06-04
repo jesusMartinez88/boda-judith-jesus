@@ -199,7 +199,7 @@ export class FinancesComponent implements OnInit {
         } catch (error) {
             console.error('Error submitting form:', error);
             // Show error toast
-            const msg = (error && (error as any).message) ? (error as any).message : 'No se ha podido guardar';
+            const msg = this.getErrorMessage(error, 'No se ha podido guardar');
             this.showAppToast(msg, 'error');
         } finally {
             this.isSubmitting.set(false);
@@ -222,6 +222,22 @@ export class FinancesComponent implements OnInit {
         this.showToast.set(false);
         this.toastMessage.set('');
         this.toastType.set(null);
+    }
+
+    private getErrorMessage(error: unknown, fallback = 'Error inesperado'): string {
+        if (error instanceof Error && error.message) {
+            return error.message;
+        }
+
+        if (typeof error === 'string' && error.trim().length) {
+            return error.trim();
+        }
+
+        if (error && typeof error === 'object' && 'message' in error && typeof (error as { message?: unknown }).message === 'string') {
+            return (error as { message?: string }).message || fallback;
+        }
+
+        return fallback;
     }
 
     // Prompt user with modal to confirm delete
@@ -252,7 +268,7 @@ export class FinancesComponent implements OnInit {
             await this.loadData();
         } catch (err) {
             console.error('Error deleting record:', err);
-            const msg = (err && (err as any).message) ? (err as any).message : 'No se ha podido eliminar';
+            const msg = this.getErrorMessage(err, 'No se ha podido eliminar');
             this.showAppToast(msg, 'error');
         } finally {
             this.isLoading.set(false);
@@ -436,13 +452,14 @@ export class FinancesComponent implements OnInit {
                 event.preventDefault();
                 this.selectedSuggestionIndex.update(i => i > 0 ? i - 1 : -1);
                 break;
-            case 'Enter':
+            case 'Enter': {
                 event.preventDefault();
                 const index = this.selectedSuggestionIndex();
                 if (index >= 0 && index < suggestions.length) {
                     this.selectSuggestion(suggestions[index]);
                 }
                 break;
+            }
             case 'Escape':
                 this.showSuggestions.set(false);
                 this.selectedSuggestionIndex.set(-1);

@@ -175,16 +175,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
         try {
             const savedView = localStorage.getItem('dashboard.currentView');
             if (savedView && ['stats','tables','settings','finances','todos','contacts','music'].includes(savedView)) {
-                this.currentView.set(savedView as any);
+                this.currentView.set(savedView as 'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts' | 'music');
             }
-        } catch (e) {
+        } catch {
             // ignore
         }
 
         try {
             const menu = localStorage.getItem('dashboard.isMenuOpen');
             if (menu === 'true') this.isMenuOpen.set(true);
-        } catch (e) {
+        } catch {
             // ignore
         }
 
@@ -200,7 +200,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             // be the guard state, which we can detect reliably.
             history.pushState({ dashboardGuard: true }, '', window.location.href);
             history.pushState({}, '', window.location.href);
-        } catch (e) {
+        } catch {
             // ignore
         }
 
@@ -227,13 +227,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     @HostListener('window:popstate', ['$event'])
     onPopState(ev: PopStateEvent) {
-        const target = this.location.path() || '/';
-
         // If the popstate event's state is our guard, the user pressed back
         // from the app shell — show exit confirmation and re-insert the
         // top-of-stack empty state to keep the user on the dashboard.
-        if (ev && (ev.state as any)?.dashboardGuard === true) {
-            try { history.pushState({}, '', window.location.href); } catch (e) { /* ignore */ }
+        if (ev && ((ev.state as { dashboardGuard?: boolean })?.dashboardGuard === true)) {
+            try { history.pushState({}, '', window.location.href); } catch { /* ignore */ }
             this.showExitConfirm.set(true);
             return;
         }
@@ -247,7 +245,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.authService.logout();
         // navigate to login (replace history) then allow one back to proceed
         this.router.navigate(['/login'], { replaceUrl: true }).then(() => {
-            try { history.back(); } catch (e) { /* ignore */ }
+            try { history.back(); } catch { /* ignore */ }
         });
     }
 
@@ -257,12 +255,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     toggleMenu() {
         this.isMenuOpen.update(v => !v);
-        try { localStorage.setItem('dashboard.isMenuOpen', String(this.isMenuOpen())); } catch (e) { /* ignore */ }
+        try { localStorage.setItem('dashboard.isMenuOpen', String(this.isMenuOpen())); } catch { /* ignore */ }
     }
 
     closeMenu() {
         this.isMenuOpen.set(false);
-        try { localStorage.setItem('dashboard.isMenuOpen', 'false'); } catch (e) { /* ignore */ }
+        try { localStorage.setItem('dashboard.isMenuOpen', 'false'); } catch { /* ignore */ }
     }
 
     loadStats() {
@@ -270,7 +268,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.statsService.getStats().subscribe({
             next: async (data) => {
                 // Soporte para respuestas envueltas en un objeto 'data'
-                const finalData = (data as any).data || data;
+                const response = data as { data?: WeddingStats } | WeddingStats;
+                const finalData = ('data' in response && response.data) ? response.data : response as WeddingStats;
 
                 // ensure we have guests before computing declined fallback
                 try {
@@ -288,18 +287,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
                 // cargar alergias (no depende de invitados)
                 this.statsService.getAllergiesStats().subscribe({
-                    next: (res: any) => {
-                        const items = res.data || res;
+                    next: (res) => {
+                        const response = res as { data?: unknown } | unknown;
+                        const items = ('data' in (response as { data?: unknown }) ? (response as { data?: unknown }).data : response) ?? [];
+
+                        const isCountable = (value: unknown): value is { count: number } => {
+                            return (
+                                value !== null &&
+                                typeof value === 'object' &&
+                                'count' in value &&
+                                typeof (value as { count: unknown }).count === 'number'
+                            );
+                        };
+
                         let totalAllergies = 0;
                         if (Array.isArray(items)) {
-                            items.forEach((item: any) => {
-                                if (item && typeof item.count === 'number') {
+                            items.forEach((item) => {
+                                if (isCountable(item)) {
                                     totalAllergies += item.count;
                                 } else {
                                     totalAllergies += 1;
                                 }
                             });
-                        } else if (items && typeof items.count === 'number') {
+                        } else if (isCountable(items)) {
                             totalAllergies = items.count;
                         }
                         this.allergiesCount.set(totalAllergies);
@@ -321,7 +331,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     setView(view: 'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts' | 'music') {
         this.currentView.set(view);
-        try { localStorage.setItem('dashboard.currentView', view); } catch (e) { /* ignore */ }
+        try { localStorage.setItem('dashboard.currentView', view); } catch { /* ignore */ }
         this.closeMenu();
     }
 

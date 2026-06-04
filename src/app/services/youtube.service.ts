@@ -6,6 +6,7 @@ export interface YouTubeVideoResult {
   id: string;
   title: string;
   thumbnail: string;
+  channelTitle?: string;
 }
 
 @Injectable({
@@ -40,11 +41,13 @@ export class YouTubeService {
           const videoId = item.id?.videoId || item.id;
           const title = item.snippet?.title || '';
           const thumbnail = item.snippet?.thumbnails?.medium?.url || item.snippet?.thumbnails?.default?.url || '';
+          const channelTitle = item.snippet?.channelTitle || '';
 
           return {
             id: videoId,
             title: title,
             thumbnail: thumbnail,
+            channelTitle: channelTitle,
           };
         });
       }),

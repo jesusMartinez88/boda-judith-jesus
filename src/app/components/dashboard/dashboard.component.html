@@ -9,7 +9,7 @@
   </button>
 
   <!-- Overlay Backdrop -->
-  <div class="sidebar-overlay" [class.show]="isMenuOpen()" (click)="closeMenu()"></div>
+  <button type="button" class="sidebar-overlay" [class.show]="isMenuOpen()" (click)="closeMenu()" (keyup.enter)="closeMenu()" aria-label="Cerrar menú" tabindex="0"></button>
 
   <aside class="sidebar" [class.open]="isMenuOpen()">
     <div class="user-info-mobile">
@@ -24,33 +24,33 @@
       <h2>Admin Panel</h2>
     </div>
     <nav class="sidebar-nav">
-      <a class="nav-item" [class.active]="currentView() === 'stats'" (click)="setView('stats')">
+      <button type="button" class="nav-item" [class.active]="currentView() === 'stats'" (click)="setView('stats')">
         <span class="icon">📊</span> Resumen
-      </a>
-      <a class="nav-item" [class.active]="currentView() === 'tables'" (click)="setView('tables')">
+      </button>
+      <button type="button" class="nav-item" [class.active]="currentView() === 'tables'" (click)="setView('tables')">
         <span class="icon">🪑</span> Mesas
-      </a>
-      <a class="nav-item" [class.active]="currentView() === 'finances'" (click)="setView('finances')">
+      </button>
+      <button type="button" class="nav-item" [class.active]="currentView() === 'finances'" (click)="setView('finances')">
         <span class="icon">💰</span> Control de Gastos
-      </a>
-      <a class="nav-item" [class.active]="currentView() === 'todos'" (click)="setView('todos')">
+      </button>
+      <button type="button" class="nav-item" [class.active]="currentView() === 'todos'" (click)="setView('todos')">
         <span class="icon">📝</span> Tareas
-      </a>
-      <a class="nav-item" [class.active]="currentView() === 'music'" (click)="setView('music')">
+      </button>
+      <button type="button" class="nav-item" [class.active]="currentView() === 'music'" (click)="setView('music')">
         <span class="icon">🎵</span> Música
-      </a>
-      <a class="nav-item" [class.active]="currentView() === 'contacts'" (click)="setView('contacts')">
+      </button>
+      <button type="button" class="nav-item" [class.active]="currentView() === 'contacts'" (click)="setView('contacts')">
         <span class="icon">📱</span> Invitaciones
-      </a>
+      </button>
       <a class="nav-item" href="/" target="_blank">
         <span class="icon">✉️</span> Ver invitación
       </a>
-      <a class="nav-item" [class.active]="currentView() === 'settings'" (click)="setView('settings')">
+      <button type="button" class="nav-item" [class.active]="currentView() === 'settings'" (click)="setView('settings')">
         <span class="icon">⚙️</span> Configuración
-      </a>
-      <a class="nav-item" (click)="loadStats()">
+      </button>
+      <button type="button" class="nav-item" (click)="loadStats()">
         <span class="icon">🔄</span> Actualizar
-      </a>
+      </button>
     </nav>
     <div class="sidebar-footer">
       <button (click)="logout()" class="logout-btn">
@@ -122,14 +122,14 @@
                     </div>
                     <!-- Adults and Children Counters inside Total -->
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                      <div class="stat-item adults clickable" style="flex: 1;" (click)="openGuestsModal('adults')">
+                      <button type="button" class="stat-item adults clickable" style="flex: 1;" (click)="openGuestsModal('adults')">
                         <span class="label">Adultos</span>
                         <span class="count" style="font-size: 1.5rem;">{{ adultsCount() }}</span>
-                      </div>
-                      <div class="stat-item children clickable" style="flex: 1;" (click)="openGuestsModal('children')">
+                      </button>
+                      <button type="button" class="stat-item children clickable" style="flex: 1;" (click)="openGuestsModal('children')">
                         <span class="label">Niños</span>
                         <span class="count" style="font-size: 1.5rem;">{{ childrenCount() }}</span>
-                      </div>
+                      </button>
                     </div>
                   </div>
 
@@ -137,36 +137,32 @@
                   <div class="stats-card attendance">
                     <h3>Estado de Asistencia</h3>
                     <div class="attendance-summary">
-                      <div class="stat-item confirmed clickable" (click)="openGuestsModal('confirmed')">
+                      <button type="button" class="stat-item confirmed clickable" (click)="openGuestsModal('confirmed')">
                         <span class="label">Confirmados</span>
                         <span class="count">{{ stats()?.confirmed }}</span>
-                      </div>
-                      <!-- <div class="stat-item pending" *ngIf="sentGuestsCount() !== null">
-                      <span class="label">Sentados</span>
-                      <span class="count">{{ sentGuestsCount() }}</span>
-                    </div> -->
+                      </button>
                     <div class="stat-item pending">
                       <span class="label">Pendientes de respuesta</span>
                       <span class="count">{{ pendings() }}</span>
                     </div>
                     @if (stats()?.declined !== undefined) {
-                      <div class="stat-item declined clickable" (click)="openDeclinedGuestsModal()">
+                      <button type="button" class="stat-item declined clickable" (click)="openDeclinedGuestsModal()">
                         <span class="label">No asisten</span>
                         <span class="count">{{ stats()?.declined }}</span>
-                      </div>
+                      </button>
                     }
                     @if (unassignedGuestsCount() !== null) {
-                      <div class="stat-item unassigned clickable" (click)="openGuestsModal('unassigned')">
+                      <button type="button" class="stat-item unassigned clickable" (click)="openGuestsModal('unassigned')">
                         <span class="label">Sin mesa</span>
                         <span class="count">{{ unassignedGuestsCount() }}</span>
-                      </div>
+                      </button>
                     }
                   </div>
                 </div>
 
                 <!-- Transportation and Children Cards -->
                 <!-- Transportation Card -->
-                <div class="stats-card transport clickable-card" (click)="openGuestsModal('transport')">
+                <button type="button" class="stats-card transport clickable-card" (click)="openGuestsModal('transport')">
                   <h3>Transporte</h3>
                   <div class="transport-info">
                     <div class="transport-item">
@@ -177,23 +173,23 @@
                       </div>
                     </div>
                   </div>
-                </div>
+                </button>
 
                 <!-- Allergies Card -->
                 @if (allergiesCount() !== null) {
-                  <div class="stats-card allergies clickable-card" (click)="openGuestsModal('allergies')">
+                  <button type="button" class="stats-card allergies clickable-card" (click)="openGuestsModal('allergies')">
                     <div class="card-icon">🥗</div>
                     <div class="card-info">
                       <h3>Con Alergias / Intolerancias</h3>
                       <p class="value">{{ allergiesCount() }}</p>
                     </div>
-                  </div>
+                  </button>
                 }
               </div>
 
               @if (showDeclinedGuestsModal()) {
-                <div class="modal-backdrop" (click)="closeDeclinedGuestsModal()">
-                  <div class="modal-container declined-modal" (click)="$event.stopPropagation()">
+                <button type="button" class="modal-backdrop" (click)="closeDeclinedGuestsModal()" (keydown.enter)="closeDeclinedGuestsModal()" (keyup.enter)="closeDeclinedGuestsModal()" aria-label="Cerrar modal" tabindex="0"></button>
+                  <div class="modal-container declined-modal" role="dialog" aria-modal="true" tabindex="0" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
                     <div class="modal-header">
                       <h3>Invitados que no asisten</h3>
                       <button class="close-btn" (click)="closeDeclinedGuestsModal()">×</button>
@@ -243,13 +239,12 @@
                       }
                     </div>
                   </div>
-                </div>
               }
 
               <!-- Modal Genérico para otras listas de invitados -->
               @if (showGuestsModal()) {
-                <div class="modal-backdrop" (click)="closeGuestsModal()">
-                  <div class="modal-container declined-modal" (click)="$event.stopPropagation()">
+                <button type="button" class="modal-backdrop" (click)="closeGuestsModal()" (keydown.enter)="closeGuestsModal()" (keyup.enter)="closeGuestsModal()" aria-label="Cerrar modal" tabindex="0"></button>
+                  <div class="modal-container declined-modal" role="dialog" aria-modal="true" tabindex="0" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
                     <div class="modal-header">
                       <h3>{{ modalTitle() }}</h3>
                       <button class="close-btn" (click)="closeGuestsModal()">×</button>
@@ -279,7 +274,12 @@
                                 }
                               </div>
                               @if (guest.tableId && guest.tableId !== 0 && modalTitle() === 'Invitados Confirmados') {
-                                <p class="notes">🪑 Mesa {{ guest.tableId }}@if (guest.seatNumber) { - Asiento {{ guest.seatNumber }}}</p>
+                                <p class="notes">
+                                  🪑 Mesa {{ guest.tableId }}
+                                  @if (guest.seatNumber) {
+                                    - Asiento {{ guest.seatNumber }}
+                                  }
+                                </p>
                               }
                               @if (guest.allergies && guest.allergies.trim() !== '' && ['Invitados Confirmados', 'Invitados con Alergias'].some((title) => title === modalTitle())) {
                                 <p class="notes allergies-note">🥗 Alergias: {{ guest.allergies }}</p>
@@ -296,13 +296,11 @@
                       }
                     </div>
                   </div>
-                </div>
               }
-            }
 
             @if (showExitConfirm()) {
-              <div class="modal-backdrop" (click)="cancelExit()">
-                <div class="modal-container confirm-exit-modal" (click)="$event.stopPropagation()">
+              <button type="button" class="modal-backdrop" (click)="cancelExit()" (keydown.enter)="cancelExit()" (keyup.enter)="cancelExit()" aria-label="Cerrar confirmación" tabindex="0"></button>
+                <div class="modal-container confirm-exit-modal" role="dialog" aria-modal="true" tabindex="0" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
                   <div class="modal-header">
                     <h3>¿Deseas salir de la aplicación?</h3>
                     <button class="close-btn" (click)="cancelExit()">×</button>
@@ -315,10 +313,9 @@
                     <button class="btn-danger" (click)="confirmExit()">Sí, salir</button>
                   </div>
                 </div>
-              </div>
             }
-
           }
+        }
 
 <!-- Modal para Editar Invitado -->
 @if (showEditGuestModal()) {

@@ -43,7 +43,7 @@
                 <h3>{{ editingRecordId() ? '✏️ Editar Registro' : 'Nuevo Registro' }}</h3>
             <form id="finance-form" [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="finance-form">
                   <div class="form-group autocomplete-wrapper">
-                      <label>Pagado por / Recibido de</label>
+                      <label for="paidByInput">Pagado por / Recibido de</label>
                      <input id="paidByInput" type="text"
                          formControlName="paidBy"
                              placeholder="Ej: Juan, María, Ambos..."
@@ -76,36 +76,36 @@
                       }
                   </div>
                   <div class="form-group">
-                      <label>Descripción</label>
-                      <input type="text" formControlName="description" placeholder="Ej: Pago Fotógrafo"
+                      <label for="descriptionInput">Descripción</label>
+                      <input id="descriptionInput" type="text" formControlName="description" placeholder="Ej: Pago Fotógrafo"
                           [class.error]="financeForm.get('description')?.invalid && financeForm.get('description')?.touched">
                   </div>
 
 
                   <div class="form-row">
                       <div class="form-group">
-                          <label>Importe (€)</label>
-                          <input type="number" formControlName="amount" step="0.01"
+                          <label for="amountInput">Importe (€)</label>
+                          <input id="amountInput" type="number" formControlName="amount" step="0.01"
                               [class.error]="financeForm.get('amount')?.invalid && financeForm.get('amount')?.touched">
                       </div>
-                      <div class="form-group">
-                          <label>Tipo</label>
-                          <div class="segmented-control">
-                              <button type="button" [class.active]="financeForm.get('type')?.value === 'expense'"
+                      <fieldset class="form-group">
+                          <legend>Tipo</legend>
+                          <div class="segmented-control" role="radiogroup" aria-label="Tipo de movimiento">
+                              <button type="button" role="radio" [attr.aria-checked]="financeForm.get('type')?.value === 'expense'" [class.active]="financeForm.get('type')?.value === 'expense'"
                                   (click)="financeForm.patchValue({type: 'expense'})">
                                   Gasto
                               </button>
-                              <button type="button" [class.active]="financeForm.get('type')?.value === 'income'"
+                              <button type="button" role="radio" [attr.aria-checked]="financeForm.get('type')?.value === 'income'" [class.active]="financeForm.get('type')?.value === 'income'"
                                   (click)="financeForm.patchValue({type: 'income'})">
                                   Ingreso
                               </button>
                           </div>
-                      </div>
+                      </fieldset>
                   </div>
 
                   <div class="form-group">
-                      <label>Categoría</label>
-                      <select formControlName="category">
+                      <label for="categorySelect">Categoría</label>
+                      <select id="categorySelect" formControlName="category">
                           <option value="Celebración">Celebración</option>
                           <option value="Vestuario">Vestuario</option>
                           <option value="Fotografía/Video">Fotografía/Video</option>
@@ -133,16 +133,16 @@
 
         <!-- Modal for form when form-section is hidden on narrower screens -->
         @if (showFormModal()) {
-        <div class="modal-backdrop" (click)="closeFormModal()">
-            <div class="modal-container finance-modal" (click)="$event.stopPropagation()">
+        <button type="button" class="modal-backdrop" (click)="closeFormModal()" (keydown.enter)="closeFormModal()" aria-label="Cerrar formulario" tabindex="0"></button>
+            <div class="modal-container finance-modal" role="dialog" aria-modal="true" aria-labelledby="finance-modal-title" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
                 <div class="modal-header">
-                    <h3>{{ editingRecordId() ? '✏️ Editar Registro' : 'Nuevo Registro' }}</h3>
+                    <h3 id="finance-modal-title">{{ editingRecordId() ? '✏️ Editar Registro' : 'Nuevo Registro' }}</h3>
                     <button class="close-btn" (click)="closeFormModal()">×</button>
                 </div>
                 <div class="modal-body">
                     <form [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="finance-form modal-form">
                         <div class="form-group autocomplete-wrapper">
-                            <label>Pagado por / Recibido de</label>
+                            <label for="paidByInput">Pagado por / Recibido de</label>
                             <input id="paidByInput" type="text"
                                    formControlName="paidBy"
                                    placeholder="Ej: Juan, María, Ambos..."
@@ -170,35 +170,35 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Descripción</label>
-                            <input type="text" formControlName="description" placeholder="Ej: Pago Fotógrafo"
+                            <label for="descriptionInput">Descripción</label>
+                            <input id="descriptionInput" type="text" formControlName="description" placeholder="Ej: Pago Fotógrafo"
                                 [class.error]="financeForm.get('description')?.invalid && financeForm.get('description')?.touched">
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Importe (€)</label>
-                                <input type="number" formControlName="amount" step="0.01"
+                                <label for="amountInput">Importe (€)</label>
+                                <input id="amountInput" type="number" formControlName="amount" step="0.01"
                                     [class.error]="financeForm.get('amount')?.invalid && financeForm.get('amount')?.touched">
                             </div>
-                            <div class="form-group">
-                                <label>Tipo</label>
-                                <div class="segmented-control">
-                                    <button type="button" [class.active]="financeForm.get('type')?.value === 'expense'"
+                            <fieldset class="form-group">
+                                <legend>Tipo</legend>
+                                <div class="segmented-control" role="radiogroup" aria-label="Tipo de movimiento">
+                                    <button type="button" role="radio" [attr.aria-checked]="financeForm.get('type')?.value === 'expense'" [class.active]="financeForm.get('type')?.value === 'expense'"
                                         (click)="financeForm.patchValue({type: 'expense'})">
                                         Gasto
                                     </button>
-                                    <button type="button" [class.active]="financeForm.get('type')?.value === 'income'"
+                                    <button type="button" role="radio" [attr.aria-checked]="financeForm.get('type')?.value === 'income'" [class.active]="financeForm.get('type')?.value === 'income'"
                                         (click)="financeForm.patchValue({type: 'income'})">
                                         Ingreso
                                     </button>
                                 </div>
-                            </div>
+                            </fieldset>
                         </div>
 
                         <div class="form-group">
-                            <label>Categoría</label>
-                            <select formControlName="category">
+                            <label for="categorySelect">Categoría</label>
+                            <select id="categorySelect" formControlName="category">
                                 <option value="Celebración">Celebración</option>
                                 <option value="Vestuario">Vestuario</option>
                                 <option value="Fotografía/Video">Fotografía/Video</option>
@@ -220,7 +220,6 @@
                     </form>
                 </div>
             </div>
-        </div>
         }
 
         <!-- List Section -->
@@ -239,26 +238,6 @@
 
                 <div class="table-container">
                     @if (records().length === 0 && !isLoading()) {
-
-        <!-- Delete Confirmation Modal -->
-        @if (showDeleteModal()) {
-        <div class="modal-backdrop" (click)="cancelDelete()">
-            <div class="modal-container delete-modal" (click)="$event.stopPropagation()">
-                <div class="modal-header">
-                    <h3>Eliminar Registro</h3>
-                    <button class="close-btn" (click)="cancelDelete()">×</button>
-                </div>
-                <div class="modal-body">
-                    <p>¿Estás seguro de que querés eliminar el registro <strong>"{{ deleteTargetDesc() }}"</strong>?</p>
-                    <p class="muted">Esta acción no se puede deshacer.</p>
-                </div>
-                <div class="modal-actions" style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1rem;">
-                    <button class="cancel-btn" (click)="cancelDelete()">Cancelar</button>
-                    <button class="btn-danger" (click)="confirmDelete()">🗑️ Eliminar</button>
-                </div>
-            </div>
-        </div>
-        }
                     <div class="empty-state">
                         <p>No hay movimientos registrados.</p>
                     </div>
@@ -377,20 +356,21 @@
     </div>
 
     <!-- Toast notification (reusable component) -->
-    <app-toast *ngIf="showToast()"
-               [show]="showToast()"
-               [type]="toastType() || 'success'"
-               [title]="toastType() === 'success' ? 'Guardado' : 'Error'"
-               [message]="toastMessage()"
-               (closed)="hideToast()">
-    </app-toast>
+    @if (showToast()) {
+      <app-toast [show]="showToast()"
+        [type]="toastType() || 'success'"
+        [title]="toastType() === 'success' ? 'Guardado' : 'Error'"
+        [message]="toastMessage()"
+        (closed)="hideToast()">
+      </app-toast>
+    }
 
     <!-- Delete Confirmation Modal (global placement so it can open regardless of list state) -->
     @if (showDeleteModal()) {
-    <div class="modal-backdrop" (click)="cancelDelete()">
-        <div class="modal-container delete-modal" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-backdrop" (click)="cancelDelete()" (keydown.enter)="cancelDelete()" aria-label="Cerrar confirmación" tabindex="0"></button>
+        <div class="modal-container delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
             <div class="modal-header">
-                <h3>Eliminar Registro</h3>
+                <h3 id="delete-modal-title">Eliminar Registro</h3>
                 <button class="close-btn" (click)="cancelDelete()">×</button>
             </div>
             <div class="modal-body">
@@ -402,7 +382,6 @@
                 <button class="btn-danger" (click)="confirmDelete()">🗑️ Eliminar</button>
             </div>
         </div>
-    </div>
     }
 
     <!-- Comparison by Person Card -->

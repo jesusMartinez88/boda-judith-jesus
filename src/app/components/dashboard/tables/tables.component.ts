@@ -19,7 +19,7 @@ export interface HallSearchResult {
     seatNumber: number | null;
 }
 
-type TableWithGuests = {
+interface TableWithGuests {
     id: number;
     name: string | undefined;
     capacity: number;
@@ -27,7 +27,7 @@ type TableWithGuests = {
     posX: number | undefined;
     posY: number | undefined;
     guests: Guest[];
-};
+}
 
 @Component({
     selector: 'app-tables',

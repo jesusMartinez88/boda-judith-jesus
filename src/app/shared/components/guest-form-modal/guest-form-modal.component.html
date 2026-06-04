@@ -11,6 +11,9 @@
                             <label>Nombre Completo</label>
                             <input type="text" formControlName="name" name="name"
                                 placeholder="Ej: Juan Pérez" required>
+                            @if (guestForm.get('name')?.touched && guestForm.get('name')?.invalid) {
+                                <small class="error-message">El nombre es obligatorio (mínimo 3 caracteres)</small>
+                            }
                         </div>
 
                         <div class="form-group">

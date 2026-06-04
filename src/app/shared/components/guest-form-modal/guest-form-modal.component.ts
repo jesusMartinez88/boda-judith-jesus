@@ -60,14 +60,13 @@ export class GuestFormModalComponent implements OnInit {
   async saveGuest() {
     if (this.guestForm.invalid) {
       this.guestForm.markAllAsTouched();
-      alert('Por favor, rellena al menos el nombre del invitado con un formato válido.');
       return;
     }
 
     try {
       this.isLoading.set(true);
 
-      const formValue = this.guestForm.value as any;
+      const formValue: Guest = this.guestForm.value;
       const isAdult = Number(formValue.isAdult) === 1;
       const guestData: Guest = {
         name: (formValue.name || '').trim(),
@@ -88,7 +87,7 @@ export class GuestFormModalComponent implements OnInit {
       if (this.isEditingGuest() && this.editingGuestId()) {
         await this.guestService.updateGuest(this.editingGuestId()!, guestData);
       } else {
-        (guestData as any).sendEmail = false;
+        guestData.sendEmail = false;
         await this.guestService.registerGuest(guestData);
       }
 

@@ -172,24 +172,30 @@
 
   <!-- Modal Add/Edit -->
   @if (showModal()) {
-    <div class="modal-backdrop" (click)="closeModal()">
-      <div class="modal-card" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-backdrop" (click)="closeModal()" (keydown.enter)="closeModal()" aria-label="Cerrar modal" tabindex="0"></button>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="music-modal-title" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
         <div class="modal-head">
-          <h3>{{ isEditing() ? 'Editar Canción' : 'Añadir Canción' }}</h3>
+          <h3 id="music-modal-title">{{ isEditing() ? 'Editar Canción' : 'Añadir Canción' }}</h3>
           <button class="close-btn" (click)="closeModal()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
         </div>
         <form [formGroup]="musicForm" (ngSubmit)="onSubmit()" class="modal-body">
           <div class="form-grid">
             <div class="form-group">
-              <label>Título</label>
-              <input type="text" formControlName="title" placeholder="Ej: Perfect">
+              <label for="titleInput">Título</label>
+              <input id="titleInput" type="text" formControlName="title" placeholder="Ej: Perfect">
+              @if (musicForm.get('title')?.touched && musicForm.get('title')?.invalid) {
+                <small class="error-message">El título es obligatorio</small>
+              }
             </div>
             <div class="form-group">
-              <label>Artista</label>
-              <input type="text" formControlName="artist" placeholder="Ej: Ed Sheeran">
+              <label for="artistInput">Artista</label>
+              <input id="artistInput" type="text" formControlName="artist" placeholder="Ej: Ed Sheeran">
+              @if (musicForm.get('artist')?.touched && musicForm.get('artist')?.invalid) {
+                <small class="error-message">El artista es obligatorio</small>
+              }
             </div>
             <div class="form-group full">
-              <label>URL YouTube</label>
+              <label [attr.for]="useManualUrl() ? 'youtubeUrlInput' : 'youtubeSearchInput'">URL YouTube</label>
               <div class="youtube-input-mode-toggle">
                 <button type="button" class="mode-btn" [class.active]="!useManualUrl()" (click)="toggleUrlMode()">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -200,7 +206,7 @@
                   Pegar URL
                 </button>
               </div>
-              
+
               @if (!useManualUrl()) {
                 <div class="youtube-search-wrapper">
                   <div class="search-input-container">
@@ -208,6 +214,7 @@
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                     </span>
                     <input
+                      id="youtubeSearchInput"
                       type="text"
                       [value]="youtubeSearchQuery()"
                       (input)="onYouTubeSearch($any($event.target).value)"
@@ -220,7 +227,7 @@
                       </button>
                     }
                   </div>
-                  
+
                   @if (showSearchDropdown()) {
                     <div class="search-dropdown">
                       @if (isSearching()) {
@@ -241,15 +248,15 @@
                       } @else if (youtubeSearchResults().length > 0) {
                         <div class="search-results">
                           @for (video of youtubeSearchResults(); track video.id) {
-                            <div class="search-result-item" (click)="selectVideo(video)">
+                            <button type="button" class="search-result-item" (click)="selectVideo(video)">
                               <img [src]="video.thumbnail" alt="" class="search-result-thumbnail" loading="lazy">
                               <div class="search-result-info">
                                 <div class="search-result-title">{{ video.title }}</div>
-                                <button type="button" class="search-select-btn">
+                                <span class="search-select-btn" aria-hidden="true">
                                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                                </button>
+                                </span>
                               </div>
-                            </div>
+                            </button>
                           }
                         </div>
                       } @else {
@@ -261,14 +268,18 @@
                   }
                 </div>
               } @else {
-                <input type="text" formControlName="youtubeUrl" placeholder="https://www.youtube.com/watch?v=...">
+                <input id="youtubeUrlInput" type="text" formControlName="youtubeUrl" placeholder="https://www.youtube.com/watch?v=...">
+                @if (musicForm.get('youtubeUrl')?.touched && musicForm.get('youtubeUrl')?.invalid) {
+                  <small class="error-message">La URL de YouTube es obligatoria</small>
+                }
               }
             </div>
             <div class="form-group full">
-              <label>Nota / Momento</label>
-              <textarea formControlName="note" placeholder="Ej: Regalo padres..." rows="2"></textarea>
+              <label for="noteInput">Nota / Momento</label>
+              <textarea id="noteInput" formControlName="note" placeholder="Ej: Regalo padres..." rows="2"></textarea>
             </div>
           </div>
+          <pre>{{ musicForm.invalid }}</pre>
           <div class="modal-foot">
             <button type="button" class="btn-cancel" (click)="closeModal()">Cancelar</button>
             <button type="submit" class="btn-save" [disabled]="musicForm.invalid || isSubmitting()">
@@ -277,13 +288,12 @@
           </div>
         </form>
       </div>
-    </div>
   }
 
   <!-- Delete Modal -->
   @if (songToDelete()) {
-    <div class="modal-backdrop" (click)="songToDelete.set(null)">
-      <div class="modal-card delete-modal" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-backdrop" (click)="songToDelete.set(null)" (keydown.enter)="songToDelete.set(null)" aria-label="Cerrar confirmación" tabindex="0"></button>
+      <div class="modal-card delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-song-modal-title" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
         <div class="modal-body delete-modal-body">
           <div class="alert-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></div>
           <h4>¿Eliminar canción?</h4>
@@ -294,6 +304,4 @@
           </div>
         </div>
       </div>
-    </div>
   }
-</div>

@@ -70,21 +70,26 @@ export class ContactsComponent implements OnInit {
 
   async ngOnInit() {
     const cats = await this.contactService.loadCategories();
-    const saved = (() => {
-      try { return localStorage.getItem('contacts.activeTab'); } catch (e) { return null; }
+    const savedTab = (() => {
+      try {
+        return localStorage.getItem('contacts.activeTab');
+      } catch {
+        return null;
+      }
     })();
 
-    if (saved && cats.some(c => c.slug === saved)) {
-      this.activeTab.set(saved);
+    if (savedTab) {
+      this.activeTab.set(savedTab);
     } else if (cats.length > 0) {
       this.activeTab.set(cats[0].slug);
     }
+
     this.contactService.loadContacts();
   }
 
   setTab(slug: string) {
     this.activeTab.set(slug);
-    try { localStorage.setItem('contacts.activeTab', slug); } catch (e) { /* ignore */ }
+    try { localStorage.setItem('contacts.activeTab', slug); } catch { /* ignore */ }
   }
 
   async addCategory() {
@@ -108,24 +113,26 @@ export class ContactsComponent implements OnInit {
     }
 
     try {
+      interface ImportedContact { name?: string[]; tel?: string[] }
       const props = ['name', 'tel'];
       const opts = { multiple: true };
-      const selectedContacts = await (navigator as any).contacts.select(props, opts);
+      const selectedContacts = await (navigator as unknown as { contacts: { select(props: string[], opts: { multiple: boolean }): ImportedContact[] } }).contacts.select(props, opts);
 
       if (selectedContacts.length > 0) {
         const contactsToCreate: Contact[] = selectedContacts
-          .map((c: any) => {
-            const result = this.parsePhoneNumber(c.tel[0]);
+          .map((contact) => {
+            const rawTel = contact.tel?.[0] ?? '';
+            const result = this.parsePhoneNumber(rawTel);
 
             return {
-              name: c.name[0],
+              name: contact.name?.[0] ?? 'Invitado',
               phone: result.phone,
               countryCode: result.countryCode,
               side: this.activeTab(),
               linkSent: false
             };
           })
-          .filter((c: any) => this.isValidPhone(c.phone));
+          .filter((contact) => this.isValidPhone(contact.phone));
 
         if (contactsToCreate.length === 0) {
           alert('No se encontraron contactos con teléfonos válidos (9 dígitos, empezando por 6 o 7).');
@@ -173,7 +180,7 @@ export class ContactsComponent implements OnInit {
    */
   parsePhoneNumber(rawPhone: string): { countryCode: string; phone: string } {
     // Limpiar: eliminar espacios, guiones, paréntesis
-    const clean = rawPhone.replace(/[\s\-\(\)]/g, '');
+    const clean = rawPhone.replace(/[\s\-()]/g, '');
 
     let countryCode = '+34'; // Por defecto España
     let phone = clean;
@@ -309,7 +316,7 @@ export class ContactsComponent implements OnInit {
   async setInvitationStatus(contact: Contact, status: 'not_sent' | 'sent' | 'responded') {
     if (!contact?.id) return;
     try {
-      const updateData: any = {
+      const updateData: { invitationStatus: 'not_sent' | 'sent' | 'responded'; linkSent: boolean; sentAt?: string; respondedAt?: string } = {
         invitationStatus: status,
         linkSent: status !== 'not_sent'
       };

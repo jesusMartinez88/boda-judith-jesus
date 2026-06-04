@@ -55,7 +55,7 @@
 
     <div class="tables-layout" cdkDropListGroup>
         <!-- Panel Izquierdo: Cola de Recepción -->
-        <aside class="reception-queue" [class.queue-highlighted]="isQueueHighlighted()" cdkDropList [cdkDropListData]="null" 
+        <aside class="reception-queue" [class.queue-highlighted]="isQueueHighlighted()" cdkDropList [cdkDropListData]="null"
                [cdkDropListSortingDisabled]="true"
                (cdkDropListDropped)="onDrop($event)"
                (cdkDropListEntered)="onReceptionQueueEntered()"

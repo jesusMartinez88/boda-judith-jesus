@@ -183,11 +183,12 @@
   }
 
   <!-- Toast notification -->
-  <app-toast *ngIf="showToast()"
-             [show]="showToast()"
-             [type]="toastType() || 'success'"
-             [title]="toastType() === 'success' ? 'Guardado' : 'Error'"
-             [message]="toastMessage()"
-             (closed)="hideToast()">
-  </app-toast>
+   @if (showToast()) {
+     <app-toast [show]="showToast()"
+       [type]="toastType() || 'success'"
+       [title]="toastType() === 'success' ? 'Guardado' : 'Error'"
+       [message]="toastMessage()"
+       (closed)="hideToast()">
+     </app-toast>
+   }
 </div>

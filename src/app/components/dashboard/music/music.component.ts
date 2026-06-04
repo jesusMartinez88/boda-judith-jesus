@@ -8,7 +8,24 @@ import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-
 import { fromEvent, Subject, timer, of } from 'rxjs';
 import { takeUntil, filter, switchMap, debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
 
-declare var YT: any;
+interface YouTubePlayer {
+  loadVideoById(videoId: string): void;
+  getPlayerState(): number;
+  playVideo(): void;
+  pauseVideo(): void;
+  destroy(): void;
+}
+
+interface YouTubeApi {
+  Player: new (id: string, options: {
+    events: {
+      onStateChange: (event: { data: number }) => void;
+      onError: () => void;
+    };
+  }) => YouTubePlayer;
+}
+
+declare const YT: YouTubeApi | undefined;
 
 @Component({
   selector: 'app-music',
@@ -34,15 +51,15 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   isSubmitting = signal(false);
   currentPlayingId = signal<number | null | undefined>(null);
   songToDelete = signal<MusicSong | null>(null);
-  
+
   // Estado del reproductor
   isVideoExpanded = signal(false);
-  private player: any = null;
+  private player: YouTubePlayer | null = null;
   private apiReady = false;
-  
+
   // Búsqueda
   searchQuery = signal('');
-  
+
   // YouTube Search
   youtubeSearchQuery = signal('');
   youtubeSearchResults = signal<YouTubeVideoResult[]>([]);
@@ -63,9 +80,9 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   filteredSongs = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     if (!query) return this.songs();
-    
-    return this.songs().filter(song => 
-      song.title.toLowerCase().includes(query) || 
+
+    return this.songs().filter(song =>
+      song.title.toLowerCase().includes(query) ||
       song.artist.toLowerCase().includes(query) ||
       (song.note && song.note.toLowerCase().includes(query))
     );
@@ -75,10 +92,10 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   safeYoutubeUrl = computed<SafeResourceUrl | null>(() => {
     const id = this.currentPlayingId();
     if (!id) return null;
-    
+
     const song = this.songs().find(s => s.id === id);
     if (!song || !song.youtubeId) return null;
-    
+
     const url = `https://www.youtube.com/embed/${song.youtubeId}?enablejsapi=1&autoplay=1&origin=${window.location.origin}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   });
@@ -111,7 +128,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
     // Manejo reactivo de cambios de canción
     effect(() => {
       const song = this.currentSong();
-      if (song && this.player && this.player.loadVideoById) {
+      if (song && song?.youtubeId && this.player && this.player.loadVideoById) {
         this.player.loadVideoById(song.youtubeId);
         this.updateMediaSession(song);
         this.startKeepAlive();
@@ -152,7 +169,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
       .pipe(
         takeUntil(this.destroy$),
         filter(() => document.visibilityState === 'hidden' && !!this.currentPlayingId()),
-        switchMap(() => timer(200)) 
+        switchMap(() => timer(200))
       )
       .subscribe(() => {
         this.startKeepAlive();
@@ -166,7 +183,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   private startKeepAlive() {
     if (this.keepAliveAudio?.nativeElement) {
       this.keepAliveAudio.nativeElement.volume = 0.01;
-      this.keepAliveAudio.nativeElement.play().catch(() => {});
+      this.keepAliveAudio.nativeElement.play().catch(() => undefined);
     }
   }
 
@@ -191,8 +208,8 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
       actions.forEach(([action, handler]) => {
         try {
           navigator.mediaSession.setActionHandler(action, handler);
-        } catch (e) {
-          console.warn(`Action ${action} not supported`);
+        } catch (error) {
+          console.warn(`Action ${action} not supported`, error);
         }
       });
     }
@@ -214,12 +231,14 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   initYoutubeApi() {
-    if ((window as any).YT?.Player) {
+    const win = window as Window & { YT?: YouTubeApi; onYouTubeIframeAPIReady?: () => void };
+
+    if (win.YT?.Player) {
       this.apiReady = true;
       return;
     }
 
-    (window as any).onYouTubeIframeAPIReady = () => {
+    win.onYouTubeIframeAPIReady = () => {
       this.apiReady = true;
       if (this.currentPlayingId()) this.initPlayer();
     };
@@ -235,10 +254,11 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
     timer(500).pipe(takeUntil(this.destroy$)).subscribe(() => {
       const iframe = document.getElementById('youtube-player-iframe');
       if (!iframe) return;
+      if (typeof YT === 'undefined') return;
 
       this.player = new YT.Player('youtube-player-iframe', {
         events: {
-          'onStateChange': (event: any) => {
+          onStateChange: (event: { data: number }) => {
             const state = event.data;
             if (state === 0) { // ENDED
               this.nextSong();
@@ -254,7 +274,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
               }
             }
           },
-          'onError': () => timer(2000).pipe(takeUntil(this.destroy$)).subscribe(() => this.nextSong())
+          onError: () => timer(2000).pipe(takeUntil(this.destroy$)).subscribe(() => this.nextSong())
         }
       });
     });
@@ -342,7 +362,11 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.currentPlayingId() === song.id) {
       if (this.player) {
         const state = this.player.getPlayerState();
-        state === 1 ? this.player.pauseVideo() : this.player.playVideo();
+        if (state === 1) {
+          this.player.pauseVideo();
+        } else {
+          this.player.playVideo();
+        }
       }
     } else {
       const isFirstPlay = !this.currentPlayingId();
@@ -442,7 +466,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
 
   onYouTubeSearch(termino: string) {
     this.youtubeSearchQuery.set(termino);
-    
+
     if (!termino.trim()) {
       this.youtubeSearchResults.set([]);
       this.showSearchDropdown.set(false);
@@ -467,16 +491,25 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   selectVideo(video: YouTubeVideoResult) {
     const youtubeUrl = `https://www.youtube.com/watch?v=${video.id}`;
     this.musicForm.patchValue({ youtubeUrl });
-    
+
     // Auto-fill title
     this.musicForm.patchValue({ title: video.title });
-    
-    // Try to extract artist from title (common format: "Artist - Song" or "Artist: Song")
-    const artistMatch = video.title.match(/^(.+?)\s[-–:]\s.+$/);
-    if (artistMatch) {
-      this.musicForm.patchValue({ artist: artistMatch[1].trim() });
+
+    // Prefer explicit channel title returned by API as artist
+    const channel = video.channelTitle || '';
+    if (channel) {
+      this.musicForm.patchValue({ artist: channel });
+    } else {
+      // Fallback: Try to extract artist from title (common format: "Artist - Song" or "Artist: Song")
+      const artistMatch = video.title.match(/^(.+?)\s[-–:]\s.+$/);
+      if (artistMatch) {
+        this.musicForm.patchValue({ artist: artistMatch[1].trim() });
+      }
     }
-    
+
+    // Force validators to re-evaluate after patching values
+    this.musicForm.updateValueAndValidity({ onlySelf: false, emitEvent: true });
+
     this.youtubeSearchQuery.set(video.title);
     this.showSearchDropdown.set(false);
   }

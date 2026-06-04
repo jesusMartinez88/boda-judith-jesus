@@ -73,6 +73,13 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Native search clear 'x' cursor affordance for WebKit/Edge */
+.hall-search-input::-webkit-search-cancel-button,
+.hall-search-input::-webkit-search-decoration,
+.hall-search-input::-ms-clear {
+  cursor: pointer;
+}
+
 .hall-search-input:focus {
   outline: none;
   border-color: #ec4899;
@@ -85,6 +92,7 @@
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
+  cursor: pointer;
   opacity: 0.55;
 }
 
