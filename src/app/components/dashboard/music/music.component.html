@@ -1,13 +1,28 @@
 <div class="music-section animate-fade-in">
   <!-- Audio Keep-Alive Element (Hidden) -->
-  <audio #keepAliveAudio loop preload="auto" style="display: none;">
-    <source src="assets/audio/silence.mp3" type="audio/mpeg">
+  <audio #keepAliveAudio loop preload="auto" style="display: none">
+    <source src="assets/audio/silence.mp3" type="audio/mpeg" />
   </audio>
 
   <header class="section-header">
     <div class="header-content">
       <div class="section-icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-music"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-music"
+        >
+          <path d="M9 18V5l12-2v13" />
+          <circle cx="6" cy="18" r="3" />
+          <circle cx="18" cy="16" r="3" />
+        </svg>
       </div>
       <div>
         <h1>Lista de Música</h1>
@@ -15,12 +30,44 @@
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn-secondary-custom" (click)="playAll()" [disabled]="filteredSongs().length === 0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play-circle"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+      <button
+        class="btn-secondary-custom"
+        (click)="playAll()"
+        [disabled]="filteredSongs().length === 0"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-play-circle"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polygon points="10 8 16 12 10 16 10 8" />
+        </svg>
         Reproducir Todo
       </button>
       <button class="btn-primary-custom" (click)="openAddModal()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-plus"
+        >
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
         Añadir Canción
       </button>
     </div>
@@ -30,7 +77,21 @@
   <div class="search-bar-container">
     <div class="search-input-wrapper">
       <span class="search-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-search"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
       </span>
       <input
         type="text"
@@ -38,16 +99,28 @@
         [value]="searchQuery()"
         (input)="onSearch($event)"
         class="search-input"
-      >
+      />
       @if (searchQuery()) {
         <button class="clear-search" (click)="searchQuery.set('')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-x"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
         </button>
       }
     </div>
-    <div class="songs-count">
-      {{ filteredSongs().length }} canciones
-    </div>
+    <div class="songs-count">{{ filteredSongs().length }} canciones</div>
   </div>
 
   <div class="spotify-container">
@@ -60,25 +133,44 @@
         <div class="col-actions">Acciones</div>
       </div>
 
-      <div class="table-body" cdkDropList (cdkDropListDropped)="drop($event)" [cdkDropListDisabled]="searchQuery() !== ''">
+      <div
+        class="table-body"
+        cdkDropList
+        (cdkDropListDropped)="drop($event)"
+        [cdkDropListDisabled]="searchQuery() !== ''"
+      >
         @for (song of filteredSongs(); track song.id; let i = $index) {
-          <div class="song-row" [class.playing]="currentPlayingId() === song.id" cdkDrag [cdkDragData]="song">
-
+          <div
+            class="song-row"
+            [class.playing]="currentPlayingId() === song.id"
+            cdkDrag
+            [cdkDragData]="song"
+          >
             <div class="row-main-content">
               <div class="col-index">
                 <div class="drag-handle" cdkDragHandle>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="9" cy="5" r="2" fill="currentColor"/>
-                    <circle cx="9" cy="12" r="2" fill="currentColor"/>
-                    <circle cx="9" cy="19" r="2" fill="currentColor"/>
-                    <circle cx="15" cy="5" r="2" fill="currentColor"/>
-                    <circle cx="15" cy="12" r="2" fill="currentColor"/>
-                    <circle cx="15" cy="19" r="2" fill="currentColor"/>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle cx="9" cy="5" r="2" fill="currentColor" />
+                    <circle cx="9" cy="12" r="2" fill="currentColor" />
+                    <circle cx="9" cy="19" r="2" fill="currentColor" />
+                    <circle cx="15" cy="5" r="2" fill="currentColor" />
+                    <circle cx="15" cy="12" r="2" fill="currentColor" />
+                    <circle cx="15" cy="19" r="2" fill="currentColor" />
                   </svg>
                 </div>
                 <div class="number">
                   @if (currentPlayingId() === song.id) {
-                    <div class="playing-bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                    <div class="playing-bars">
+                      <div class="bar"></div>
+                      <div class="bar"></div>
+                      <div class="bar"></div>
+                    </div>
                   } @else {
                     {{ i + 1 }}
                   }
@@ -102,16 +194,64 @@
               <div class="col-actions">
                 <button class="action-btn play" (click)="playSong(song)">
                   @if (currentPlayingId() === song.id) {
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <rect width="4" height="16" x="6" y="4" />
+                      <rect width="4" height="16" x="14" y="4" />
+                    </svg>
                   } @else {
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <polygon points="6 3 20 12 6 21 6 3" />
+                    </svg>
                   }
                 </button>
                 <button class="action-btn edit" (click)="editSong(song)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-pencil"
+                  >
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
                 </button>
                 <button class="action-btn delete" (click)="confirmDelete(song)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-trash-2"
+                  >
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                    <line x1="10" x2="10" y1="11" y2="17" />
+                    <line x1="14" x2="14" y1="11" y2="17" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -140,8 +280,27 @@
           </div>
 
           <div class="player-controls">
-            <button class="nav-btn" (click)="previousSong()" [disabled]="!hasPrevious()" title="Anterior">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-skip-back"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/></svg>
+            <button
+              class="nav-btn"
+              (click)="previousSong()"
+              [disabled]="!hasPrevious()"
+              title="Anterior"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-skip-back"
+              >
+                <polygon points="19 20 9 12 19 4 19 20" />
+                <line x1="5" x2="5" y1="19" y2="5" />
+              </svg>
             </button>
 
             <div class="video-controls-wrapper">
@@ -151,20 +310,53 @@
                     id="youtube-player-iframe"
                     [src]="youtubeUrl"
                     frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen>
+                    allow="
+                      accelerometer;
+                      autoplay;
+                      clipboard-write;
+                      encrypted-media;
+                      gyroscope;
+                      picture-in-picture;
+                    "
+                    allowfullscreen
+                  >
                   </iframe>
                 }
               </div>
             </div>
 
             <button class="nav-btn" (click)="nextSong()" [disabled]="!hasNext()" title="Siguiente">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-skip-forward"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-skip-forward"
+              >
+                <polygon points="5 4 15 12 5 20 5 4" />
+                <line x1="19" x2="19" y1="5" y2="19" />
+              </svg>
             </button>
           </div>
         </div>
         <button class="close-player" (click)="stopPlayback()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
         </button>
       </div>
     }
@@ -172,136 +364,325 @@
 
   <!-- Modal Add/Edit -->
   @if (showModal()) {
-    <button type="button" class="modal-backdrop" (click)="closeModal()" (keydown.enter)="closeModal()" aria-label="Cerrar modal" tabindex="0"></button>
-      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="music-modal-title" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
-        <div class="modal-head">
-          <h3 id="music-modal-title">{{ isEditing() ? 'Editar Canción' : 'Añadir Canción' }}</h3>
-          <button class="close-btn" (click)="closeModal()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-        </div>
-        <form [formGroup]="musicForm" (ngSubmit)="onSubmit()" class="modal-body">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="titleInput">Título</label>
-              <input id="titleInput" type="text" formControlName="title" placeholder="Ej: Perfect">
-              @if (musicForm.get('title')?.touched && musicForm.get('title')?.invalid) {
-                <small class="error-message">El título es obligatorio</small>
-              }
+    <button
+      type="button"
+      class="modal-backdrop"
+      (click)="closeModal()"
+      (keydown.enter)="closeModal()"
+      aria-label="Cerrar modal"
+      tabindex="0"
+    ></button>
+    <div
+      class="modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="music-modal-title"
+      tabindex="-1"
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+    >
+      <div class="modal-head">
+        <h3 id="music-modal-title">{{ isEditing() ? 'Editar Canción' : 'Añadir Canción' }}</h3>
+        <button class="close-btn" (click)="closeModal()">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+      </div>
+      <form [formGroup]="musicForm" (ngSubmit)="onSubmit()" class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="titleInput">Título</label>
+            <input id="titleInput" type="text" formControlName="title" placeholder="Ej: Perfect" />
+            @if (musicForm.get('title')?.touched && musicForm.get('title')?.invalid) {
+              <small class="error-message">El título es obligatorio</small>
+            }
+          </div>
+          <div class="form-group">
+            <label for="artistInput">Artista</label>
+            <input
+              id="artistInput"
+              type="text"
+              formControlName="artist"
+              placeholder="Ej: Ed Sheeran"
+            />
+            @if (musicForm.get('artist')?.touched && musicForm.get('artist')?.invalid) {
+              <small class="error-message">El artista es obligatorio</small>
+            }
+          </div>
+          <div class="form-group full">
+            <label [attr.for]="useManualUrl() ? 'youtubeUrlInput' : 'youtubeSearchInput'"
+              >URL YouTube</label
+            >
+            <div class="youtube-input-mode-toggle">
+              <button
+                type="button"
+                class="mode-btn"
+                [class.active]="!useManualUrl()"
+                (click)="toggleUrlMode()"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+                Buscar
+              </button>
+              <button
+                type="button"
+                class="mode-btn"
+                [class.active]="useManualUrl()"
+                (click)="toggleUrlMode()"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+                Pegar URL
+              </button>
             </div>
-            <div class="form-group">
-              <label for="artistInput">Artista</label>
-              <input id="artistInput" type="text" formControlName="artist" placeholder="Ej: Ed Sheeran">
-              @if (musicForm.get('artist')?.touched && musicForm.get('artist')?.invalid) {
-                <small class="error-message">El artista es obligatorio</small>
-              }
-            </div>
-            <div class="form-group full">
-              <label [attr.for]="useManualUrl() ? 'youtubeUrlInput' : 'youtubeSearchInput'">URL YouTube</label>
-              <div class="youtube-input-mode-toggle">
-                <button type="button" class="mode-btn" [class.active]="!useManualUrl()" (click)="toggleUrlMode()">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                  Buscar
-                </button>
-                <button type="button" class="mode-btn" [class.active]="useManualUrl()" (click)="toggleUrlMode()">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                  Pegar URL
-                </button>
-              </div>
 
-              @if (!useManualUrl()) {
-                <div class="youtube-search-wrapper">
-                  <div class="search-input-container">
-                    <span class="search-icon">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                    </span>
-                    <input
-                      id="youtubeSearchInput"
-                      type="text"
-                      [value]="youtubeSearchQuery()"
-                      (input)="onYouTubeSearch($any($event.target).value)"
-                      placeholder="Buscar video en YouTube..."
-                      class="youtube-search-input"
+            @if (!useManualUrl()) {
+              <div class="youtube-search-wrapper">
+                <div class="search-input-container">
+                  <span class="search-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
                     >
-                    @if (youtubeSearchQuery()) {
-                      <button type="button" class="clear-search-btn" (click)="clearYouTubeSearch()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                      </button>
-                    }
-                  </div>
-
-                  @if (showSearchDropdown()) {
-                    <div class="search-dropdown">
-                      @if (isSearching()) {
-                        <div class="search-loading">
-                          <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
-                            <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1">
-                              <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
-                            </path>
-                          </svg>
-                          <span>Buscando videos...</span>
-                        </div>
-                      } @else if (searchError()) {
-                        <div class="search-error">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                          <span>{{ searchError() }}</span>
-                        </div>
-                      } @else if (youtubeSearchResults().length > 0) {
-                        <div class="search-results">
-                          @for (video of youtubeSearchResults(); track video.id) {
-                            <button type="button" class="search-result-item" (click)="selectVideo(video)">
-                              <img [src]="video.thumbnail" alt="" class="search-result-thumbnail" loading="lazy">
-                              <div class="search-result-info">
-                                <div class="search-result-title">{{ video.title }}</div>
-                                <span class="search-select-btn" aria-hidden="true">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                                </span>
-                              </div>
-                            </button>
-                          }
-                        </div>
-                      } @else {
-                        <div class="search-no-results">
-                          <span>No se encontraron videos</span>
-                        </div>
-                      }
-                    </div>
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.3-4.3" />
+                    </svg>
+                  </span>
+                  <input
+                    id="youtubeSearchInput"
+                    type="text"
+                    [value]="youtubeSearchQuery()"
+                    (input)="onYouTubeSearch($any($event.target).value)"
+                    placeholder="Buscar video en YouTube..."
+                    class="youtube-search-input"
+                  />
+                  @if (youtubeSearchQuery()) {
+                    <button type="button" class="clear-search-btn" (click)="clearYouTubeSearch()">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                      </svg>
+                    </button>
                   }
                 </div>
-              } @else {
-                <input id="youtubeUrlInput" type="text" formControlName="youtubeUrl" placeholder="https://www.youtube.com/watch?v=...">
-                @if (musicForm.get('youtubeUrl')?.touched && musicForm.get('youtubeUrl')?.invalid) {
-                  <small class="error-message">La URL de YouTube es obligatoria</small>
+
+                @if (showSearchDropdown()) {
+                  <div class="search-dropdown">
+                    @if (isSearching()) {
+                      <div class="search-loading">
+                        <svg
+                          class="spinner"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <circle cx="12" cy="12" r="10" stroke-opacity="0.25" />
+                          <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1">
+                            <animateTransform
+                              attributeName="transform"
+                              type="rotate"
+                              from="0 12 12"
+                              to="360 12 12"
+                              dur="1s"
+                              repeatCount="indefinite"
+                            />
+                          </path>
+                        </svg>
+                        <span>Buscando videos...</span>
+                      </div>
+                    } @else if (searchError()) {
+                      <div class="search-error">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="8" x2="12" y2="12" />
+                          <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        <span>{{ searchError() }}</span>
+                      </div>
+                    } @else if (youtubeSearchResults().length > 0) {
+                      <div class="search-results">
+                        @for (video of youtubeSearchResults(); track video.id) {
+                          <button
+                            type="button"
+                            class="search-result-item"
+                            (click)="selectVideo(video)"
+                          >
+                            <img
+                              [src]="video.thumbnail"
+                              alt=""
+                              class="search-result-thumbnail"
+                              loading="lazy"
+                            />
+                            <div class="search-result-info">
+                              <div class="search-result-title">{{ video.title }}</div>
+                              <span class="search-select-btn" aria-hidden="true">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                >
+                                  <path d="M5 12h14" />
+                                  <path d="m12 5 7 7-7 7" />
+                                </svg>
+                              </span>
+                            </div>
+                          </button>
+                        }
+                      </div>
+                    } @else {
+                      <div class="search-no-results">
+                        <span>No se encontraron videos</span>
+                      </div>
+                    }
+                  </div>
                 }
+              </div>
+            } @else {
+              <input
+                id="youtubeUrlInput"
+                type="text"
+                formControlName="youtubeUrl"
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
+              @if (musicForm.get('youtubeUrl')?.touched && musicForm.get('youtubeUrl')?.invalid) {
+                <small class="error-message">La URL de YouTube es obligatoria</small>
               }
-            </div>
-            <div class="form-group full">
-              <label for="noteInput">Nota / Momento</label>
-              <textarea id="noteInput" formControlName="note" placeholder="Ej: Regalo padres..." rows="2"></textarea>
-            </div>
+            }
           </div>
-          <pre>{{ musicForm.invalid }}</pre>
-          <div class="modal-foot">
-            <button type="button" class="btn-cancel" (click)="closeModal()">Cancelar</button>
-            <button type="submit" class="btn-save" [disabled]="musicForm.invalid || isSubmitting()">
-              {{ isSubmitting() ? 'Guardando...' : (isEditing() ? 'Actualizar' : 'Añadir') }}
-            </button>
+          <div class="form-group full">
+            <label for="noteInput">Nota / Momento</label>
+            <textarea
+              id="noteInput"
+              formControlName="note"
+              placeholder="Ej: Regalo padres..."
+              rows="2"
+            ></textarea>
           </div>
-        </form>
-      </div>
+        </div>
+        <pre>{{ musicForm.invalid }}</pre>
+        <div class="modal-foot">
+          <button type="button" class="btn-cancel" (click)="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-save" [disabled]="musicForm.invalid || isSubmitting()">
+            {{ isSubmitting() ? 'Guardando...' : isEditing() ? 'Actualizar' : 'Añadir' }}
+          </button>
+        </div>
+      </form>
+    </div>
   }
 
   <!-- Delete Modal -->
   @if (songToDelete()) {
-    <button type="button" class="modal-backdrop" (click)="songToDelete.set(null)" (keydown.enter)="songToDelete.set(null)" aria-label="Cerrar confirmación" tabindex="0"></button>
-      <div class="modal-card delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-song-modal-title" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
-        <div class="modal-body delete-modal-body">
-          <div class="alert-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></div>
-          <h4>¿Eliminar canción?</h4>
-          <p>Se borrará <strong>{{ songToDelete()?.title }}</strong> de la lista.</p>
-          <div class="modal-foot delete-modal-actions">
-            <button class="btn-cancel" (click)="songToDelete.set(null)">No, volver</button>
-            <button class="btn-danger" (click)="deleteSong()">Sí, eliminar</button>
-          </div>
+    <button
+      type="button"
+      class="modal-backdrop"
+      (click)="songToDelete.set(null)"
+      (keydown.enter)="songToDelete.set(null)"
+      aria-label="Cerrar confirmación"
+      tabindex="0"
+    ></button>
+    <div
+      class="modal-card delete-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-song-modal-title"
+      tabindex="-1"
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+    >
+      <div class="modal-body delete-modal-body">
+        <div class="alert-icon" aria-hidden="true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="34"
+            height="34"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 6h18" />
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            <line x1="10" x2="10" y1="11" y2="17" />
+            <line x1="14" x2="14" y1="11" y2="17" />
+          </svg>
+        </div>
+        <h4>¿Eliminar canción?</h4>
+        <p>
+          Se borrará <strong>{{ songToDelete()?.title }}</strong> de la lista.
+        </p>
+        <div class="modal-foot delete-modal-actions">
+          <button class="btn-cancel" (click)="songToDelete.set(null)">No, volver</button>
+          <button class="btn-danger" (click)="deleteSong()">Sí, eliminar</button>
         </div>
       </div>
+    </div>
   }
+</div>

@@ -1,0 +1,30 @@
+<button
+  type="button"
+  class="popup-overlay"
+  (click)="close()"
+  (keyup.enter)="close()"
+  aria-label="Cerrar aviso"
+></button>
+
+<section
+  class="popup-panel"
+  [class]="type()"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="info-popup-title"
+  aria-describedby="info-popup-message"
+  tabindex="-1"
+>
+  <header class="popup-header">
+    <span class="popup-icon" aria-hidden="true"></span>
+    <h2 id="info-popup-title">{{ title() }}</h2>
+  </header>
+
+  <p id="info-popup-message" class="popup-message">{{ message() }}</p>
+
+  <footer class="popup-actions">
+    <button type="button" class="popup-action" (click)="close()">
+      {{ actionLabel() }}
+    </button>
+  </footer>
+</section>

@@ -2,18 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-
-export interface FinanceRecord {
-  id?: number;
-  description: string;
-  amount: number;
-  type: 'income' | 'expense';
-  category?: string;
-  paidBy?: string; // Nombre de quien hizo el gasto/ingreso
-  date?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { ApiResponse, FinanceEntity } from '../../types/api';
 
 @Injectable({
   providedIn: 'root',
@@ -22,16 +11,20 @@ export class FinancesService {
   private apiUrl = `${environment.apiUrl.replace('/guests', '')}/finances`;
 
   // Master signal for all finance records
-  records = signal<FinanceRecord[]>([]);
+  records = signal<FinanceEntity[]>([]);
 
   private http = inject(HttpClient);
 
-  async loadFinances(): Promise<FinanceRecord[]> {
+  async loadFinances(): Promise<FinanceEntity[]> {
     try {
       const response = await firstValueFrom(
-        this.http.get<FinanceRecord[] | { data: FinanceRecord[] }>(this.apiUrl),
+        this.http.get<ApiResponse<FinanceEntity[]> | FinanceEntity[]>(this.apiUrl),
       );
-      const list = response && 'data' in response ? response.data : response;
+      const list = (
+        response && 'data' in (response as ApiResponse<FinanceEntity[]>)
+          ? (response as ApiResponse<FinanceEntity[]>).data
+          : response
+      ) as FinanceEntity[];
       const finalItems = Array.isArray(list) ? list : [];
       this.records.set(finalItems);
       return finalItems;
@@ -41,33 +34,39 @@ export class FinancesService {
     }
   }
 
-  async createFinance(record: FinanceRecord): Promise<FinanceRecord> {
+  async createFinance(record: FinanceEntity): Promise<FinanceEntity> {
     try {
-      const result = await firstValueFrom(this.http.post<FinanceRecord>(this.apiUrl, record));
+      const result = await firstValueFrom(
+        this.http.post<ApiResponse<FinanceEntity>>(this.apiUrl, record),
+      );
+      const created = result.data as FinanceEntity;
       await this.loadFinances(); // Refresh list
-      return result;
+      return created as FinanceEntity;
     } catch (error) {
       console.error('Error creating finance record:', error);
       throw error;
     }
   }
 
-  async updateFinance(id: number, record: Partial<FinanceRecord>): Promise<FinanceRecord> {
+  async updateFinance(id: number, record: Partial<FinanceEntity>): Promise<FinanceEntity> {
     try {
       const result = await firstValueFrom(
-        this.http.patch<FinanceRecord>(`${this.apiUrl}/${id}`, record),
+        this.http.patch<ApiResponse<FinanceEntity>>(`${this.apiUrl}/${id}`, record),
       );
+      const updated = result.data as FinanceEntity;
       await this.loadFinances(); // Refresh list
-      return result;
+      return updated as FinanceEntity;
     } catch (error) {
       console.error('Error updating finance record:', error);
       throw error;
     }
   }
 
-  async deleteFinance(id: number): Promise<unknown> {
+  async deleteFinance(id: number): Promise<ApiResponse<{ message?: string }>> {
     try {
-      const result = await firstValueFrom(this.http.delete<unknown>(`${this.apiUrl}/${id}`));
+      const result = await firstValueFrom(
+        this.http.delete<ApiResponse<{ message?: string }>>(`${this.apiUrl}/${id}`),
+      );
       await this.loadFinances(); // Refresh list
       return result;
     } catch (error) {

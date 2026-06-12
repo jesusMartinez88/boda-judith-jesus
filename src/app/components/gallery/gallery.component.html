@@ -4,19 +4,30 @@
 
   <div class="story-timeline">
     @for (photo of photos; track photo.id; let i = $index) {
-    <div class="story-item" [class.reverse]="i % 2 !== 0" data-aos="fade-up">
-      <div class="story-image" (click)="openModal(photo)">
-        <div class="photo-frame">
-          <img [src]="photo.placeholder" [alt]="photo.title" onerror="this.style.display='none'" />
-          <div class="photo-date">{{ photo.date }}</div>
+      <div class="story-item" [class.reverse]="i % 2 !== 0" data-aos="fade-up">
+        <div
+          class="story-image"
+          (click)="openModal(photo)"
+          (keydown.enter)="openModal(photo)"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="'Ver foto: ' + photo.title"
+        >
+          <div class="photo-frame">
+            <img
+              [src]="photo.placeholder"
+              [alt]="photo.title"
+              onerror="this.style.display = 'none'"
+            />
+            <div class="photo-date">{{ photo.date }}</div>
+          </div>
         </div>
+        <div class="story-content">
+          <h3 class="story-item-title">{{ photo.title }}</h3>
+          <p class="story-item-description">{{ photo.description }}</p>
+        </div>
+        <div class="story-dot"></div>
       </div>
-      <div class="story-content">
-        <h3 class="story-item-title">{{ photo.title }}</h3>
-        <p class="story-item-description">{{ photo.description }}</p>
-      </div>
-      <div class="story-dot"></div>
-    </div>
     }
   </div>
 
@@ -26,30 +37,45 @@
     <div class="infinite-slider-track" #sliderTrack>
       <!-- First set of images -->
       @for (img of sliderImages; track $index) {
-      <div class="slider-item">
-        <img [src]="img" alt="Boda Judith y Jesús" loading="lazy">
-      </div>
+        <div class="slider-item">
+          <img [src]="img" alt="Boda Judith y Jesús" loading="lazy" />
+        </div>
       }
       <!-- Duplicated set for seamless loop -->
       @for (img of sliderImages; track $index + 'dup') {
-      <div class="slider-item">
-        <img [src]="img" alt="Boda Judith y Jesús" loading="lazy">
-      </div>
+        <div class="slider-item">
+          <img [src]="img" alt="Boda Judith y Jesús" loading="lazy" />
+        </div>
       }
     </div>
   </div>
 
   <!-- Modal -->
   @if (selectedPhoto) {
-  <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <button class="modal-close" (click)="closeModal()">✕</button>
-      <div class="modal-photo">
-        <img [src]="selectedPhoto.placeholder" [alt]="selectedPhoto.title" />
+    <div
+      class="modal-overlay"
+      (click)="closeModal()"
+      (keydown.enter)="closeModal()"
+      tabindex="0"
+      role="button"
+      aria-label="Cerrar modal"
+    >
+      <div
+        class="modal-content"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="photo-modal-title"
+      >
+        <button class="modal-close" (click)="closeModal()" aria-label="Cerrar">✕</button>
+        <div class="modal-photo">
+          <img [src]="selectedPhoto.placeholder" [alt]="selectedPhoto.title" />
+        </div>
+        <h3>{{ selectedPhoto.title }}</h3>
+        <p>Haz clic afuera para cerrar</p>
       </div>
-      <h3>{{ selectedPhoto.title }}</h3>
-      <p>Haz clic afuera para cerrar</p>
     </div>
-  </div>
   }
 </div>

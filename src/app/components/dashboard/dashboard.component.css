@@ -18,6 +18,9 @@
   padding: 2rem;
   box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
   z-index: 100;
+  transition:
+    width 0.28s ease,
+    padding 0.28s ease;
 }
 
 .sidebar-header {
@@ -25,6 +28,25 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 3rem;
+}
+.sidebar-collapse-btn {
+  margin-left: auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(148, 163, 184, 0.12);
+  color: #e2e8f0;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-collapse-btn:hover {
+  background: rgba(148, 163, 184, 0.2);
+  color: white;
+  transform: scale(1.04);
 }
 
 .sidebar-header h2 {
@@ -115,6 +137,10 @@
   align-items: center;
   gap: 1rem;
 }
+.nav-label,
+.logout-label {
+  white-space: nowrap;
+}
 
 .nav-item:hover,
 .nav-item.active {
@@ -198,6 +224,43 @@
 
 .logout-btn:hover .door-knob {
   fill: #dc2626;
+}
+
+@media (min-width: 1025px) {
+  .sidebar.collapsed {
+    width: 92px;
+    padding: 1.5rem 0.75rem;
+  }
+
+  .sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .sidebar.collapsed .sidebar-header h2,
+  .sidebar.collapsed .nav-label,
+  .sidebar.collapsed .logout-label {
+    display: none;
+  }
+
+  .sidebar.collapsed .sidebar-nav {
+    padding-right: 0;
+  }
+
+  .sidebar.collapsed .nav-item,
+  .sidebar.collapsed .logout-btn {
+    justify-content: center;
+    gap: 0;
+    padding: 0.9rem;
+  }
+
+  .sidebar.collapsed .logout-icon-container {
+    margin-right: 0;
+  }
+
+  .sidebar.collapsed .sidebar-collapse-btn {
+    margin-left: 0;
+  }
 }
 
 /* Main Content */
@@ -492,22 +555,31 @@
   position: relative;
 }
 
-.edit-icon-btn {
+.icon-btn {
   position: absolute;
   top: 1rem;
-  right: 1rem;
   background: transparent;
   border: none;
   font-size: 1.2rem;
   cursor: pointer;
   opacity: 0.5;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   padding: 0.2rem;
 }
 
-.edit-icon-btn:hover {
+.icon-btn:hover {
   opacity: 1;
   transform: scale(1.15) rotate(10deg);
+}
+
+.edit-icon-btn {
+  right: 2.5rem;
+}
+
+.delete-icon-btn {
+  right: 1rem;
 }
 
 .declined-item:hover {
@@ -831,6 +903,10 @@
   .menu-toggle,
   .sidebar-overlay {
     display: flex;
+  }
+
+  .sidebar-collapse-btn {
+    display: none;
   }
 
   /* Hide desktop user info, show mobile version */

@@ -1,568 +1,914 @@
 <div class="tables-view">
-    <app-tables-header [isEditMode]="isEditLayoutMode()" [totalTables]="tables().length" (toggleEditMode)="toggleEditLayout()"
-        (addTable)="openCreateTableModal()">
-        <app-export-pdf-btn [hallElement]="hall"></app-export-pdf-btn>
-    </app-tables-header>
+  <app-tables-header
+    [isEditMode]="isEditLayoutMode()"
+    [totalTables]="tables().length"
+    (toggleEditMode)="toggleEditLayout()"
+    (addTable)="openCreateTableModal()"
+  >
+    <app-export-pdf-btn [hallElement]="hall"></app-export-pdf-btn>
+  </app-tables-header>
 
-    <!-- Modal para Añadir Mesa -->
-    @if (showCreateTableModal()) {
-    <div class="modal-backdrop" (click)="closeCreateTableModal()">
-        <div class="modal-container" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-                <h3>Nueva Mesa</h3>
-                <button class="close-btn" (click)="closeCreateTableModal()">×</button>
-            </div>
-
-            <form class="modal-form" [formGroup]="tableForm" (ngSubmit)="confirmAddTable()">
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label>Nombre de la Mesa</label>
-                        <input type="text" formControlName="name" name="tableName"
-                            placeholder="Ej: Mesa Real o Mesa 5" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Capacidad</label>
-                        <input type="number" formControlName="capacity" name="tableCapacity" min="1"
-                            max="25" required>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label>Tipo / Forma de Mesa</label>
-                        <div class="shape-selector grid-4">
-                            <button type="button" [class.active]="tableForm.get('shape')?.value === 'round'"
-                                (click)="tableForm.get('shape')?.setValue('round')">⭕ Redonda</button>
-                            <button type="button" [class.active]="tableForm.get('shape')?.value === 'square'"
-                                (click)="tableForm.get('shape')?.setValue('square')">🟦 Cuadrada</button>
-                            <button type="button" [class.active]="tableForm.get('shape')?.value === 'rectangular'"
-                                (click)="tableForm.get('shape')?.setValue('rectangular')">👥 Rectangular</button>
-                            <button type="button" [class.active]="tableForm.get('shape')?.value === 'presidential'"
-                                (click)="tableForm.get('shape')?.setValue('presidential')">👑 Presidencial</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn-secondary" (click)="closeCreateTableModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary" [disabled]="isLoading()">
-                        @if (isLoading()) { Creando... } @else { Crear Mesa }
-                    </button>
-                </div>
-            </form>
+  <!-- Modal para Añadir Mesa -->
+  @if (showCreateTableModal()) {
+    <div
+      class="modal-backdrop"
+      (click)="closeCreateTableModal()"
+      (keydown.enter)="closeCreateTableModal()"
+      tabindex="0"
+      role="button"
+      aria-label="Cerrar modal"
+    >
+      <div
+        class="modal-container"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-table-title"
+      >
+        <div class="modal-header">
+          <h3 id="create-table-title">Nueva Mesa</h3>
+          <button class="close-btn" (click)="closeCreateTableModal()" aria-label="Cerrar">×</button>
         </div>
-    </div>
-    }
 
-    <div class="tables-layout" cdkDropListGroup>
-        <!-- Panel Izquierdo: Cola de Recepción -->
-        <aside class="reception-queue" [class.queue-highlighted]="isQueueHighlighted()" cdkDropList [cdkDropListData]="null"
-               [cdkDropListSortingDisabled]="true"
-               (cdkDropListDropped)="onDrop($event)"
-               (cdkDropListEntered)="onReceptionQueueEntered()"
-               (cdkDropListExited)="onReceptionQueueExited()"
-               [class.receiving-guest]="isReceivingGuest()">
-            <div class="pool-header">
-                <div class="header-main">
-                    <h3>Cola de Recepción</h3>
-                    <button class="add-guest-btn" (click)="openAddModal()" title="Añadir invitado manual">
-                        <span>+</span>
-                    </button>
-                </div>
-
-                <div class="search-container">
-                    <input type="text" [formControl]="searchControl"
-                        placeholder="Buscar en cola..." class="search-input"
-                        aria-label="Buscar invitados en cola de recepción">
-                    <span class="search-icon">🔍</span>
-                </div>
+        <form class="modal-form" [formGroup]="tableForm" (ngSubmit)="confirmAddTable()">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="tableNameInput">Nombre de la Mesa</label>
+              <input
+                id="tableNameInput"
+                type="text"
+                formControlName="name"
+                name="tableName"
+                placeholder="Ej: Mesa Real o Mesa 5"
+                required
+              />
             </div>
 
-            <span class="badge" style="display:block;text-align:center;margin-bottom:0.8rem;">
-                @if (searchTerm()) {
-                {{ filteredUnassignedGuests().length }} encotrados
-                } @else {
-                {{ unassignedGuests().length }} invitados esperando
-                }
-            </span>
+            <div class="form-group">
+              <label for="tableCapacityInput">Capacidad</label>
+              <input
+                id="tableCapacityInput"
+                type="number"
+                formControlName="capacity"
+                name="tableCapacity"
+                min="1"
+                max="25"
+                required
+              />
+            </div>
 
-            <div class="guest-list">
-                @for (guest of filteredUnassignedGuests(); track guestKey(guest)) {
-                <div class="guest-item" [class]="getMenuClass(guest.mealType)"
-                    [title]="(guest.name || 'Invitado') + ' (' + guest.mealType + ')'" cdkDrag [cdkDragData]="guest"
-                    cdkDragPreviewContainer="parent"
-                    (cdkDragEnded)="onGuestDragEnded($event)">
-                    <!-- Preview while dragging -->
-                    <div *cdkDragPreview class="guest-drag-preview">
-                        <svg class="kicking-person" viewBox="0 0 24 48">
+            <div class="form-group full-width">
+              <span class="form-label" id="tableShapeLabel">Tipo / Forma de Mesa</span>
+              <div class="shape-selector grid-4" aria-labelledby="tableShapeLabel">
+                <button
+                  type="button"
+                  [class.active]="tableForm.get('shape')?.value === 'round'"
+                  (click)="tableForm.get('shape')?.setValue('round')"
+                >
+                  ⭕ Redonda
+                </button>
+                <button
+                  type="button"
+                  [class.active]="tableForm.get('shape')?.value === 'square'"
+                  (click)="tableForm.get('shape')?.setValue('square')"
+                >
+                  🟦 Cuadrada
+                </button>
+                <button
+                  type="button"
+                  [class.active]="tableForm.get('shape')?.value === 'rectangular'"
+                  (click)="tableForm.get('shape')?.setValue('rectangular')"
+                >
+                  👥 Rectangular
+                </button>
+                <button
+                  type="button"
+                  [class.active]="tableForm.get('shape')?.value === 'presidential'"
+                  (click)="tableForm.get('shape')?.setValue('presidential')"
+                >
+                  👑 Presidencial
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeCreateTableModal()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="isLoading()">
+              @if (isLoading()) {
+                Creando...
+              } @else {
+                Crear Mesa
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <div class="tables-layout" cdkDropListGroup>
+    <!-- Panel Izquierdo: Cola de Recepción -->
+    <aside
+      class="reception-queue"
+      [class.queue-highlighted]="isQueueHighlighted()"
+      cdkDropList
+      [cdkDropListData]="null"
+      [cdkDropListSortingDisabled]="true"
+      (cdkDropListDropped)="onDrop($event)"
+      (cdkDropListEntered)="onReceptionQueueEntered()"
+      (cdkDropListExited)="onReceptionQueueExited()"
+      [class.receiving-guest]="isReceivingGuest()"
+    >
+      <div class="pool-header">
+        <div class="header-main">
+          <h3>Cola de Recepción</h3>
+          <button class="add-guest-btn" (click)="openAddModal()" title="Añadir invitado manual">
+            <span>+</span>
+          </button>
+        </div>
+
+        <div class="search-container">
+          <input
+            type="text"
+            [formControl]="searchControl"
+            placeholder="Buscar en cola..."
+            class="search-input"
+            aria-label="Buscar invitados en cola de recepción"
+          />
+          <span class="search-icon">🔍</span>
+        </div>
+      </div>
+
+      <span class="badge" style="display: block; text-align: center; margin-bottom: 0.8rem">
+        @if (searchTerm()) {
+          {{ filteredUnassignedGuests().length }} encotrados
+        } @else {
+          {{ unassignedGuests().length }} invitados esperando
+        }
+      </span>
+
+      <div class="guest-list">
+        @for (guest of filteredUnassignedGuests(); track guestKey(guest)) {
+          <div
+            class="guest-item"
+            [class]="getMenuClass(guest.mealType)"
+            [title]="(guest.name || 'Invitado') + ' (' + guest.mealType + ')'"
+            cdkDrag
+            [cdkDragData]="guest"
+            cdkDragPreviewContainer="parent"
+            (cdkDragEnded)="onGuestDragEnded($event)"
+          >
+            <!-- Preview while dragging -->
+            <div *cdkDragPreview class="guest-drag-preview">
+              <svg class="kicking-person" viewBox="0 0 24 48">
+                <!-- Cabeza -->
+                <circle cx="12" cy="7" r="4.5" fill="#ec4899" />
+                <!-- Cuerpo/Torso -->
+                <path d="M8,13 Q12,12 16,13 L15,27 Q12,28 9,27 Z" fill="#ec4899" />
+                <!-- Brazos -->
+                <path
+                  class="arm left"
+                  d="M6,14 Q3,19 5,25"
+                  fill="none"
+                  stroke="#ec4899"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                />
+                <path
+                  class="arm right"
+                  d="M18,14 Q21,19 19,25"
+                  fill="none"
+                  stroke="#ec4899"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                />
+                <!-- Piernas -->
+                <path
+                  class="leg left"
+                  d="M9,27 Q7,35 9,43"
+                  fill="none"
+                  stroke="#ec4899"
+                  stroke-width="3.5"
+                  stroke-linecap="round"
+                />
+                <path
+                  class="leg right"
+                  d="M15,27 Q17,35 15,43"
+                  fill="none"
+                  stroke="#ec4899"
+                  stroke-width="3.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+
+            <!-- Placeholder while dragging -->
+            <div *cdkDragPlaceholder class="guest-item-placeholder"></div>
+
+            <div class="guest-avatar">
+              {{ (guest.name.charAt(0) || '?').toUpperCase() }}
+            </div>
+            <div class="guest-info">
+              <span class="guest-name">{{ guest.name || 'Invitado' }}</span>
+              <span class="guest-meta">{{ guest.mealType }}</span>
+            </div>
+            <div class="guest-actions">
+              <button
+                class="edit-btn"
+                (click)="openEditModal(guest); $event.stopPropagation()"
+                title="Editar invitado"
+              >
+                <span>📝</span>
+              </button>
+              <button
+                class="delete-btn"
+                (click)="deleteGuest(guest); $event.stopPropagation()"
+                title="Eliminar invitado"
+              >
+                <span>🗑️</span>
+              </button>
+            </div>
+          </div>
+        }
+        @if (filteredUnassignedGuests().length === 0) {
+          <div class="empty-msg-container">
+            @if (searchTerm()) {
+              <span>🔍</span>
+              <p>No hay coincidencias para "{{ searchTerm() }}"</p>
+            } @else {
+              <span>✨</span>
+              <p>¡Todos están acomodados!</p>
+            }
+          </div>
+        }
+      </div>
+    </aside>
+
+    <div class="hall-scroll-container">
+      <div class="hall-search-bar" role="search">
+        <label class="hall-search-label" for="hall-search-input">Buscar invitado en el salón</label>
+        <div class="hall-search-input-wrap">
+          <input
+            id="hall-search-input"
+            type="search"
+            [formControl]="hallSearchControl"
+            placeholder="Ej: Ramón — ¿dónde está sentado?"
+            class="hall-search-input"
+            (keydown)="onHallSearchKeydown($event)"
+            aria-label="Buscar invitado en todo el salón"
+            [attr.aria-expanded]="hallSearchResults().length > 0"
+            aria-controls="hall-search-results"
+          />
+          <span class="search-icon">🔍</span>
+        </div>
+
+        @if (hallSearchTerm()) {
+          <div
+            id="hall-search-results"
+            class="hall-search-results"
+            role="listbox"
+            aria-label="Resultados de búsqueda en el salón"
+          >
+            @if (hallSearchResults().length === 0) {
+              <p class="hall-search-empty">No hay coincidencias para "{{ hallSearchTerm() }}"</p>
+            } @else {
+              @for (result of hallSearchResults(); track guestKey(result.guest)) {
+                <button
+                  type="button"
+                  class="hall-search-result"
+                  role="option"
+                  aria-selected="false"
+                  (click)="onHallSearchSelect(result)"
+                >
+                  <span class="hall-search-result-name">{{ result.guest.name }}</span>
+                  <span class="hall-search-result-location">
+                    @if (result.location === 'seated') {
+                      Sentado en {{ result.tableName }}
+                      @if (result.seatNumber) {
+                        · Asiento {{ result.seatNumber }}
+                      }
+                    } @else {
+                      En cola de recepción
+                    }
+                  </span>
+                </button>
+              }
+            }
+          </div>
+        }
+      </div>
+
+      <div
+        class="celebration-hall"
+        #hall
+        [class.edit-mode]="isEditLayoutMode()"
+        [style.min-height.px]="hallHeight()"
+        [style.min-width.px]="hallWidth()"
+      >
+        <!-- Decoración floral en esquinas -->
+        <span class="hall-corner hall-corner--tl">🌸🌿</span>
+        <span class="hall-corner hall-corner--tr">🌿🌸</span>
+        <span class="hall-corner hall-corner--bl">🌺🌿</span>
+        <span class="hall-corner hall-corner--br">🌿🌺</span>
+
+        <main
+          class="tables-grid"
+          [class.edit-mode]="isEditLayoutMode()"
+          [style.min-height.px]="hallHeight()"
+          [style.min-width.px]="hallWidth()"
+        >
+          @for (table of tables(); track table.id) {
+            <div
+              class="table-container"
+              [attr.data-table-id]="table.id"
+              [class.highlighted]="highlightedTableId() === table.id"
+              [class.full]="table.guests.length >= table.capacity"
+              [class.round]="table.shape === 'round'"
+              [class.square]="table.shape === 'square'"
+              [class.rectangular]="table.shape === 'rectangular'"
+              [class.presidential]="table.shape === 'presidential'"
+              [class.dragging-table]="isEditLayoutMode()"
+              [class.positioned]="table.posX !== undefined && table.posY !== undefined"
+              cdkDrag
+              [cdkDragBoundary]="hall"
+              [cdkDragDisabled]="!isEditLayoutMode()"
+              (cdkDragStarted)="onTableDragStarted()"
+              (cdkDragEnded)="onTableDragEnded($event, table.id)"
+              [style.left.px]="table.posX !== undefined ? table.posX : null"
+              [style.top.px]="table.posY !== undefined ? table.posY : null"
+              [style.width.px]="
+                table.shape === 'rectangular' || table.shape === 'presidential'
+                  ? getRectTableWidth(table.capacity, table.shape) + 60
+                  : null
+              "
+              [style.height.px]="
+                table.shape === 'rectangular' ? 340 : table.shape === 'presidential' ? 240 : null
+              "
+              [style.--seat-spacing.px]="
+                table.shape === 'rectangular' || table.shape === 'presidential'
+                  ? getRectSeatSpacing(table.capacity, table.shape)
+                  : null
+              "
+            >
+              <!-- Controles de Mesa (Overlay) -->
+              <div
+                class="table-config-overlay"
+                (click)="$event.stopPropagation()"
+                (keydown.enter)="$event.stopPropagation()"
+                tabindex="-1"
+              >
+                <button
+                  class="config-btn shape"
+                  (click)="toggleTableShape(table.id, table.shape)"
+                  [title]="'Cambiar tipo: ' + table.shape"
+                >
+                  {{
+                    table.shape === 'round'
+                      ? '⭕'
+                      : table.shape === 'square'
+                        ? '🟦'
+                        : table.shape === 'presidential'
+                          ? '🤵'
+                          : '👥'
+                  }}
+                </button>
+                <div class="capacity-field">
+                  <input
+                    type="number"
+                    [formControl]="getCapacityControl(table.id, table.capacity)"
+                    min="1"
+                    max="20"
+                    title="Capacidad de esta mesa"
+                  />
+                </div>
+                <button
+                  class="config-btn delete"
+                  (click)="deleteTable(table.id)"
+                  title="Eliminar mesa"
+                >
+                  🗑️
+                </button>
+              </div>
+
+              <div
+                class="table-surface"
+                cdkDropList
+                [cdkDropListData]="table.id"
+                [cdkDropListSortingDisabled]="true"
+                (cdkDropListDropped)="onDrop($event)"
+                (click)="onTableSurfaceClick($event, table)"
+                (keydown.enter)="onTableSurfaceClick($event, table)"
+                (keydown.space)="onTableSurfaceClick($event, table)"
+                tabindex="0"
+                role="button"
+                title="Clic para ver comensales de esta mesa"
+                [style.width.px]="
+                  table.shape === 'rectangular' || table.shape === 'presidential'
+                    ? getRectTableWidth(table.capacity, table.shape)
+                    : null
+                "
+                [style.height.px]="table.shape === 'presidential' ? 80 : null"
+              >
+                @if (table.shape === 'square') {
+                  <div class="square-border"></div>
+                }
+                @if (table.shape === 'rectangular' || table.shape === 'presidential') {
+                  <div class="rectangular-border"></div>
+                }
+
+                <div class="table-info">
+                  @if (editingTableId() === table.id) {
+                    <input
+                      type="text"
+                      class="edit-table-input"
+                      [formControl]="editingNameControl"
+                      (blur)="saveTableName(table.id)"
+                      (keyup.enter)="saveTableName(table.id)"
+                      (click)="$event.stopPropagation()"
+                    />
+                  } @else {
+                    <span
+                      class="table-num"
+                      (click)="startEditingTable(table.id, table.name); $event.stopPropagation()"
+                      (keydown.enter)="
+                        startEditingTable(table.id, table.name); $event.stopPropagation()
+                      "
+                      (keydown.space)="
+                        startEditingTable(table.id, table.name); $event.stopPropagation()
+                      "
+                      tabindex="0"
+                      role="button"
+                      title="Haz clic para renombrar"
+                    >
+                      {{ table.name || 'Mesa ' + table.id }}
+                    </span>
+                  }
+                  <div class="table-stats">
+                    <span class="count">{{ table.guests.length }}/{{ table.capacity }}</span>
+                  </div>
+                </div>
+
+                <!-- Anillo de progreso / Decoración -->
+                @if (table.shape === 'round') {
+                  <svg class="progress-ring" viewBox="0 0 100 100">
+                    <circle class="ring-bg" cx="50" cy="50" r="48"></circle>
+                    <circle
+                      class="ring-fill"
+                      cx="50"
+                      cy="50"
+                      r="48"
+                      [style.stroke-dashoffset]="301 - 301 * (table.guests.length / table.capacity)"
+                      stroke-dasharray="301"
+                    ></circle>
+                  </svg>
+                } @else {
+                  <div
+                    class="square-border"
+                    [style.--progress]="(table.guests.length / table.capacity) * 100"
+                  ></div>
+                }
+              </div>
+
+              <div class="seats-layout">
+                @for (seatIdx of getSequence(table.capacity); track seatIdx) {
+                  @let seatNumber = seatIdx + 1;
+                  @let guest = getGuestAtSeat(table.id, seatNumber);
+                  <div
+                    class="guest-seat"
+                    [style.--seat-index]="seatIdx"
+                    [style.--total-seats]="table.capacity"
+                    [style.--is-bottom]="
+                      table.shape === 'rectangular' && seatIdx >= table.capacity / 2 ? 1 : 0
+                    "
+                    [style.--side-index]="
+                      table.shape === 'rectangular' ? seatIdx % (table.capacity / 2) : seatIdx
+                    "
+                    [style.left.px]="getSeatX(table.shape, table.capacity, seatIdx)"
+                    [style.top.px]="getSeatY(table.shape, table.capacity, seatIdx)"
+                    [class.bottom-seat]="isBottomSeat(seatIdx, table.capacity)"
+                    cdkDropList
+                    [cdkDropListData]="{ tableId: table.id, seatIndex: seatNumber }"
+                    [cdkDropListSortingDisabled]="true"
+                    (cdkDropListDropped)="onDrop($event)"
+                  >
+                    @if (guest) {
+                      <div
+                        class="guest-seat-inner"
+                        cdkDrag
+                        [cdkDragData]="guest"
+                        cdkDragPreviewContainer="parent"
+                        [class.just-seated]="newlySeatedIds().has(guestKey(guest))"
+                        [title]="guest.name + ' (' + guest.mealType + ')'"
+                        (cdkDragEnded)="onGuestDragEnded($event)"
+                      >
+                        <!-- Preview while dragging -->
+                        <div *cdkDragPreview class="guest-drag-preview">
+                          <svg class="kicking-person" viewBox="0 0 24 48">
                             <!-- Cabeza -->
                             <circle cx="12" cy="7" r="4.5" fill="#ec4899" />
                             <!-- Cuerpo/Torso -->
                             <path d="M8,13 Q12,12 16,13 L15,27 Q12,28 9,27 Z" fill="#ec4899" />
                             <!-- Brazos -->
-                            <path class="arm left" d="M6,14 Q3,19 5,25" fill="none" stroke="#ec4899" stroke-width="3"
-                                stroke-linecap="round" />
-                            <path class="arm right" d="M18,14 Q21,19 19,25" fill="none" stroke="#ec4899"
-                                stroke-width="3" stroke-linecap="round" />
+                            <path
+                              class="arm left"
+                              d="M6,14 Q3,19 5,25"
+                              fill="none"
+                              stroke="#ec4899"
+                              stroke-width="3"
+                              stroke-linecap="round"
+                            />
+                            <path
+                              class="arm right"
+                              d="M18,14 Q21,19 19,25"
+                              fill="none"
+                              stroke="#ec4899"
+                              stroke-width="3"
+                              stroke-linecap="round"
+                            />
                             <!-- Piernas -->
-                            <path class="leg left" d="M9,27 Q7,35 9,43" fill="none" stroke="#ec4899" stroke-width="3.5"
-                                stroke-linecap="round" />
-                            <path class="leg right" d="M15,27 Q17,35 15,43" fill="none" stroke="#ec4899"
-                                stroke-width="3.5" stroke-linecap="round" />
-                        </svg>
-                    </div>
+                            <path
+                              class="leg left"
+                              d="M9,27 Q7,35 9,43"
+                              fill="none"
+                              stroke="#ec4899"
+                              stroke-width="3.5"
+                              stroke-linecap="round"
+                            />
+                            <path
+                              class="leg right"
+                              d="M15,27 Q17,35 15,43"
+                              fill="none"
+                              stroke="#ec4899"
+                              stroke-width="3.5"
+                              stroke-linecap="round"
+                            />
+                          </svg>
+                        </div>
 
-                    <!-- Placeholder while dragging -->
-                    <div *cdkDragPlaceholder class="guest-item-placeholder"></div>
+                        <!-- Placeholder while dragging -->
+                        <div *cdkDragPlaceholder class="guest-seat-placeholder"></div>
 
+                        <div class="seat-marker" [class]="getMenuClass(guest.mealType)">
+                          <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
+                        </div>
+                        <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
+                      </div>
+                    } @else {
+                      <div class="seat-marker empty">
+                        <span class="seat-icon">+</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </main>
+      </div>
+      <!-- .celebration-hall -->
+    </div>
+    <!-- .hall-scroll-container -->
+
+    <!-- Panel de comensales de mesa -->
+    @if (selectedTablePanelData(); as panelTable) {
+      <div
+        class="table-panel-backdrop"
+        (click)="closeTablePanel()"
+        (keydown.enter)="closeTablePanel()"
+        tabindex="0"
+        role="button"
+        aria-label="Cerrar panel"
+      >
+        <aside
+          class="table-panel"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="-1"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="table-panel-title"
+        >
+          <header class="table-panel-header">
+            <div>
+              <h3 id="table-panel-title">{{ panelTable.name || 'Mesa ' + panelTable.id }}</h3>
+              <p class="table-panel-subtitle">
+                {{ panelTable.sortedGuests.length }}/{{ panelTable.capacity }} comensales
+              </p>
+            </div>
+            <div class="table-panel-header-actions">
+              @if (selectedTableFreeSeats().length > 0) {
+                <button
+                  type="button"
+                  class="btn-primary btn-sm"
+                  (click)="openAssignSeatModalForSelectedTable()"
+                >
+                  + Añadir
+                </button>
+              }
+              <button
+                type="button"
+                class="close-btn"
+                (click)="closeTablePanel()"
+                aria-label="Cerrar panel de mesa"
+              >
+                ×
+              </button>
+            </div>
+          </header>
+
+          <div class="table-panel-body">
+            @if (panelTable.sortedGuests.length === 0) {
+              <p class="table-panel-empty">Esta mesa aún no tiene invitados sentados.</p>
+            } @else {
+              <ul class="table-panel-guest-list">
+                @for (guest of panelTable.sortedGuests; track guestKey(guest)) {
+                  <li class="guest-item table-panel-guest" [class]="getMenuClass(guest.mealType)">
                     <div class="guest-avatar">
-                        {{ (guest.name.charAt(0) || '?').toUpperCase() }}
+                      {{ (guest.name.charAt(0) || '?').toUpperCase() }}
                     </div>
                     <div class="guest-info">
-                        <span class="guest-name">{{ guest.name || 'Invitado' }}</span>
-                        <span class="guest-meta">{{ guest.mealType }}</span>
+                      <span class="guest-name">{{ guest.name || 'Invitado' }}</span>
+                      <span class="guest-meta">
+                        Asiento {{ guest.seatNumber }} · {{ guest.mealType }}
+                      </span>
                     </div>
                     <div class="guest-actions">
-                        <button class="edit-btn" (click)="openEditModal(guest); $event.stopPropagation()"
-                            title="Editar invitado">
-                            <span>📝</span>
-                        </button>
-                        <button class="delete-btn" (click)="deleteGuest(guest); $event.stopPropagation()"
-                            title="Eliminar invitado">
-                            <span>🗑️</span>
-                        </button>
+                      <button
+                        type="button"
+                        class="unseat-btn"
+                        (click)="onTablePanelUnseat(guest, $event)"
+                        title="Quitar asiento (enviar a cola)"
+                      >
+                        <span>↩️</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="edit-btn"
+                        (click)="onTablePanelEdit(guest, $event)"
+                        title="Editar invitado"
+                      >
+                        <span>📝</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="delete-btn"
+                        (click)="onTablePanelDelete(guest, $event)"
+                        title="Eliminar invitado"
+                      >
+                        <span>🗑️</span>
+                      </button>
                     </div>
-                </div>
+                  </li>
                 }
-                @if (filteredUnassignedGuests().length === 0) {
-                <div class="empty-msg-container">
-                    @if (searchTerm()) {
-                    <span>🔍</span>
-                    <p>No hay coincidencias para "{{searchTerm()}}"</p>
-                    } @else {
-                    <span>✨</span>
-                    <p>¡Todos están acomodados!</p>
-                    }
-                </div>
-                }
-            </div>
+              </ul>
+            }
+          </div>
         </aside>
+      </div>
+    }
 
-        <div class="hall-scroll-container">
-            <div class="hall-search-bar" role="search">
-                <label class="hall-search-label" for="hall-search-input">Buscar invitado en el salón</label>
-                <div class="hall-search-input-wrap">
-                    <input id="hall-search-input" type="search" [formControl]="hallSearchControl"
-                        placeholder="Ej: Ramón — ¿dónde está sentado?" class="hall-search-input"
-                        (keydown)="onHallSearchKeydown($event)"
-                        aria-label="Buscar invitado en todo el salón"
-                        [attr.aria-expanded]="hallSearchResults().length > 0"
-                        aria-controls="hall-search-results">
-                    <span class="search-icon">🔍</span>
-                </div>
+    <!-- Modal: asignar invitado a asiento libre -->
+    @if (showAssignSeatModal()) {
+      <div
+        class="assign-modal-backdrop"
+        (click)="closeAssignSeatModal()"
+        (keydown.enter)="closeAssignSeatModal()"
+        tabindex="0"
+        role="button"
+        aria-label="Cerrar modal"
+      >
+        <div
+          class="assign-modal"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="-1"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="assign-modal-title"
+        >
+          <header class="assign-modal-header">
+            <h3 id="assign-modal-title">
+              Añadir invitado a
+              {{ selectedTablePanelData()?.name || 'Mesa ' + selectedTablePanelData()?.id }}
+            </h3>
+            <button
+              type="button"
+              class="close-btn"
+              (click)="closeAssignSeatModal()"
+              aria-label="Cerrar asignación"
+            >
+              ×
+            </button>
+          </header>
 
-                @if (hallSearchTerm()) {
-                <div id="hall-search-results" class="hall-search-results" role="listbox"
-                    aria-label="Resultados de búsqueda en el salón">
-                    @if (hallSearchResults().length === 0) {
-                    <p class="hall-search-empty">No hay coincidencias para "{{ hallSearchTerm() }}"</p>
-                    } @else {
-                    @for (result of hallSearchResults(); track guestKey(result.guest)) {
-                    <button type="button" class="hall-search-result" role="option"
-                        (click)="onHallSearchSelect(result)">
-                        <span class="hall-search-result-name">{{ result.guest.name }}</span>
-                        <span class="hall-search-result-location">
-                            @if (result.location === 'seated') {
-                            Sentado en {{ result.tableName }}
-                            @if (result.seatNumber) { · Asiento {{ result.seatNumber }} }
-                            } @else {
-                            En cola de recepción
-                            }
-                        </span>
-                    </button>
-                    }
-                    }
-                </div>
+          <div class="assign-modal-body">
+            <div class="assign-controls">
+              <div class="search-container">
+                <input
+                  type="search"
+                  [formControl]="assignSearchControl"
+                  placeholder="Buscar en cola de recepción..."
+                  class="search-input"
+                  aria-label="Buscar invitados en cola de recepción"
+                />
+                <span class="search-icon">🔍</span>
+              </div>
+
+              <div class="assign-seat-select">
+                <label for="assign-seat">Asiento libre</label>
+                <select
+                  id="assign-seat"
+                  [value]="selectedSeatToAssign()"
+                  (change)="onAssignSeatChange($any($event.target).value)"
+                >
+                  @for (seat of selectedTableFreeSeats(); track seat) {
+                    <option [value]="seat">Asiento {{ seat }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="assign-guest-list" role="listbox" aria-label="Invitados en cola">
+              @if (assignableGuests().length === 0) {
+                <p class="assign-empty">No hay invitados disponibles en la cola.</p>
+              } @else {
+                @for (guest of assignableGuests(); track guestKey(guest)) {
+                  <button
+                    type="button"
+                    class="assign-guest-item"
+                    [class.selected]="isGuestSelectedForAssign(guest)"
+                    (click)="selectGuestToAssign(guest)"
+                  >
+                    <span class="assign-guest-name">{{ guest.name || 'Invitado' }}</span>
+                    <span class="assign-guest-meta">{{ guest.mealType }}</span>
+                  </button>
                 }
+              }
             </div>
+          </div>
 
-            <div class="celebration-hall" #hall [class.edit-mode]="isEditLayoutMode()"
-                [style.min-height.px]="hallHeight()" [style.min-width.px]="hallWidth()">
-                <!-- Decoración floral en esquinas -->
-                <span class="hall-corner hall-corner--tl">🌸🌿</span>
-                <span class="hall-corner hall-corner--tr">🌿🌸</span>
-                <span class="hall-corner hall-corner--bl">🌺🌿</span>
-                <span class="hall-corner hall-corner--br">🌿🌺</span>
-
-                <main class="tables-grid" [class.edit-mode]="isEditLayoutMode()" [style.min-height.px]="hallHeight()"
-                    [style.min-width.px]="hallWidth()">
-                    @for (table of tables(); track table.id) {
-                    <div class="table-container" [attr.data-table-id]="table.id"
-                        [class.highlighted]="highlightedTableId() === table.id"
-                        [class.full]="table.guests.length >= table.capacity" [class.round]="table.shape === 'round'"
-                        [class.square]="table.shape === 'square'" [class.rectangular]="table.shape === 'rectangular'"
-                        [class.presidential]="table.shape === 'presidential'"
-                        [class.dragging-table]="isEditLayoutMode()"
-                        [class.positioned]="table.posX !== undefined && table.posY !== undefined" cdkDrag
-                        [cdkDragBoundary]="hall" [cdkDragDisabled]="!isEditLayoutMode()"
-                        (cdkDragStarted)="onTableDragStarted()"
-                        (cdkDragEnded)="onTableDragEnded($event, table.id)"
-                        [style.left.px]="(table.posX !== undefined) ? table.posX : null"
-                        [style.top.px]="(table.posY !== undefined) ? table.posY : null"
-                        [style.width.px]="(table.shape === 'rectangular' || table.shape === 'presidential') ? getRectTableWidth(table.capacity, table.shape) + 60 : null"
-                        [style.height.px]="table.shape === 'rectangular' ? 340 : table.shape === 'presidential' ? 240 : null"
-                        [style.--seat-spacing.px]="(table.shape === 'rectangular' || table.shape === 'presidential') ? getRectSeatSpacing(table.capacity, table.shape) : null">
-
-                        <!-- Controles de Mesa (Overlay) -->
-                        <div class="table-config-overlay" (click)="$event.stopPropagation()">
-                            <button class="config-btn shape" (click)="toggleTableShape(table.id, table.shape)"
-                                [title]="'Cambiar tipo: ' + table.shape">
-                                {{ table.shape === 'round' ? '⭕' : table.shape === 'square' ? '🟦' : table.shape ===
-                                'presidential' ? '🤵' : '👥' }}
-                            </button>
-                            <div class="capacity-field">
-                                <input type="number" [formControl]="getCapacityControl(table.id, table.capacity)"
-                                    min="1" max="20"
-                                    title="Capacidad de esta mesa">
-                            </div>
-                            <button class="config-btn delete" (click)="deleteTable(table.id)" title="Eliminar mesa">
-                                🗑️
-                            </button>
-                        </div>
-
-                        <div class="table-surface" cdkDropList [cdkDropListData]="table.id"
-                            [cdkDropListSortingDisabled]="true" (cdkDropListDropped)="onDrop($event)"
-                            (click)="onTableSurfaceClick($event, table)"
-                            title="Clic para ver comensales de esta mesa"
-                            [style.width.px]="(table.shape === 'rectangular' || table.shape === 'presidential') ? getRectTableWidth(table.capacity, table.shape) : null"
-                            [style.height.px]="table.shape === 'presidential' ? 80 : null">
-
-                            @if (table.shape === 'square') {
-                            <div class="square-border"></div>
-                            }
-                            @if (table.shape === 'rectangular' || table.shape === 'presidential') {
-                            <div class="rectangular-border"></div>
-                            }
-
-                            <div class="table-info">
-                                @if (editingTableId() === table.id) {
-                                <input type="text" class="edit-table-input" [formControl]="editingNameControl"
-                                    (blur)="saveTableName(table.id)"
-                                    (keyup.enter)="saveTableName(table.id)"
-                                    (click)="$event.stopPropagation()">
-                                } @else {
-                                <span class="table-num" (click)="startEditingTable(table.id, table.name); $event.stopPropagation()"
-                                    title="Haz clic para renombrar">
-                                    {{ table.name || 'Mesa ' + table.id }}
-                                </span>
-                                }
-                                <div class="table-stats">
-                                    <span class="count">{{ table.guests.length }}/{{ table.capacity }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Anillo de progreso / Decoración -->
-                            @if (table.shape === 'round') {
-                            <svg class="progress-ring" viewBox="0 0 100 100">
-                                <circle class="ring-bg" cx="50" cy="50" r="48"></circle>
-                                <circle class="ring-fill" cx="50" cy="50" r="48"
-                                    [style.stroke-dashoffset]="301 - (301 * (table.guests.length / table.capacity))"
-                                    stroke-dasharray="301">
-                                </circle>
-                            </svg>
-                            } @else {
-                            <div class="square-border"
-                                [style.--progress]="(table.guests.length / table.capacity) * 100">
-                            </div>
-                            }
-                        </div>
-
-                        <div class="seats-layout">
-                            @for (seatIdx of getSequence(table.capacity); track seatIdx) {
-                            @let seatNumber = seatIdx + 1;
-                            @let guest = getGuestAtSeat(table.id, seatNumber);
-                            <div class="guest-seat" [style.--seat-index]="seatIdx"
-                                [style.--total-seats]="table.capacity"
-                                [style.--is-bottom]="table.shape === 'rectangular' && seatIdx >= (table.capacity / 2) ? 1 : 0"
-                                [style.--side-index]="table.shape === 'rectangular' ? (seatIdx % (table.capacity / 2)) : seatIdx"
-                                [style.left.px]="getSeatX(table.shape, table.capacity, seatIdx)"
-                                [style.top.px]="getSeatY(table.shape, table.capacity, seatIdx)"
-                                [class.bottom-seat]="isBottomSeat(seatIdx, table.capacity)" cdkDropList
-                                [cdkDropListData]="{tableId: table.id, seatIndex: seatNumber}"
-                                [cdkDropListSortingDisabled]="true"
-                                (cdkDropListDropped)="onDrop($event)">
-
-                                @if (guest) {
-                                <div class="guest-seat-inner" cdkDrag [cdkDragData]="guest"
-                                    cdkDragPreviewContainer="parent"
-                                    [class.just-seated]="newlySeatedIds().has(guestKey(guest))"
-                                    [title]="guest.name + ' (' + guest.mealType + ')'"
-                                    (cdkDragEnded)="onGuestDragEnded($event)">
-
-                                    <!-- Preview while dragging -->
-                                    <div *cdkDragPreview class="guest-drag-preview">
-                                        <svg class="kicking-person" viewBox="0 0 24 48">
-                                            <!-- Cabeza -->
-                                            <circle cx="12" cy="7" r="4.5" fill="#ec4899" />
-                                            <!-- Cuerpo/Torso -->
-                                            <path d="M8,13 Q12,12 16,13 L15,27 Q12,28 9,27 Z" fill="#ec4899" />
-                                            <!-- Brazos -->
-                                            <path class="arm left" d="M6,14 Q3,19 5,25" fill="none" stroke="#ec4899"
-                                                stroke-width="3" stroke-linecap="round" />
-                                            <path class="arm right" d="M18,14 Q21,19 19,25" fill="none" stroke="#ec4899"
-                                                stroke-width="3" stroke-linecap="round" />
-                                            <!-- Piernas -->
-                                            <path class="leg left" d="M9,27 Q7,35 9,43" fill="none" stroke="#ec4899"
-                                                stroke-width="3.5" stroke-linecap="round" />
-                                            <path class="leg right" d="M15,27 Q17,35 15,43" fill="none" stroke="#ec4899"
-                                                stroke-width="3.5" stroke-linecap="round" />
-                                        </svg>
-                                    </div>
-
-                                    <!-- Placeholder while dragging -->
-                                    <div *cdkDragPlaceholder class="guest-seat-placeholder"></div>
-
-                                    <div class="seat-marker" [class]="getMenuClass(guest.mealType)">
-                                        <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
-                                    </div>
-                                    <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
-                                </div>
-                                } @else {
-                                <div class="seat-marker empty">
-                                    <span class="seat-icon">+</span>
-                                </div>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </div>
-                    }
-                </main>
-            </div> <!-- .celebration-hall -->
-        </div> <!-- .hall-scroll-container -->
-
-        <!-- Panel de comensales de mesa -->
-        @if (selectedTablePanelData(); as panelTable) {
-        <div class="table-panel-backdrop" (click)="closeTablePanel()" role="presentation">
-            <aside class="table-panel" (click)="$event.stopPropagation()" role="dialog"
-                aria-modal="true" aria-labelledby="table-panel-title">
-                <header class="table-panel-header">
-                    <div>
-                        <h3 id="table-panel-title">{{ panelTable.name || 'Mesa ' + panelTable.id }}</h3>
-                        <p class="table-panel-subtitle">{{ panelTable.sortedGuests.length }}/{{ panelTable.capacity }} comensales</p>
-                    </div>
-                    <div class="table-panel-header-actions">
-                        @if (selectedTableFreeSeats().length > 0) {
-                        <button type="button" class="btn-primary btn-sm" (click)="openAssignSeatModalForSelectedTable()">
-                            + Añadir
-                        </button>
-                        }
-                    <button type="button" class="close-btn" (click)="closeTablePanel()"
-                        aria-label="Cerrar panel de mesa">×</button>
-                    </div>
-                </header>
-
-                <div class="table-panel-body">
-                    @if (panelTable.sortedGuests.length === 0) {
-                    <p class="table-panel-empty">Esta mesa aún no tiene invitados sentados.</p>
-                    } @else {
-                    <ul class="table-panel-guest-list">
-                        @for (guest of panelTable.sortedGuests; track guestKey(guest)) {
-                        <li class="guest-item table-panel-guest" [class]="getMenuClass(guest.mealType)">
-                            <div class="guest-avatar">
-                                {{ (guest.name.charAt(0) || '?').toUpperCase() }}
-                            </div>
-                            <div class="guest-info">
-                                <span class="guest-name">{{ guest.name || 'Invitado' }}</span>
-                                <span class="guest-meta">
-                                    Asiento {{ guest.seatNumber }} · {{ guest.mealType }}
-                                </span>
-                            </div>
-                            <div class="guest-actions">
-                                <button type="button" class="unseat-btn"
-                                    (click)="onTablePanelUnseat(guest, $event)"
-                                    title="Quitar asiento (enviar a cola)">
-                                    <span>↩️</span>
-                                </button>
-                                <button type="button" class="edit-btn"
-                                    (click)="onTablePanelEdit(guest, $event)"
-                                    title="Editar invitado">
-                                    <span>📝</span>
-                                </button>
-                                <button type="button" class="delete-btn"
-                                    (click)="onTablePanelDelete(guest, $event)"
-                                    title="Eliminar invitado">
-                                    <span>🗑️</span>
-                                </button>
-                            </div>
-                        </li>
-                        }
-                    </ul>
-                    }
-                </div>
-            </aside>
+          <footer class="assign-modal-actions">
+            <button type="button" class="btn-secondary-modal" (click)="closeAssignSeatModal()">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn-primary"
+              (click)="confirmAssignSeat()"
+              [disabled]="
+                !selectedGuestToAssign() ||
+                selectedTableFreeSeats().length === 0 ||
+                selectedSeatToAssign() === null
+              "
+            >
+              Asignar asiento
+            </button>
+          </footer>
         </div>
-        }
+      </div>
+    }
 
-        <!-- Modal: asignar invitado a asiento libre -->
-        @if (showAssignSeatModal()) {
-        <div class="assign-modal-backdrop" (click)="closeAssignSeatModal()" role="presentation">
-            <div class="assign-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true"
-                aria-labelledby="assign-modal-title">
-                <header class="assign-modal-header">
-                    <h3 id="assign-modal-title">Añadir invitado a {{ selectedTablePanelData()?.name || ('Mesa ' + selectedTablePanelData()?.id) }}</h3>
-                    <button type="button" class="close-btn" (click)="closeAssignSeatModal()"
-                        aria-label="Cerrar asignación">×</button>
-                </header>
+    <!-- Modal para Añadir/Editar Invitado -->
+    @if (showAddModal()) {
+      <app-guest-form-modal
+        [guest]="selectedGuestForModal()"
+        (modalClose)="closeAddModal()"
+      ></app-guest-form-modal>
+    }
 
-                <div class="assign-modal-body">
-                    <div class="assign-controls">
-                        <div class="search-container">
-                            <input type="search" [formControl]="assignSearchControl"
-                                placeholder="Buscar en cola de recepción..." class="search-input"
-                                aria-label="Buscar invitados en cola de recepción">
-                            <span class="search-icon">🔍</span>
-                        </div>
-
-                        <div class="assign-seat-select">
-                            <label for="assign-seat">Asiento libre</label>
-                            <select id="assign-seat" [value]="selectedSeatToAssign()"
-                                (change)="onAssignSeatChange($any($event.target).value)">
-                                @for (seat of selectedTableFreeSeats(); track seat) {
-                                <option [value]="seat">Asiento {{ seat }}</option>
-                                }
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="assign-guest-list" role="listbox" aria-label="Invitados en cola">
-                        @if (assignableGuests().length === 0) {
-                        <p class="assign-empty">No hay invitados disponibles en la cola.</p>
-                        } @else {
-                        @for (guest of assignableGuests(); track guestKey(guest)) {
-                        <button type="button" class="assign-guest-item"
-                            [class.selected]="isGuestSelectedForAssign(guest)"
-                            (click)="selectGuestToAssign(guest)">
-                            <span class="assign-guest-name">{{ guest.name || 'Invitado' }}</span>
-                            <span class="assign-guest-meta">{{ guest.mealType }}</span>
-                        </button>
-                        }
-                        }
-                    </div>
-                </div>
-
-                <footer class="assign-modal-actions">
-                    <button type="button" class="btn-secondary-modal" (click)="closeAssignSeatModal()">Cancelar</button>
-                    <button type="button" class="btn-primary" (click)="confirmAssignSeat()"
-                        [disabled]="!selectedGuestToAssign() || selectedTableFreeSeats().length === 0 || selectedSeatToAssign() === null">
-                        Asignar asiento
-                    </button>
-                </footer>
+    <!-- Modal para Confirmar Eliminación de Mesa -->
+    @if (showDeleteConfirm()) {
+      <div
+        class="modal-backdrop"
+        (click)="cancelDeleteTable()"
+        (keydown.enter)="cancelDeleteTable()"
+        tabindex="0"
+        role="button"
+        aria-label="Cerrar confirmaciÃ³n de eliminaciÃ³n de mesa"
+      >
+        <div
+          class="modal-container delete-confirm"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="-1"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div class="modal-header">
+            <h3>Eliminar {{ getTableNameToDelete() }}</h3>
+            <button class="close-btn" (click)="cancelDeleteTable()">×</button>
+          </div>
+          <div class="modal-body warning-theme">
+            <div class="warning-visual">
+              <span class="confirm-icon">🗑️</span>
             </div>
-        </div>
-        }
+            <p>¿Seguro que quieres eliminar esta mesa?</p>
+            <p class="secondary-text">
+              Los invitados asignados volverán a la lista de "Por asignar".
+            </p>
 
-        <!-- Modal para Añadir/Editar Invitado -->
-        @if (showAddModal()) {
-            <app-guest-form-modal [guest]="selectedGuestForModal()" (close)="closeAddModal()"></app-guest-form-modal>
-        }
-
-        <!-- Modal para Confirmar Eliminación de Mesa -->
-        @if (showDeleteConfirm()) {
-        <div class="modal-backdrop" (click)="cancelDeleteTable()">
-            <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
-                <div class="modal-header">
-                    <h3>Eliminar {{ getTableNameToDelete() }}</h3>
-                    <button class="close-btn" (click)="cancelDeleteTable()">×</button>
-                </div>
-                <div class="modal-body warning-theme">
-                    <div class="warning-visual">
-                        <span class="confirm-icon">🗑️</span>
-                    </div>
-                    <p>¿Seguro que quieres eliminar esta mesa?</p>
-                    <p class="secondary-text">Los invitados asignados volverán a la lista de "Por asignar".</p>
-
-                    <div class="modal-actions full-width-btns">
-                        <button class="btn-danger" (click)="confirmDeleteTable()">Sí, eliminar mesa</button>
-                        <button class="btn-secondary-modal" (click)="cancelDeleteTable()">No, mantener mesa</button>
-                    </div>
-                </div>
+            <div class="modal-actions full-width-btns">
+              <button class="btn-danger" (click)="confirmDeleteTable()">Sí, eliminar mesa</button>
+              <button class="btn-secondary-modal" (click)="cancelDeleteTable()">
+                No, mantener mesa
+              </button>
             </div>
+          </div>
         </div>
-        }
+      </div>
+    }
 
-        <!-- Modal para Confirmar Eliminación de Invitado -->
-        @if (showGuestDeleteConfirm()) {
-        <div class="modal-backdrop" (click)="cancelDeleteGuest()">
-            <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
-                <div class="modal-header">
-                    <h3>Eliminar Invitado</h3>
-                    <button class="close-btn" (click)="cancelDeleteGuest()">×</button>
-                </div>
-                <div class="modal-body warning-theme">
-                    <div class="warning-visual">
-                        <span class="confirm-icon">👤❌</span>
-                    </div>
-                    <p>¿Seguro que quieres eliminar a {{ guestToDelete()?.name }}?</p>
-                    <p class="secondary-text">Esta acción no se puede deshacer y el invitado será borrado
-                        permanentemente.
-                    </p>
+    <!-- Modal para Confirmar Eliminación de Invitado -->
+    @if (showGuestDeleteConfirm()) {
+      <app-guest-delete-modal
+        [guest]="guestToDelete()"
+        (confirm)="confirmDeleteGuest()"
+        (cancel)="cancelDeleteGuest()"
+      ></app-guest-delete-modal>
+    }
 
-                    <div class="modal-actions full-width-btns">
-                        <button class="btn-danger" (click)="confirmDeleteGuest()">Sí, eliminar invitado</button>
-                        <button class="btn-secondary-modal" (click)="cancelDeleteGuest()">No, mantener invitado</button>
-                    </div>
-                </div>
+    <!-- Modal para Mesa Completa -->
+    @if (showFullTableModal()) {
+      <div
+        class="modal-backdrop"
+        (click)="closeFullTableModal()"
+        (keydown.enter)="closeFullTableModal()"
+        tabindex="0"
+        role="button"
+        aria-label="Cerrar aviso de mesa completa"
+      >
+        <div
+          class="modal-container delete-confirm"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="-1"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div class="modal-header">
+            <h3>Mesa Completa</h3>
+            <button class="close-btn" (click)="closeFullTableModal()">×</button>
+          </div>
+          <div class="modal-body warning-theme">
+            <div class="warning-visual info-theme">
+              <span class="confirm-icon">🛑</span>
             </div>
-        </div>
-        }
+            <p>La mesa "{{ fullTableName() }}" está llena</p>
+            <p class="secondary-text">
+              La capacidad máxima es de {{ fullTableCapacity() }} personas. Por favor, amplía la
+              capacidad o elige otra mesa.
+            </p>
 
-        <!-- Modal para Mesa Completa -->
-        @if (showFullTableModal()) {
-        <div class="modal-backdrop" (click)="closeFullTableModal()">
-            <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
-                <div class="modal-header">
-                    <h3>Mesa Completa</h3>
-                    <button class="close-btn" (click)="closeFullTableModal()">×</button>
-                </div>
-                <div class="modal-body warning-theme">
-                    <div class="warning-visual info-theme">
-                        <span class="confirm-icon">🛑</span>
-                    </div>
-                    <p>La mesa "{{ fullTableName() }}" está llena</p>
-                    <p class="secondary-text">La capacidad máxima es de {{ fullTableCapacity() }} personas. Por favor,
-                        amplía la capacidad o elige otra mesa.</p>
-
-                    <div class="modal-actions full-width-btns">
-                        <button class="btn-primary" (click)="closeFullTableModal()">Entendido</button>
-                    </div>
-                </div>
+            <div class="modal-actions full-width-btns">
+              <button class="btn-primary" (click)="closeFullTableModal()">Entendido</button>
             </div>
+          </div>
         </div>
-        }
+      </div>
+    }
 
-        <!-- Modal Genérico de Alerta -->
-        @if (showGenericModal()) {
-        <div class="modal-backdrop" (click)="closeGenericModal()">
-            <div class="modal-container delete-confirm" (click)="$event.stopPropagation()">
-                <div class="modal-header">
-                    <h3>{{ genericModalTitle() }}</h3>
-                    <button class="close-btn" (click)="closeGenericModal()">×</button>
-                </div>
-                <div class="modal-body warning-theme">
-                    <div class="warning-visual info-theme">
-                        <span class="confirm-icon">⚠️</span>
-                    </div>
-                    <p>{{ genericModalMessage() }}</p>
-
-                    <div class="modal-actions full-width-btns">
-                        <button class="btn-primary" (click)="closeGenericModal()">Entendido</button>
-                    </div>
-                </div>
+    <!-- Modal Genérico de Alerta -->
+    @if (showGenericModal()) {
+      <div
+        class="modal-backdrop"
+        (click)="closeGenericModal()"
+        (keydown.enter)="closeGenericModal()"
+        tabindex="0"
+        role="button"
+        aria-label="Cerrar aviso"
+      >
+        <div
+          class="modal-container delete-confirm"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="-1"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div class="modal-header">
+            <h3>{{ genericModalTitle() }}</h3>
+            <button class="close-btn" (click)="closeGenericModal()">×</button>
+          </div>
+          <div class="modal-body warning-theme">
+            <div class="warning-visual info-theme">
+              <span class="confirm-icon">⚠️</span>
             </div>
-        </div>
-        }
-    </div>
+            <p>{{ genericModalMessage() }}</p>
 
-    <!-- Leyenda de Colores -->
-    <app-tables-legend></app-tables-legend>
+            <div class="modal-actions full-width-btns">
+              <button class="btn-primary" (click)="closeGenericModal()">Entendido</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Leyenda de Colores -->
+  <app-tables-legend></app-tables-legend>
 </div>

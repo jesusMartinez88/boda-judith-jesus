@@ -2,12 +2,13 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ApiResponse, TodoEntity } from '../../types/api';
 
 export interface Todo {
   id?: number;
   name: string;
-  date: string;
-  status: 'pending' | 'completed';
+  date?: string | null;
+  status: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -26,9 +27,23 @@ export class TodosService {
   async loadTodos(): Promise<Todo[]> {
     this.isLoading.set(true);
     try {
-      const response = await firstValueFrom(this.http.get<Todo[] | { data: Todo[] }>(this.apiUrl));
-      const list = response && 'data' in response ? response.data : response;
-      const finalItems = Array.isArray(list) ? list : [];
+      const response = await firstValueFrom(
+        this.http.get<ApiResponse<TodoEntity[]> | TodoEntity[]>(this.apiUrl),
+      );
+      const list = (
+        response && 'data' in (response as ApiResponse<TodoEntity[]>)
+          ? (response as ApiResponse<TodoEntity[]>).data
+          : response
+      ) as TodoEntity[];
+      const rawItems = Array.isArray(list) ? list : [];
+      const finalItems: Todo[] = rawItems.map((it) => ({
+        id: it.id,
+        name: it.name,
+        date: it.date ?? null,
+        status: String(it.status),
+        createdAt: it.createdAt,
+        updatedAt: it.updatedAt,
+      }));
       this.todos.set(finalItems);
       return finalItems;
     } catch (error) {
@@ -41,9 +56,12 @@ export class TodosService {
 
   async createTodo(todo: Todo): Promise<Todo> {
     try {
-      const result = await firstValueFrom(this.http.post<Todo>(this.apiUrl, todo));
+      const result = await firstValueFrom(
+        this.http.post<ApiResponse<TodoEntity>>(this.apiUrl, todo),
+      );
+      const created = result.data as TodoEntity;
       await this.loadTodos(); // Refresh list
-      return result;
+      return created as Todo;
     } catch (error) {
       console.error('Error creating todo:', error);
       throw error;
@@ -52,18 +70,23 @@ export class TodosService {
 
   async updateTodo(id: number, todo: Partial<Todo>): Promise<Todo> {
     try {
-      const result = await firstValueFrom(this.http.patch<Todo>(`${this.apiUrl}/${id}`, todo));
+      const result = await firstValueFrom(
+        this.http.patch<ApiResponse<TodoEntity>>(`${this.apiUrl}/${id}`, todo),
+      );
+      const updated = result.data as TodoEntity;
       await this.loadTodos(); // Refresh list
-      return result;
+      return updated as Todo;
     } catch (error) {
       console.error('Error updating todo:', error);
       throw error;
     }
   }
 
-  async deleteTodo(id: number): Promise<unknown> {
+  async deleteTodo(id: number): Promise<ApiResponse<{ message?: string }>> {
     try {
-      const result = await firstValueFrom(this.http.delete<unknown>(`${this.apiUrl}/${id}`));
+      const result = await firstValueFrom(
+        this.http.delete<ApiResponse<{ message?: string }>>(`${this.apiUrl}/${id}`),
+      );
       await this.loadTodos(); // Refresh list
       return result;
     } catch (error) {

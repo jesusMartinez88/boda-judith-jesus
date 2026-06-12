@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ApiResponse, MusicPlaylistSong } from '../../types/api';
 
 export interface MusicSong {
   id?: number;
@@ -11,7 +12,7 @@ export interface MusicSong {
   youtubeId?: string;
   note?: string;
   addedAt?: string;
-  order?: number; // Campo para mantener el orden
+  order?: number;
 }
 
 @Injectable({
@@ -27,12 +28,13 @@ export class MusicPlaylistService {
   async loadSongs(): Promise<MusicSong[]> {
     this.isLoading.set(true);
     try {
-      const response = await firstValueFrom(this.http.get<MusicSong[] | { data: MusicSong[] }>(this.apiUrl));
-      const finalItems = this.unwrapListResponse(response);
+      const response = await firstValueFrom(
+        this.http.get<ApiResponse<MusicPlaylistSong[]>>(this.apiUrl),
+      );
+      const apiItems = response.data || [];
 
-      finalItems.sort((a, b) => (a.order || 0) - (b.order || 0));
-
-      const itemsWithIds = finalItems.map((song) => this.normalizeSong(song));
+      const itemsWithIds = apiItems.map((song) => this.normalizeSong(song));
+      itemsWithIds.sort((a, b) => (a.order || 0) - (b.order || 0));
 
       this.songs.set(itemsWithIds);
       return itemsWithIds;
@@ -48,14 +50,20 @@ export class MusicPlaylistService {
     try {
       const songToCreate: MusicSong = {
         ...song,
-        youtubeId: this.extractYoutubeId(song.youtubeUrl)
+        youtubeId: this.extractYoutubeId(song.youtubeUrl),
       };
 
       const currentSongs = this.songs();
-      songToCreate.order = currentSongs.length > 0 ? Math.max(...currentSongs.map(s => s.order || 0)) + 1 : 0;
+      songToCreate.order =
+        currentSongs.length > 0 ? Math.max(...currentSongs.map((s) => s.order || 0)) + 1 : 0;
 
-      const response = await firstValueFrom(this.http.post<MusicSong | { data: MusicSong }>(this.apiUrl, songToCreate));
-      const result = this.normalizeSong(this.unwrapItemResponse(response, songToCreate));
+      const response = await firstValueFrom(
+        this.http.post<ApiResponse<MusicPlaylistSong>>(
+          this.apiUrl,
+          songToCreate as unknown as MusicPlaylistSong,
+        ),
+      );
+      const result = this.normalizeSong((response.data ?? songToCreate) as MusicSong);
 
       const updatedSongs = [...this.songs(), result];
       this.songs.set(updatedSongs);
@@ -73,13 +81,20 @@ export class MusicPlaylistService {
       }
 
       const current = this.songs();
-      const currentSong = current.find(s => s.id === id);
-      const optimisticSong: MusicSong = currentSong ? { ...currentSong, ...songUpdate } : { ...songUpdate as MusicSong };
+      const currentSong = current.find((s) => s.id === id);
+      const optimisticSong: MusicSong = currentSong
+        ? { ...currentSong, ...songUpdate }
+        : { ...(songUpdate as MusicSong) };
 
-      const response = await firstValueFrom(this.http.patch<MusicSong | { data: MusicSong }>(`${this.apiUrl}/${id}`, songUpdate));
-      const result = this.normalizeSong(this.unwrapItemResponse(response, optimisticSong));
+      const response = await firstValueFrom(
+        this.http.patch<ApiResponse<MusicPlaylistSong>>(
+          `${this.apiUrl}/${id}`,
+          songUpdate as unknown as MusicPlaylistSong,
+        ),
+      );
+      const result = this.normalizeSong((response.data ?? optimisticSong) as MusicSong);
 
-      const updatedSongs = this.songs().map(s => s.id === id ? result : s);
+      const updatedSongs = this.songs().map((s) => (s.id === id ? result : s));
       this.songs.set(updatedSongs);
       return result;
     } catch (error) {
@@ -91,7 +106,7 @@ export class MusicPlaylistService {
   async updateOrder(songs: MusicSong[]): Promise<void> {
     const orderedSongs = songs.map((song, index) => ({
       ...song,
-      order: index
+      order: index,
     }));
 
     const previousSongs = this.songs();
@@ -99,9 +114,11 @@ export class MusicPlaylistService {
 
     try {
       const response = await firstValueFrom(
-        this.http.put<MusicSong[] | { data: MusicSong[] }>(`${this.apiUrl}/reorder`, { songs: orderedSongs })
+        this.http.put<ApiResponse<MusicPlaylistSong[]>>(`${this.apiUrl}/reorder`, {
+          songs: orderedSongs.map((s) => ({ id: Number(s.id), order: Number(s.order) })),
+        }),
       );
-      const resultSongs = this.unwrapListResponse(response).map((song) => this.normalizeSong(song));
+      const resultSongs = (response.data || []).map((song) => this.normalizeSong(song));
       if (resultSongs.length > 0) {
         this.songs.set(resultSongs);
       }
@@ -114,9 +131,11 @@ export class MusicPlaylistService {
 
   async removeSong(id: number): Promise<void> {
     try {
-      await firstValueFrom(this.http.delete(`${this.apiUrl}/${id}`));
+      await firstValueFrom(
+        this.http.delete<ApiResponse<{ deletedId?: number }>>(`${this.apiUrl}/${id}`),
+      );
 
-      const filteredSongs = this.songs().filter(s => s.id !== id);
+      const filteredSongs = this.songs().filter((s) => s.id !== id);
       this.songs.set(filteredSongs);
     } catch (error) {
       console.error('Error deleting song:', error);
@@ -126,52 +145,32 @@ export class MusicPlaylistService {
 
   private extractYoutubeId(url: string): string | undefined {
     if (!url) return undefined;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : undefined;
+    return match && match[2].length === 11 ? match[2] : undefined;
   }
 
-  private unwrapListResponse(response: MusicSong[] | { data: MusicSong[] }): MusicSong[] {
-    if (Array.isArray(response)) {
-      return response;
-    }
+  private normalizeSong(song: MusicPlaylistSong | MusicSong | Record<string, unknown>): MusicSong {
+    const raw: Record<string, unknown> = song as Record<string, unknown>;
 
-    if (response && typeof response === 'object' && Array.isArray(response.data)) {
-      return response.data;
-    }
+    const youtubeUrl = (raw['youtubeUrl'] as string) || (raw['youtube_url'] as string) || '';
+    const youtubeId =
+      (raw['youtubeId'] as string) ||
+      (raw['youtube_id'] as string) ||
+      this.extractYoutubeId(youtubeUrl);
 
-    return [];
-  }
-
-  private unwrapItemResponse(response: MusicSong | { data: MusicSong }, fallback: MusicSong): MusicSong {
-    if (response && typeof response === 'object' && 'data' in response && response.data) {
-      return response.data;
-    }
-
-    if (response && typeof response === 'object') {
-      return response as MusicSong;
-    }
-
-    return fallback;
-  }
-
-  private normalizeSong(song: MusicSong): MusicSong {
-    const rawSong = song as MusicSong & {
-      youtube_url?: string;
-      youtube_id?: string;
-      added_at?: string;
-      order_index?: number;
-    };
-
-    const youtubeUrl = rawSong.youtubeUrl || rawSong.youtube_url || '';
-    const youtubeId = rawSong.youtubeId || rawSong.youtube_id || this.extractYoutubeId(youtubeUrl);
+    const idVal = raw['id'] ?? raw['_id'];
+    const id = idVal !== undefined ? (idVal as number) : undefined;
 
     return {
-      ...song,
+      id: id !== undefined ? id : undefined,
+      title: (raw['title'] as string) || '',
+      artist: (raw['artist'] as string) || '',
       youtubeUrl,
       youtubeId,
-      addedAt: song.addedAt || rawSong.added_at,
-      order: song.order ?? rawSong.order_index,
+      note: (raw['note'] as string) || undefined,
+      addedAt: (raw['addedAt'] as string) || (raw['added_at'] as string) || undefined,
+      order: (raw['order'] as number) || (raw['order_index'] as number) || undefined,
     };
   }
 }

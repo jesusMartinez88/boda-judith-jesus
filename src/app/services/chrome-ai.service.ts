@@ -19,10 +19,16 @@ interface AILanguageModelCapabilities {
 }
 
 interface AILanguageModel {
-  capabilities(options?: { expectedOutputs?: AIExpectedOutput[] }): Promise<AILanguageModelCapabilities>;
-  availability(options?: { expectedOutputs?: AIExpectedOutput[] }): Promise<AILanguageModelCapabilities>;
+  capabilities(options?: {
+    expectedOutputs?: AIExpectedOutput[];
+  }): Promise<AILanguageModelCapabilities>;
+  availability(options?: {
+    expectedOutputs?: AIExpectedOutput[];
+  }): Promise<AILanguageModelCapabilities>;
   create(options?: {
-    monitor?: (m: any) => void;
+    monitor?: (m: {
+      addEventListener: (name: string, cb: (e: { loaded: number; total: number }) => void) => void;
+    }) => void;
     signal?: AbortSignal;
     systemPrompt?: string;
     expectedLanguage?: string;
@@ -33,16 +39,27 @@ interface AILanguageModel {
 declare global {
   interface Window {
     ai?: {
-      languageModel: AILanguageModel;
+      languageModel?: AILanguageModel;
+      canCreateTextSession?: () => Promise<string> | Promise<AILanguageModelCapabilities>;
     };
     LanguageModel?: AILanguageModel;
   }
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChromeAiService {
+  private extractStatus(input: unknown): string | undefined {
+    if (typeof input === 'string') return input;
+    if (input && typeof input === 'object') {
+      const o = input as Record<string, unknown>;
+      if (typeof o['available'] === 'string') return o['available'] as string;
+      if (typeof o['status'] === 'string') return o['status'] as string;
+    }
+    return undefined;
+  }
+
   isAvailable = signal(false);
   isLoading = signal(false);
   isSupported = signal(false);
@@ -63,22 +80,22 @@ export class ChromeAiService {
       const model = this.aiModel;
       if (model) {
         this.isSupported.set(true);
-        
-        let status: any;
-        
+        let status: string | AILanguageModelCapabilities | undefined;
+
         const checkOptions = {
-          expectedOutputs: [{ type: 'text' as const, languages: ['es'] }]
+          expectedOutputs: [{ type: 'text' as const, languages: ['es'] }],
         };
 
         // 1. Intentar obtener el estado
-        if ((model as any).capabilities) {
-          const cap = await (model as any).capabilities(checkOptions);
-          status = typeof cap === 'string' ? cap : (cap?.available || cap?.status);
-        } else if ((model as any).availability) {
-          const av = await (model as any).availability(checkOptions);
-          status = typeof av === 'string' ? av : (av?.available || av?.status);
-        } else if ((window as any).ai?.canCreateTextSession) {
-          status = await (window as any).ai.canCreateTextSession();
+        if (typeof model.capabilities === 'function') {
+          const cap = await model.capabilities(checkOptions);
+          status = this.extractStatus(cap);
+        } else if (typeof model.availability === 'function') {
+          const av = await model.availability(checkOptions);
+          status = this.extractStatus(av);
+        } else if (typeof window.ai?.canCreateTextSession === 'function') {
+          const canCreate = await window.ai!.canCreateTextSession!();
+          status = this.extractStatus(canCreate);
         }
 
         const isReady = status === 'readily' || status === 'available';
@@ -86,7 +103,7 @@ export class ChromeAiService {
         const isUnavailable = status === 'no' || status === 'unavailable';
 
         this.isAvailable.set(isReady);
-        
+
         if (status === undefined || status === null) {
           this.isAvailable.set(false);
           this.needsDownload.set(true);
@@ -103,7 +120,7 @@ export class ChromeAiService {
         this.isAvailable.set(false);
         this.needsDownload.set(false);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error checking AI availability:', error);
       this.isAvailable.set(false);
       this.needsDownload.set(false);
@@ -124,7 +141,12 @@ export class ChromeAiService {
     if (!this.session && model) {
       try {
         this.session = await model.create({
-          monitor: (m: { addEventListener: (name: string, cb: (e: { loaded: number, total: number }) => void) => void }) => {
+          monitor: (m: {
+            addEventListener: (
+              name: string,
+              cb: (e: { loaded: number; total: number }) => void,
+            ) => void;
+          }) => {
             m.addEventListener('downloadprogress', (e) => {
               const progress = Math.round((e.loaded / e.total) * 100);
               this.downloadProgress.set(progress);
@@ -132,9 +154,9 @@ export class ChromeAiService {
             });
           },
           expectedLanguage: 'es',
-          expectedOutputs: [{ type: 'text', languages: ['es'] }]
+          expectedOutputs: [{ type: 'text', languages: ['es'] }],
         });
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error creando sesión:', error);
         this.session = null;
         throw error;
@@ -150,7 +172,9 @@ export class ChromeAiService {
     if (this.session) {
       try {
         this.session.destroy();
-      } catch (e) {}
+      } catch {
+        // ignore error on destroy
+      }
       this.session = null;
     }
   }
@@ -163,25 +187,32 @@ export class ChromeAiService {
     this.isLoading.set(true);
     try {
       const session = await this.getSession();
-      const prompt = `Genera un mensaje corto y emotivo (máximo 2-3 frases) para felicitar a una pareja de novios en su boda. 
+      const prompt = `Genera un mensaje corto y emotivo (máximo 2-3 frases) para felicitar a una pareja de novios en su boda.
       Debe ser cálido, sincero y especial. No uses emojis. Escribe en español.`;
-      
+
       const response = await session.prompt(prompt);
       return response.trim();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generando mensaje:', error);
-      
+      const e = error as { name?: string; message?: string };
+
       // Manejar error de espacio insuficiente
-      if (error.name === 'NotAllowedError' && error.message?.includes('enough space')) {
-        throw new Error('No hay suficiente espacio en disco para descargar el modelo de IA (se necesitan ~22GB libres).');
+      if (e.name === 'NotAllowedError' && e.message?.includes('enough space')) {
+        throw new Error(
+          'No hay suficiente espacio en disco para descargar el modelo de IA (se necesitan ~22GB libres).',
+          { cause: error },
+        );
       }
-      
+
       // Si es un error genérico, resetear la sesión para el próximo intento
-      if (error.message?.includes('generic failures') || error.name === 'UnknownError') {
+      if (e.message?.includes('generic failures') || e.name === 'UnknownError') {
         this.resetSession();
-        throw new Error('El modelo de IA aún se está inicializando. Por favor, espera unos segundos e intenta de nuevo.');
+        throw new Error(
+          'El modelo de IA aún se está inicializando. Por favor, espera unos segundos e intenta de nuevo.',
+          { cause: error },
+        );
       }
-      
+
       throw error;
     } finally {
       this.isLoading.set(false);
@@ -196,26 +227,33 @@ export class ChromeAiService {
     this.isLoading.set(true);
     try {
       const session = await this.getSession();
-      const prompt = `Sugiere UNA canción popular de discoteca o fiesta perfecta para bailar en una boda, dando preferencia a música o artistas en español. 
+      const prompt = `Sugiere UNA canción popular de discoteca o fiesta perfecta para bailar en una boda, dando preferencia a música o artistas en español.
       Responde SOLO con el nombre de la canción y el artista en este formato exacto: "Nombre de la canción - Artista"
       Elige canciones conocidas y animadas que funcionen bien en bodas. Escribe en español.`;
-      
+
       const response = await session.prompt(prompt);
       return response.trim();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generando canción:', error);
-      
+      const e = error as { name?: string; message?: string };
+
       // Manejar error de espacio insuficiente
-      if (error.name === 'NotAllowedError' && error.message?.includes('enough space')) {
-        throw new Error('No hay suficiente espacio en disco para descargar el modelo de IA (se necesitan ~22GB libres).');
+      if (e.name === 'NotAllowedError' && e.message?.includes('enough space')) {
+        throw new Error(
+          'No hay suficiente espacio en disco para descargar el modelo de IA (se necesitan ~22GB libres).',
+          { cause: error },
+        );
       }
-      
+
       // Si es un error genérico, resetear la sesión para el próximo intento
-      if (error.message?.includes('generic failures') || error.name === 'UnknownError') {
+      if (e.message?.includes('generic failures') || e.name === 'UnknownError') {
         this.resetSession();
-        throw new Error('El modelo de IA aún se está inicializando. Por favor, espera unos segundos e intenta de nuevo.');
+        throw new Error(
+          'El modelo de IA aún se está inicializando. Por favor, espera unos segundos e intenta de nuevo.',
+          { cause: error },
+        );
       }
-      
+
       throw error;
     } finally {
       this.isLoading.set(false);
@@ -225,7 +263,7 @@ export class ChromeAiService {
   async generateMessageAndSong(): Promise<{ message: string; song: string }> {
     const [message, song] = await Promise.all([
       this.generateWeddingMessage(),
-      this.generatePartySong()
+      this.generatePartySong(),
     ]);
 
     return { message, song };
@@ -241,43 +279,47 @@ export class ChromeAiService {
     return new Observable<string>((observer) => {
       let isAborted = false;
 
-      this.getSession().then(async (session) => {
-        try {
-          const stream = session.promptStreaming(prompt);
-          let fullText = '';
-          
-          for await (const chunk of stream) {
-            if (isAborted) break;
-            
-            let delta = '';
-            // DETECCIÓN INTELIGENTE:
-            // Si el chunk empieza por lo que ya teníamos, es ACUMULADO.
-            // Si no, es un DELTA puro.
-            if (chunk.startsWith(fullText) && fullText.length > 0) {
-              delta = chunk.substring(fullText.length);
-              fullText = chunk;
-            } else {
-              delta = chunk;
-              fullText += chunk;
-            }
+      this.getSession()
+        .then(async (session) => {
+          try {
+            const stream = session.promptStreaming(prompt);
+            let fullText = '';
 
-            if (delta) {
-              observer.next(delta);
+            for await (const chunk of stream) {
+              if (isAborted) break;
+
+              let delta = '';
+              // DETECCIÓN INTELIGENTE:
+              // Si el chunk empieza por lo que ya teníamos, es ACUMULADO.
+              // Si no, es un DELTA puro.
+              if (chunk.startsWith(fullText) && fullText.length > 0) {
+                delta = chunk.substring(fullText.length);
+                fullText = chunk;
+              } else {
+                delta = chunk;
+                fullText += chunk;
+              }
+
+              if (delta) {
+                observer.next(delta);
+              }
             }
+            observer.complete();
+          } catch (error) {
+            observer.error(error);
           }
-          observer.complete();
-        } catch (error) {
-          observer.error(error);
-        }
-      }).catch(err => observer.error(err));
+        })
+        .catch((err) => observer.error(err));
 
-      return () => { isAborted = true; };
+      return () => {
+        isAborted = true;
+      };
     });
   }
 
   generateAttendanceNoteStream(guestName: string): Observable<string> {
-    const prompt = `Actúa como el invitado "${guestName}" que confirma su asistencia a la boda de Judith y Jesús. 
-    Escribe una nota rápida, festiva y cariñosa para los novios. 
+    const prompt = `Actúa como el invitado "${guestName}" que confirma su asistencia a la boda de Judith y Jesús.
+    Escribe una nota rápida, festiva y cariñosa para los novios.
     Y recomienda UNA canción de fiesta para bailar.
     Formato:
     MENSAJE: [Tu nota aquí]
@@ -287,7 +329,8 @@ export class ChromeAiService {
   }
 
   generateExcuseStream(): Observable<string> {
-    const prompt = 'Actúa como un invitado que no puede asistir a una boda. Genera una excusa breve (1-2 frases), educada y cariñosa en español para los novios (Judith y Jesús).';
+    const prompt =
+      'Actúa como un invitado que no puede asistir a una boda. Genera una excusa breve (1-2 frases), educada y cariñosa en español para los novios (Judith y Jesús).';
     return this.generateStream(prompt);
   }
 
@@ -299,26 +342,33 @@ export class ChromeAiService {
     this.isLoading.set(true);
     try {
       const session = await this.getSession();
-      const prompt = `Genera una excusa breve, educada y creíble (máximo 2-3 frases) de por qué alguien no puede asistir a una boda. 
+      const prompt = `Genera una excusa breve, educada y creíble (máximo 2-3 frases) de por qué alguien no puede asistir a una boda.
       Debe ser respetuosa, sincera y comprensible. No uses emojis. Escribe en español.
       Ejemplos de motivos: compromisos laborales, viaje previo, problemas de salud, compromisos familiares, etc.`;
-      
+
       const response = await session.prompt(prompt);
       return response.trim();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generando excusa:', error);
-      
+      const e = error as { name?: string; message?: string };
+
       // Manejar error de espacio insuficiente
-      if (error.name === 'NotAllowedError' && error.message?.includes('enough space')) {
-        throw new Error('No hay suficiente espacio en disco para descargar el modelo de IA (se necesitan ~22GB libres).');
+      if (e.name === 'NotAllowedError' && e.message?.includes('enough space')) {
+        throw new Error(
+          'No hay suficiente espacio en disco para descargar el modelo de IA (se necesitan ~22GB libres).',
+          { cause: error },
+        );
       }
-      
+
       // Si es un error genérico, resetear la sesión para el próximo intento
-      if (error.message?.includes('generic failures') || error.name === 'UnknownError') {
+      if (e.message?.includes('generic failures') || e.name === 'UnknownError') {
         this.resetSession();
-        throw new Error('El modelo de IA aún se está inicializando. Por favor, espera unos segundos e intenta de nuevo.');
+        throw new Error(
+          'El modelo de IA aún se está inicializando. Por favor, espera unos segundos e intenta de nuevo.',
+          { cause: error },
+        );
       }
-      
+
       throw error;
     } finally {
       this.isLoading.set(false);

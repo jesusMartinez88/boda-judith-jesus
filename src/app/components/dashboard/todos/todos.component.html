@@ -11,20 +11,29 @@
         <h3>{{ editingTodoId() ? '✏️ Editar Tarea' : 'Nueva Tarea' }}</h3>
         <form [formGroup]="todoForm" (ngSubmit)="onSubmit()" class="todo-form">
           <div class="form-group">
-            <label>Descripción de la tarea</label>
-            <input type="text" formControlName="name" placeholder="Ej: Comprar las flores"
-              [class.error]="todoForm.get('name')?.invalid && todoForm.get('name')?.touched">
+            <label for="todoNameInput">Descripción de la tarea</label>
+            <input
+              id="todoNameInput"
+              type="text"
+              formControlName="name"
+              placeholder="Ej: Comprar las flores"
+              [class.error]="todoForm.get('name')?.invalid && todoForm.get('name')?.touched"
+            />
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Fecha prevista</label>
-              <input type="date" formControlName="date"
-                [class.error]="todoForm.get('date')?.invalid && todoForm.get('date')?.touched">
+              <label for="todoDateInput">Fecha prevista</label>
+              <input
+                id="todoDateInput"
+                type="date"
+                formControlName="date"
+                [class.error]="todoForm.get('date')?.invalid && todoForm.get('date')?.touched"
+              />
             </div>
             <div class="form-group">
-              <label>Estado</label>
-              <select formControlName="status">
+              <label for="todoStatusSelect">Estado</label>
+              <select id="todoStatusSelect" formControlName="status">
                 <option value="pending">Pendiente</option>
                 <option value="completed">Completada</option>
               </select>
@@ -33,10 +42,16 @@
 
           <div class="form-actions">
             <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
-              {{ isSubmitting() ? 'Guardando...' : (editingTodoId() ? 'Guardar Cambios' : 'Añadir Tarea') }}
+              {{
+                isSubmitting()
+                  ? 'Guardando...'
+                  : editingTodoId()
+                    ? 'Guardar Cambios'
+                    : 'Añadir Tarea'
+              }}
             </button>
             @if (editingTodoId()) {
-            <button type="button" class="cancel-btn" (click)="cancelEdit()">Cancelar</button>
+              <button type="button" class="cancel-btn" (click)="cancelEdit()">Cancelar</button>
             }
           </div>
         </form>
@@ -64,54 +79,80 @@
             <!-- <button class="refresh-btn" (click)="loadData()" [disabled]="isLoading()">
             <span [class.spinning]="isLoading()">🔄</span>
             </button> -->
-            <button class="add-mobile-btn" (click)="openFormModal()" title="Añadir tarea">➕ Añadir</button>
+            <button
+              class="add-mobile-btn"
+              (click)="openFormModal()"
+              title="Añadir tarea"
+              aria-label="Añadir tarea"
+            >
+              ➕ Añadir
+            </button>
           </div>
         </div>
 
         <div class="todos-list">
           @if (todos().length === 0 && !isLoading()) {
-          <div class="empty-state">
-            <span class="empty-icon">✅</span>
-            <p>¡No hay tareas! Relájate un poco.</p>
-          </div>
+            <div class="empty-state">
+              <span class="empty-icon">✅</span>
+              <p>¡No hay tareas! Relájate un poco.</p>
+            </div>
           } @else {
-          @for (todo of sortedTodos(); track todo.id) {
-          <div class="todo-item" [class.completed]="todo.status === 'completed'" [class.just-saved]="todo.id === lastSavedTodoId()">
-            <div class="todo-status-indicator" [style.background-color]="getStatusColor(todo)"></div>
-            <div class="todo-content">
-              <div class="todo-main">
-                <span class="todo-name">{{ todo.name }}</span>
-                <div class="todo-meta">
-                  <span class="todo-date" [style.color]="getStatusColor(todo)">
-                    📅 {{ todo.date | date:'dd/MM/yyyy' }}
-                  </span>
-                  @if (todo.status === 'pending') {
-                  <span class="due-label" [style.color]="getStatusColor(todo)">
-                    {{ getDueLabel(todo.date) }}
-                  </span>
-                  }
+            @for (todo of sortedTodos(); track todo.id) {
+              <div
+                class="todo-item"
+                [class.completed]="todo.status === 'completed'"
+                [class.just-saved]="todo.id === lastSavedTodoId()"
+              >
+                <div
+                  class="todo-status-indicator"
+                  [style.background-color]="getStatusColor(todo)"
+                ></div>
+                <div class="todo-content">
+                  <div class="todo-main">
+                    <span class="todo-name">{{ todo.name }}</span>
+                    <div class="todo-meta">
+                      <span class="todo-date" [style.color]="getStatusColor(todo)">
+                        📅 {{ todo.date | date: 'dd/MM/yyyy' }}
+                      </span>
+                      @if (todo.status === 'pending') {
+                        <span class="due-label" [style.color]="getStatusColor(todo)">
+                          {{ getDueLabel(todo.date) }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                  <div class="todo-actions">
+                    @if (todo.status === 'pending') {
+                      <button
+                        class="action-btn check-btn"
+                        (click)="toggleStatus(todo)"
+                        title="Completar"
+                      >
+                        ✔️
+                      </button>
+                    } @else {
+                      <button
+                        class="action-btn undo-btn"
+                        (click)="toggleStatus(todo)"
+                        title="Reabrir"
+                      >
+                        ↩️
+                      </button>
+                    }
+                    <button class="action-btn edit-btn" (click)="editTodo(todo)" title="Editar">
+                      ✏️
+                    </button>
+                    <button
+                      class="action-btn delete-btn"
+                      (click)="deleteTodo(todo.id!)"
+                      title="Eliminar"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div class="todo-actions">
-                @if (todo.status === 'pending') {
-                <button class="action-btn check-btn" (click)="toggleStatus(todo)" title="Completar">
-                  ✔️
-                </button>
-                } @else {
-                <button class="action-btn undo-btn" (click)="toggleStatus(todo)" title="Reabrir">
-                  ↩️
-                </button>
-                }
-                <button class="action-btn edit-btn" (click)="editTodo(todo)" title="Editar">
-                  ✏️
-                </button>
-                <button class="action-btn delete-btn" (click)="deleteTodo(todo.id!)" title="Eliminar">
-                  🗑️
-                </button>
-              </div>
-            </div>
-          </div>
-          }
+            }
           }
         </div>
       </div>
@@ -120,14 +161,34 @@
 
   <!-- Modal de eliminación -->
   @if (showDeleteModal()) {
-    <div class="modal-backdrop" (click)="closeDeleteModal()">
-      <div class="modal-container delete-modal" (click)="$event.stopPropagation()">
+    <div
+      class="modal-backdrop"
+      (click)="closeDeleteModal()"
+      (keydown.enter)="closeDeleteModal()"
+      tabindex="0"
+      role="button"
+      aria-label="Cerrar modal"
+    >
+      <div
+        class="modal-container delete-modal"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-todo-title"
+      >
         <div class="modal-header">
-          <h3>Confirmar Eliminación</h3>
-          <button class="close-btn" (click)="closeDeleteModal()">&times;</button>
+          <h3 id="delete-todo-title">Confirmar Eliminación</h3>
+          <button class="close-btn" (click)="closeDeleteModal()" aria-label="Cerrar">
+            &times;
+          </button>
         </div>
         <div class="modal-body">
-          <p>¿Estás seguro de que querés borrar la tarea <strong>"{{ todoToDelete()?.name }}"</strong>?</p>
+          <p>
+            ¿Estás seguro de que querés borrar la tarea
+            <strong>"{{ todoToDelete()?.name }}"</strong>?
+          </p>
           <div class="modal-actions">
             <button class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
             <button class="btn-danger" (click)="confirmDelete()">Eliminar</button>
@@ -139,29 +200,53 @@
 
   <!-- Modal for New/Edit Task on mobile -->
   @if (showFormModal()) {
-    <div class="modal-backdrop" (click)="closeFormModal()">
-      <div class="modal-container" (click)="$event.stopPropagation()">
+    <div
+      class="modal-backdrop"
+      (click)="closeFormModal()"
+      (keydown.enter)="closeFormModal()"
+      tabindex="0"
+      role="button"
+      aria-label="Cerrar modal"
+    >
+      <div
+        class="modal-container"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="form-todo-title"
+      >
         <div class="modal-header">
-          <h3>{{ editingTodoId() ? '✏️ Editar Tarea' : 'Nueva Tarea' }}</h3>
-          <button class="close-btn" (click)="closeFormModal()">&times;</button>
+          <h3 id="form-todo-title">{{ editingTodoId() ? '✏️ Editar Tarea' : 'Nueva Tarea' }}</h3>
+          <button class="close-btn" (click)="closeFormModal()" aria-label="Cerrar">&times;</button>
         </div>
         <div class="modal-body">
           <form [formGroup]="todoForm" (ngSubmit)="onSubmit()" class="todo-form">
             <div class="form-group">
-              <label>Descripción de la tarea</label>
-              <input type="text" formControlName="name" placeholder="Ej: Comprar las flores"
-                [class.error]="todoForm.get('name')?.invalid && todoForm.get('name')?.touched">
+              <label for="todoNameModalInput">Descripción de la tarea</label>
+              <input
+                id="todoNameModalInput"
+                type="text"
+                formControlName="name"
+                placeholder="Ej: Comprar las flores"
+                [class.error]="todoForm.get('name')?.invalid && todoForm.get('name')?.touched"
+              />
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label>Fecha prevista</label>
-                <input type="date" formControlName="date"
-                  [class.error]="todoForm.get('date')?.invalid && todoForm.get('date')?.touched">
+                <label for="todoDateModalInput">Fecha prevista</label>
+                <input
+                  id="todoDateModalInput"
+                  type="date"
+                  formControlName="date"
+                  [class.error]="todoForm.get('date')?.invalid && todoForm.get('date')?.touched"
+                />
               </div>
               <div class="form-group">
-                <label>Estado</label>
-                <select formControlName="status">
+                <label for="todoStatusModalSelect">Estado</label>
+                <select id="todoStatusModalSelect" formControlName="status">
                   <option value="pending">Pendiente</option>
                   <option value="completed">Completada</option>
                 </select>
@@ -170,10 +255,18 @@
 
             <div class="form-actions">
               <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
-                {{ isSubmitting() ? 'Guardando...' : (editingTodoId() ? 'Guardar Cambios' : 'Añadir Tarea') }}
+                {{
+                  isSubmitting()
+                    ? 'Guardando...'
+                    : editingTodoId()
+                      ? 'Guardar Cambios'
+                      : 'Añadir Tarea'
+                }}
               </button>
               @if (editingTodoId()) {
-              <button type="button" class="cancel-btn" (click)="closeFormModal()">Cancelar</button>
+                <button type="button" class="cancel-btn" (click)="closeFormModal()">
+                  Cancelar
+                </button>
               }
             </div>
           </form>
@@ -183,12 +276,14 @@
   }
 
   <!-- Toast notification -->
-   @if (showToast()) {
-     <app-toast [show]="showToast()"
-       [type]="toastType() || 'success'"
-       [title]="toastType() === 'success' ? 'Guardado' : 'Error'"
-       [message]="toastMessage()"
-       (closed)="hideToast()">
-     </app-toast>
-   }
+  @if (showToast()) {
+    <app-toast
+      [show]="showToast()"
+      [type]="toastType() || 'success'"
+      [title]="toastType() === 'success' ? 'Guardado' : 'Error'"
+      [message]="toastMessage()"
+      (closed)="hideToast()"
+    >
+    </app-toast>
+  }
 </div>

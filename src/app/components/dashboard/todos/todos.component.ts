@@ -42,7 +42,10 @@ export class TodosComponent implements OnInit {
       if (a.status !== b.status) {
         return a.status === 'completed' ? 1 : -1;
       }
-      // Soonest first
+      // Soonest first — handle missing dates
+      if (!a.date && !b.date) return 0;
+      if (!a.date) return 1;
+      if (!b.date) return -1;
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
   });
@@ -68,6 +71,7 @@ export class TodosComponent implements OnInit {
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    if (!todo.date) return '#1e40af';
     const targetDate = new Date(todo.date);
     targetDate.setHours(0, 0, 0, 0);
 
@@ -78,8 +82,8 @@ export class TodosComponent implements OnInit {
     if (diffDays <= 5 && diffDays > 2) return '#f0d01fff'; // Yellow/Orange (Warning)
     return '#ef4444'; // Red (Danger/Overdue)
   }
-
-  getDueLabel(dateStr: string): string {
+  getDueLabel(dateStr?: string | null): string {
+    if (!dateStr) return '';
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const targetDate = new Date(dateStr);

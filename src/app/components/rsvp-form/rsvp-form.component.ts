@@ -1,10 +1,29 @@
 import { Component, signal, inject } from '@angular/core';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { GuestService, Guest } from '../../services/guest.service';
 import { ChromeAiService } from '../../services/chrome-ai.service';
 import { AiGenerateService, AiGenerateRequest } from '../../services/ai-generate.service';
+import { ApiResponse } from '../../../types/api';
 import confetti from 'canvas-confetti';
+
+function getSubmitErrorMessage(error: unknown): string {
+  if (error instanceof HttpErrorResponse) {
+    const apiError = error.error as ApiResponse<unknown> | undefined;
+    return (
+      apiError?.message || apiError?.error || 'Error al registrar asistencia. Intenta de nuevo.'
+    );
+  }
+
+  return 'Error al registrar asistencia. Intenta de nuevo.';
+}
 
 /** Version: 1.5.2 - FULL RECOVERY - Forced Local AI Flow */
 @Component({
@@ -12,7 +31,7 @@ import confetti from 'canvas-confetti';
   standalone: true,
   imports: [FormsModule, ReactiveFormsModule],
   templateUrl: './rsvp-form.component.html',
-  styleUrl: './rsvp-form.component.css'
+  styleUrl: './rsvp-form.component.css',
 })
 export class RsvpFormComponent {
   form: FormGroup;
@@ -23,6 +42,9 @@ export class RsvpFormComponent {
 
   private chromeAi = inject(ChromeAiService);
   private aiGenerate = inject(AiGenerateService);
+  private formBuilder = inject(FormBuilder);
+  private guestService = inject(GuestService);
+
   aiAvailable = this.chromeAi.isAvailable;
   aiLoading = this.chromeAi.isLoading;
   showDownloadModal = signal(false);
@@ -32,7 +54,7 @@ export class RsvpFormComponent {
   downloadProgress = this.chromeAi.downloadProgress;
   streamingText = signal('');
 
-  constructor(private formBuilder: FormBuilder, private guestService: GuestService) {
+  constructor() {
     this.form = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       email: [''],
@@ -44,10 +66,10 @@ export class RsvpFormComponent {
       needsTransport: [false, Validators.required],
       isSavedInBbdd: [false, Validators.required],
       allergies: [''],
-      notes: ['']
+      notes: [''],
     });
 
-    this.form.get('attendance')?.valueChanges.subscribe(att => {
+    this.form.get('attendance')?.valueChanges.subscribe((att) => {
       this.form.patchValue({ notes: '' }, { emitEvent: false });
       if (att) {
         this.applyAttendanceValidators();
@@ -65,7 +87,7 @@ export class RsvpFormComponent {
 
   async onSubmit() {
     if (this.form.invalid) {
-      Object.keys(this.form.controls).forEach(key => {
+      Object.keys(this.form.controls).forEach((key) => {
         this.form.get(key)?.markAsTouched();
       });
       return;
@@ -90,10 +112,17 @@ export class RsvpFormComponent {
         particleCount: 150,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff']
+        colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff'],
       });
 
-      this.form.reset({ adults: 1, children: 0, mealType: 'normal', needsTransport: false, isSavedInBbdd: false, attendance: guestData.attendance });
+      this.form.reset({
+        adults: 1,
+        children: 0,
+        mealType: 'normal',
+        needsTransport: false,
+        isSavedInBbdd: false,
+        attendance: guestData.attendance,
+      });
 
       const startTime = performance.now();
       const checkDelay = (now: number) => {
@@ -108,12 +137,9 @@ export class RsvpFormComponent {
         }
       };
       requestAnimationFrame(checkDelay);
-
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.submitError.set(true);
-      this.errorMessage.set(
-        error.response?.data?.message || 'Error al registrar asistencia. Intenta de nuevo.'
-      );
+      this.errorMessage.set(getSubmitErrorMessage(error));
       setTimeout(() => this.submitError.set(false), 5000);
     } finally {
       this.isSubmitting.set(false);
@@ -126,19 +152,23 @@ export class RsvpFormComponent {
   }
 
   private applyAttendanceValidators() {
-    this.form.get('adults')?.setValidators([Validators.required, Validators.min(1), Validators.max(10)]);
-    this.form.get('children')?.setValidators([Validators.required, Validators.min(0), Validators.max(10)]);
+    this.form
+      .get('adults')
+      ?.setValidators([Validators.required, Validators.min(1), Validators.max(10)]);
+    this.form
+      .get('children')
+      ?.setValidators([Validators.required, Validators.min(0), Validators.max(10)]);
     this.form.get('mealType')?.setValidators(Validators.required);
     this.form.get('needsTransport')?.setValidators(Validators.required);
     this.form.get('isSavedInBbdd')?.setValidators(Validators.required);
 
-    ['adults', 'children', 'mealType', 'needsTransport', 'isSavedInBbdd'].forEach(key => {
+    ['adults', 'children', 'mealType', 'needsTransport', 'isSavedInBbdd'].forEach((key) => {
       this.form.get(key)?.updateValueAndValidity();
     });
   }
 
   private clearAttendanceValidators() {
-    ['adults', 'children', 'mealType', 'needsTransport', 'isSavedInBbdd'].forEach(key => {
+    ['adults', 'children', 'mealType', 'needsTransport', 'isSavedInBbdd'].forEach((key) => {
       this.form.get(key)?.clearValidators();
       this.form.get(key)?.updateValueAndValidity();
     });
@@ -157,7 +187,7 @@ export class RsvpFormComponent {
     this.chromeAi.isLoading.set(true);
     try {
       await this.performAiGenerationViaBackend();
-    } catch (error) {
+    } catch {
       // 3. Si el BACKEND falla, vemos si podemos ofrecer la descarga local
       if (this.chromeAi.needsDownload()) {
         this.showDownloadModal.set(true);
@@ -183,7 +213,7 @@ export class RsvpFormComponent {
     this.chromeAi.isLoading.set(true);
     try {
       await this.performAiExcuseGenerationViaBackend();
-    } catch (error) {
+    } catch {
       // 3. Si falla BACKEND, ofrecemos descarga local
       if (this.chromeAi.needsDownload()) {
         this.showDownloadModal.set(true);
@@ -245,11 +275,9 @@ export class RsvpFormComponent {
     return new Promise<void>((resolve, reject) => {
       stream$.subscribe({
         next: (chunk: string) => {
-          this.streamingText.update(prev => prev + chunk);
+          this.streamingText.update((prev) => prev + chunk);
 
-          const display = this.streamingText()
-            .replace('MENSAJE:', '')
-            .replace('CANCION:', '\n🎵 ');
+          const display = this.streamingText().replace('MENSAJE:', '').replace('CANCION:', '\n🎵 ');
 
           this.form.patchValue({ notes: display.trim() });
         },
@@ -260,7 +288,7 @@ export class RsvpFormComponent {
         complete: () => {
           this.chromeAi.isLoading.set(false);
           resolve();
-        }
+        },
       });
     });
   }
@@ -282,11 +310,9 @@ export class RsvpFormComponent {
     return new Promise<void>((resolve, reject) => {
       this.aiGenerate.generateStream(payload).subscribe({
         next: (chunk: string) => {
-          this.streamingText.update(prev => prev + chunk);
+          this.streamingText.update((prev) => prev + chunk);
 
-          const display = this.streamingText()
-            .replace('MENSAJE:', '')
-            .replace('CANCION:', '\n🎵 ');
+          const display = this.streamingText().replace('MENSAJE:', '').replace('CANCION:', '\n🎵 ');
 
           this.form.patchValue({ notes: display.trim() });
         },
@@ -296,7 +322,7 @@ export class RsvpFormComponent {
         },
         complete: () => {
           resolve();
-        }
+        },
       });
     });
   }

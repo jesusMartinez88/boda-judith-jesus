@@ -10,7 +10,7 @@
       <div class="form-group">
         <label for="username">Usuario</label>
         <div class="input-wrapper">
-          <input type="text" id="username" formControlName="username" placeholder="Tu usuario">
+          <input type="text" id="username" formControlName="username" placeholder="Tu usuario" />
           <span class="focus-border"></span>
         </div>
       </div>
@@ -18,14 +18,14 @@
       <div class="form-group">
         <label for="password">Contraseña</label>
         <div class="input-wrapper">
-          <input type="password" id="password" formControlName="password" placeholder="••••••••">
+          <input type="password" id="password" formControlName="password" placeholder="••••••••" />
           <span class="focus-border"></span>
         </div>
       </div>
 
       <!-- CAPTCHA Section -->
       <div class="captcha-group">
-        <label>Verificación</label>
+        <label for="captchaInput">Verificación</label>
         <div class="captcha-container">
           <div class="captcha-question">
             <span>¿Cuánto es</span>
@@ -33,7 +33,12 @@
             <span>?</span>
           </div>
           <div class="input-wrapper captcha-input">
-            <input type="number" formControlName="captcha" placeholder="Resultado">
+            <input
+              id="captchaInput"
+              type="number"
+              formControlName="captcha"
+              placeholder="Resultado"
+            />
             <span class="focus-border"></span>
           </div>
         </div>
