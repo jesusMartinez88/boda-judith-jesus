@@ -827,8 +827,8 @@
     @if (showGuestDeleteConfirm()) {
       <app-guest-delete-modal
         [guest]="guestToDelete()"
-        (confirm)="confirmDeleteGuest()"
-        (cancel)="cancelDeleteGuest()"
+        (confirmDelete)="confirmDeleteGuest()"
+        (cancelDelete)="cancelDeleteGuest()"
       ></app-guest-delete-modal>
     }
 

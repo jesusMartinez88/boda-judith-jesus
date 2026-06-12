@@ -8,8 +8,8 @@ import { Guest } from '../../../services/guest.service';
   template: `
     <div
       class="modal-backdrop"
-      (click)="cancel.emit()"
-      (keydown.enter)="cancel.emit()"
+      (click)="cancelDelete.emit()"
+      (keydown.enter)="cancelDelete.emit()"
       tabindex="0"
       role="button"
       aria-label="Cerrar confirmación de eliminación de invitado"
@@ -24,7 +24,7 @@ import { Guest } from '../../../services/guest.service';
       >
         <div class="modal-header">
           <h3>Eliminar Invitado</h3>
-          <button class="close-btn" (click)="cancel.emit()">×</button>
+          <button class="close-btn" (click)="cancelDelete.emit()">×</button>
         </div>
         <div class="modal-body warning-theme">
           <div class="warning-visual">
@@ -36,10 +36,10 @@ import { Guest } from '../../../services/guest.service';
           </p>
 
           <div class="modal-actions full-width-btns">
-            <button class="btn-danger" (click)="confirm.emit()">
+            <button class="btn-danger" (click)="confirmDelete.emit()">
               Sí, eliminar invitado
             </button>
-            <button class="btn-secondary-modal" (click)="cancel.emit()">
+            <button class="btn-secondary-modal" (click)="cancelDelete.emit()">
               No, mantener invitado
             </button>
           </div>
@@ -50,6 +50,6 @@ import { Guest } from '../../../services/guest.service';
 })
 export class GuestDeleteModalComponent {
   guest = input<Guest | null>(null);
-  confirm = output<void>();
-  cancel = output<void>();
+  confirmDelete = output<void>();
+  cancelDelete = output<void>();
 }
