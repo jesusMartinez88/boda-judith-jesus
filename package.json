@@ -1,6 +1,6 @@
 {
   "name": "boda-judith-jesus",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --configuration production",
@@ -31,7 +31,7 @@
     ]
   },
   "private": true,
-  "packageManager": "pnpm@11.2.2",
+  "packageManager": "pnpm@11.5.2",
   "dependencies": {
     "@angular/cdk": "^21.2.13",
     "@angular/common": "^21.2.15",
@@ -70,8 +70,8 @@
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.3",
-    "typescript-eslint": "8.59.4",
-    "vitest": "^4.1.7"
+    "typescript-eslint": "8.60.1",
+    "vitest": "^4.1.8"
   },
   "overrides": {
     "undici": ">=7.24.5",
