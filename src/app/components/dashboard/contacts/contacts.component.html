@@ -5,7 +5,11 @@
       <p class="subtitle">Gestiona y envía el enlace de la web a tus contactos.</p>
     </div>
     <div class="header-actions">
-      <button class="btn-generic" (click)="generateGenericInvitation()" [disabled]="isGeneratingGeneric()">
+      <button
+        class="btn-generic"
+        (click)="generateGenericInvitation()"
+        [disabled]="isGeneratingGeneric()"
+      >
         @if (isGeneratingGeneric()) {
           <span class="loader-sm"></span> Generando...
         } @else {
@@ -28,7 +32,11 @@
     <div class="manual-form animate-slide-down">
       <h3>Crear Nueva Pestaña (Categoría)</h3>
       <div class="form-grid-mini">
-        <input type="text" [(ngModel)]="newCategoryName" placeholder="Ej: Amigos, Familia Suegro...">
+        <input
+          type="text"
+          [(ngModel)]="newCategoryName"
+          placeholder="Ej: Amigos, Familia Suegro..."
+        />
         <button class="btn-save" (click)="addCategory()" [disabled]="!newCategoryName.trim()">
           Crear Pestaña
         </button>
@@ -42,16 +50,26 @@
       <h3>Añadir Contacto Nuevo</h3>
       <form [formGroup]="contactForm" (ngSubmit)="addManual()" class="form-grid">
         <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" formControlName="name" placeholder="Ej: Juan Pérez" [class.invalid]="contactForm.get('name')?.invalid && contactForm.get('name')?.touched">
+          <label for="contact-name">Nombre</label>
+          <input
+            id="contact-name"
+            type="text"
+            formControlName="name"
+            placeholder="Ej: Juan Pérez"
+            [class.invalid]="contactForm.get('name')?.invalid && contactForm.get('name')?.touched"
+          />
           @if (contactForm.get('name')?.invalid && contactForm.get('name')?.touched) {
             <span class="error-msg">El nombre es obligatorio (mín. 3 letras)</span>
           }
         </div>
         <div class="form-group phone-group">
-          <label>Teléfono</label>
+          <label for="contact-phone">Teléfono</label>
           <div class="phone-input-wrapper">
-            <select formControlName="countryCode" class="country-code-select">
+            <select
+              id="contact-phone-country"
+              formControlName="countryCode"
+              class="country-code-select"
+            >
               <option value="+34">🇪🇸 +34</option>
               <option value="+1">🇺🇸 +1</option>
               <option value="+44">🇬🇧 +44</option>
@@ -63,13 +81,25 @@
               <option value="+54">🇦🇷 +54</option>
               <option value="+55">🇧🇷 +55</option>
             </select>
-            <input type="tel" formControlName="phone" placeholder="Ej: 600112233" [class.invalid]="contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched">
+            <input
+              id="contact-phone"
+              type="tel"
+              formControlName="phone"
+              placeholder="Ej: 600112233"
+              [class.invalid]="
+                contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched
+              "
+            />
           </div>
           @if (contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched) {
             <span class="error-msg">Debe empezar por 6 o 7 y tener 9 dígitos</span>
           }
         </div>
-        <button type="submit" class="btn-save" [disabled]="contactForm.invalid && contactForm.touched">
+        <button
+          type="submit"
+          class="btn-save"
+          [disabled]="contactForm.invalid && contactForm.touched"
+        >
           Guardar
         </button>
       </form>
@@ -79,7 +109,11 @@
   <div class="tabs-container">
     <div class="tabs">
       @for (cat of categories(); track cat.id) {
-        <button class="tab-btn" [class.active]="activeTab() === cat.slug" (click)="setTab(cat.slug)">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === cat.slug"
+          (click)="setTab(cat.slug)"
+        >
           {{ cat.name }}
           <span class="badge">{{ getSentCount(cat.slug) }}/{{ getTotalCount(cat.slug) }}</span>
         </button>
@@ -88,9 +122,18 @@
     <div class="search-and-filter">
       <div class="search-box">
         <span class="search-icon">🔍</span>
-        <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Buscar contacto...">
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          placeholder="Buscar contacto..."
+        />
       </div>
-      <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" class="status-select">
+      <select
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        class="status-select"
+      >
         <option value="all">Todos</option>
         <option value="not_sent">No enviado</option>
         <option value="sent">Enviado</option>
@@ -99,8 +142,12 @@
     </div>
   </div>
   <button class="btn-mark-all" (click)="markAllInTab()" [disabled]="isMarkingAll()">
-        @if (isMarkingAll()) { <span class="loader-sm"></span> Marcando... } @else { <span class="icon">✅</span> Marcar todas como enviadas }
-      </button>
+    @if (isMarkingAll()) {
+      <span class="loader-sm"></span> Marcando...
+    } @else {
+      <span class="icon">✅</span> Marcar todas como enviadas
+    }
+  </button>
 
   <div class="contacts-grid">
     @if (filteredContacts().length === 0) {
@@ -110,26 +157,71 @@
       </div>
     } @else {
       @for (contact of filteredContacts(); track contact.id) {
-        <div class="contact-card" [class.not-sent]="(!contact.invitationStatus || contact.invitationStatus === 'not_sent') && !contact.linkSent" [class.sent]="contact.invitationStatus === 'sent' || (contact.invitationStatus !== 'responded' && contact.linkSent)" [class.responded]="contact.invitationStatus === 'responded'">
+        <div
+          class="contact-card"
+          [class.not-sent]="
+            (!contact.invitationStatus || contact.invitationStatus === 'not_sent') &&
+            !contact.linkSent
+          "
+          [class.sent]="
+            contact.invitationStatus === 'sent' ||
+            (contact.invitationStatus !== 'responded' && contact.linkSent)
+          "
+          [class.responded]="contact.invitationStatus === 'responded'"
+        >
           <div class="contact-info">
             <div class="name-row">
               <span class="contact-name">{{ contact.name }}</span>
-              <button class="btn-chat-whatsapp" (click)="openWhatsApp(contact)" title="Abrir chat en WhatsApp">
+              <button
+                class="btn-chat-whatsapp"
+                (click)="openWhatsApp(contact)"
+                title="Abrir chat en WhatsApp"
+              >
                 💬
               </button>
             </div>
             <span class="contact-phone">📱 {{ contact.countryCode }} {{ contact.phone }} </span>
             @if (contact.sentAt) {
-              <span class="sent-date">Último envío: {{ contact.sentAt | date:'dd/MM HH:mm' }}</span>
+              <span class="sent-date"
+                >Último envío: {{ contact.sentAt | date: 'dd/MM HH:mm' }}</span
+              >
             }
             <div class="contact-status-indicators">
-              <button class="status-pill not-sent" [class.active]="(!contact.invitationStatus || contact.invitationStatus === 'not_sent') && !contact.linkSent" (click)="setInvitationStatus(contact, 'not_sent')">No enviado</button>
-              <button class="status-pill sent" [class.active]="contact.invitationStatus === 'sent' || (contact.invitationStatus !== 'responded' && contact.linkSent)" (click)="setInvitationStatus(contact, 'sent')">Enviado</button>
-              <button class="status-pill responded" [class.active]="contact.invitationStatus === 'responded'" (click)="setInvitationStatus(contact, 'responded')">Respondido</button>
+              <button
+                class="status-pill not-sent"
+                [class.active]="
+                  (!contact.invitationStatus || contact.invitationStatus === 'not_sent') &&
+                  !contact.linkSent
+                "
+                (click)="setInvitationStatus(contact, 'not_sent')"
+              >
+                No enviado
+              </button>
+              <button
+                class="status-pill sent"
+                [class.active]="
+                  contact.invitationStatus === 'sent' ||
+                  (contact.invitationStatus !== 'responded' && contact.linkSent)
+                "
+                (click)="setInvitationStatus(contact, 'sent')"
+              >
+                Enviado
+              </button>
+              <button
+                class="status-pill responded"
+                [class.active]="contact.invitationStatus === 'responded'"
+                (click)="setInvitationStatus(contact, 'responded')"
+              >
+                Respondido
+              </button>
             </div>
           </div>
-            <div class="contact-actions">
-            <button class="btn-whatsapp" (click)="sendInvitation(contact)" [disabled]="isGenerating() === contact.id">
+          <div class="contact-actions">
+            <button
+              class="btn-whatsapp"
+              (click)="sendInvitation(contact)"
+              [disabled]="isGenerating() === contact.id"
+            >
               @if (isGenerating() === contact.id) {
                 <span class="loader-sm"></span> Generando...
               } @else {
@@ -145,68 +237,137 @@
     }
 
     <!-- Toast notification for contacts -->
-    <app-toast *ngIf="showToast()"
-               [show]="showToast()"
-               [type]="toastType()"
-               [title]="toastType() === 'success' ? 'Listo' : 'Error'"
-               [message]="toastMessage()"
-               (closed)="hideToast()">
-    </app-toast>
+    @if (showToast()) {
+      <app-toast
+        [show]="showToast()"
+        [type]="toastType()"
+        [title]="toastType() === 'success' ? 'Listo' : 'Error'"
+        [message]="toastMessage()"
+        (closed)="hideToast()"
+      >
+      </app-toast>
+    }
   </div>
 
   @if (showDeleteConfirm()) {
-    <div class="modal-overlay animate-fade-in" (click)="closeDeleteConfirm()">
-      <div class="modal-content animate-pop-in" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <div class="modal-icon warning">⚠️</div>
-          <h3>¿Eliminar contacto?</h3>
-        </div>
-        <div class="modal-body">
-          Estás a punto de eliminar a <strong>{{ contactToDelete()?.name }}</strong>.
-          Esta acción no se puede deshacer.
-        </div>
-        <div class="modal-footer">
-          <button class="btn-cancel" (click)="closeDeleteConfirm()">Cancelar</button>
-          <button class="btn-delete-confirm" (click)="confirmDelete()">Eliminar</button>
-        </div>
+    <button
+      type="button"
+      class="modal-overlay animate-fade-in"
+      (click)="closeDeleteConfirm()"
+      (keyup.enter)="closeDeleteConfirm()"
+      aria-label="Cerrar diálogo"
+    ></button>
+    <div
+      class="modal-content animate-pop-in"
+      role="dialog"
+      tabindex="0"
+      (click)="$event.stopPropagation()"
+      (keyup.enter)="$event.stopPropagation()"
+    >
+      <div class="modal-header">
+        <div class="modal-icon warning">⚠️</div>
+        <h3>¿Eliminar contacto?</h3>
+      </div>
+      <div class="modal-body">
+        Estás a punto de eliminar a <strong>{{ contactToDelete()?.name }}</strong
+        >. Esta acción no se puede deshacer.
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="closeDeleteConfirm()"
+          (keyup.enter)="closeDeleteConfirm()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn-delete-confirm"
+          (click)="confirmDelete()"
+          (keyup.enter)="confirmDelete()"
+        >
+          Eliminar
+        </button>
       </div>
     </div>
   }
 
   @if (showGenericInvitation()) {
-    <div class="modal-overlay animate-fade-in" (click)="closeGenericInvitation()">
-      <div class="modal-content generic-invitation animate-pop-in" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <div class="modal-icon success">✨</div>
-          <h3>Invitación Genérica</h3>
-          <button class="close-btn" (click)="closeGenericInvitation()">✕</button>
-        </div>
-        <div class="modal-body">
-          @if (isGeneratingGeneric()) {
-            <div class="generating-state">
-              <div class="loader"></div>
-              <p>Generando invitación con IA...</p>
-            </div>
-          } @else {
-            <div class="invitation-text-container">
-              <p class="invitation-text">{{ genericInvitationText() }}</p>
-            </div>
-            <div class="copy-info">
-              @if (copySuccess()) {
-                <span class="copy-success">✅ ¡Copiado al portapapeles!</span>
-              } @else {
-                <span class="copy-hint">💡 El texto se copió automáticamente. También podés copiarlo manualmente.</span>
-              }
-            </div>
-          }
-        </div>
-        <div class="modal-footer">
-          <button class="btn-copy" (click)="copyToClipboard()" [disabled]="isGeneratingGeneric()">
-            <span class="icon">📋</span> Copiar Texto
-          </button>
-          <button class="btn-cancel" (click)="closeGenericInvitation()">Cerrar</button>
-        </div>
+    <button
+      type="button"
+      class="modal-overlay animate-fade-in"
+      (click)="closeGenericInvitation()"
+      (keyup.enter)="closeGenericInvitation()"
+      aria-label="Cerrar invitación"
+    ></button>
+    <div
+      class="modal-content generic-invitation animate-pop-in"
+      role="dialog"
+      tabindex="0"
+      (click)="$event.stopPropagation()"
+      (keyup.enter)="$event.stopPropagation()"
+    >
+      <div class="modal-header">
+        <div class="modal-icon success">✨</div>
+        <h3>Invitación Genérica</h3>
+        <button
+          class="close-btn"
+          (click)="closeGenericInvitation()"
+          (keyup.enter)="closeGenericInvitation()"
+        >
+          ✕
+        </button>
+      </div>
+      <div class="modal-body">
+        @if (isGeneratingGeneric()) {
+          <div class="generating-state">
+            <div class="loader"></div>
+            <p>Generando invitación con IA...</p>
+          </div>
+        } @else {
+          <div class="invitation-text-container">
+            <p class="invitation-text">{{ genericInvitationText() }}</p>
+          </div>
+          <div class="copy-info">
+            @if (copySuccess()) {
+              <span class="copy-success">✅ ¡Copiado al portapapeles!</span>
+            } @else {
+              <span class="copy-hint"
+                >💡 El texto se copió automáticamente. También podés copiarlo manualmente.</span
+              >
+            }
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn-copy"
+          (click)="copyToClipboard()"
+          (keyup.enter)="copyToClipboard()"
+          [disabled]="isGeneratingGeneric()"
+        >
+          <span class="icon">📋</span> Copiar Texto
+        </button>
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="closeGenericInvitation()"
+          (keyup.enter)="closeGenericInvitation()"
+        >
+          Cerrar
+        </button>
       </div>
     </div>
+  }
+
+  @if (infoPopup(); as popup) {
+    <app-info-popup
+      [title]="popup.title"
+      [message]="popup.message"
+      [type]="popup.type"
+      (closed)="closeInfoPopup()"
+    ></app-info-popup>
   }
 </div>

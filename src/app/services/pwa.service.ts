@@ -1,10 +1,15 @@
 import { Injectable, signal } from '@angular/core';
 
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+};
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PwaService {
-  private deferredPrompt: any = null;
+  private deferredPrompt: BeforeInstallPromptEvent | null = null;
   showInstallPrompt = signal(false);
   showUpdatePrompt = signal(false);
   private isUserLoggedIn = false;
@@ -27,22 +32,27 @@ export class PwaService {
     }
 
     // Capturar el evento beforeinstallprompt pero no mostrarlo aún
-    window.addEventListener('beforeinstallprompt', (e: any) => {
-      e.preventDefault();
-      this.deferredPrompt = e;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      const evt = e as BeforeInstallPromptEvent;
+      evt.preventDefault();
+      this.deferredPrompt = evt;
       console.log('Prompt de instalación capturado, esperando login...');
     });
 
     // Registrar service worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
+      navigator.serviceWorker
+        .register('/sw.js')
         .then((registration) => {
           console.log('Service Worker registrado:', registration);
 
           // Verificar actualizaciones cada hora
-          setInterval(() => {
-            registration.update();
-          }, 60 * 60 * 1000);
+          setInterval(
+            () => {
+              registration.update();
+            },
+            60 * 60 * 1000,
+          );
 
           // Detectar cuando hay una nueva versión disponible
           registration.addEventListener('updatefound', () => {
@@ -65,8 +75,10 @@ export class PwaService {
 
   private isAppInstalled(): boolean {
     // Detectar si está en modo standalone (instalada)
-    return window.matchMedia('(display-mode: standalone)').matches ||
-           (window.navigator as any).standalone === true;
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as unknown as { standalone?: boolean }).standalone === true
+    );
   }
 
   private isMobileOrSmallScreen(): boolean {
@@ -111,9 +123,9 @@ export class PwaService {
 
     this.deferredPrompt.prompt();
     const { outcome } = await this.deferredPrompt.userChoice;
-    
+
     console.log(`Usuario ${outcome === 'accepted' ? 'aceptó' : 'rechazó'} la instalación`);
-    
+
     this.deferredPrompt = null;
     this.showInstallPrompt.set(false);
   }

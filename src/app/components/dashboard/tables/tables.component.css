@@ -34,16 +34,21 @@
 
 /* ===== HALL SEARCH BAR ===== */
 .hall-search-bar {
-    position: absolute;
-    width: 46%;
-    top: 0px;
-    margin: 2px;
-    border-radius: 25px;
-    z-index: 20;
-    padding: 0.75rem 1rem 0.5rem;
-    background: linear-gradient(180deg, rgba(255, 251, 248, 0.98) 0%, rgba(255, 251, 248, 0.92) 70%, transparent 100%);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+  position: absolute;
+  width: 46%;
+  top: 0px;
+  margin: 2px;
+  border-radius: 25px;
+  z-index: 20;
+  padding: 0.75rem 1rem 0.5rem;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 251, 248, 0.98) 0%,
+    rgba(255, 251, 248, 0.92) 70%,
+    transparent 100%
+  );
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
 .hall-search-label {
@@ -70,7 +75,16 @@
   font-size: 0.9rem;
   color: #1e293b;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Native search clear 'x' cursor affordance for WebKit/Edge */
+.hall-search-input::-webkit-search-cancel-button,
+.hall-search-input::-webkit-search-decoration,
+.hall-search-input::-ms-clear {
+  cursor: pointer;
 }
 
 .hall-search-input:focus {
@@ -85,6 +99,7 @@
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
+  cursor: pointer;
   opacity: 0.55;
 }
 
@@ -148,7 +163,8 @@
 }
 
 @keyframes tableHighlightPulse {
-  0%, 100% {
+  0%,
+  100% {
     filter: drop-shadow(0 0 0 rgba(236, 72, 153, 0));
   }
 
@@ -265,7 +281,9 @@
   padding: 0.2rem 0.25rem;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .unseat-btn:hover {
@@ -401,7 +419,6 @@
   justify-content: flex-end;
   gap: 0.8rem;
 }
-
 
 /* ===== CELEBRATION HALL — Soft Wood + Flowers ===== */
 .reception-queue {

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ApiResponse, AuthLoginRequest, AuthLoginResponse } from '../../types/api';
 
 @Injectable({
   providedIn: 'root',
@@ -16,19 +17,25 @@ export class AuthService {
 
   isAuthenticated = this.isAuthenticatedSignal.asReadonly();
 
-  login(credentials: Record<string, string>) {
-    return this.http.post<{ token: string }>(`${this.baseUrl}/api/auth/login`, credentials).pipe(
-      tap((response) => {
-        if (response.token) {
-          localStorage.setItem('auth_token', response.token);
-          this.isAuthenticatedSignal.set(true);
-        }
-      }),
-      catchError((err) => {
-        console.error('Login error:', err);
-        throw err;
-      }),
-    );
+  login(credentials: AuthLoginRequest) {
+    return this.http
+      .post<ApiResponse<AuthLoginResponse>>(`${this.baseUrl}/api/auth/login`, credentials)
+      .pipe(
+        tap((response) => {
+          const maybe = response as ApiResponse<AuthLoginResponse> | AuthLoginResponse;
+          const token =
+            (maybe as AuthLoginResponse).token ??
+            (maybe as ApiResponse<AuthLoginResponse>).data?.token;
+          if (token) {
+            localStorage.setItem('auth_token', token);
+            this.isAuthenticatedSignal.set(true);
+          }
+        }),
+        catchError((err) => {
+          console.error('Login error:', err);
+          throw err;
+        }),
+      );
   }
 
   logout() {

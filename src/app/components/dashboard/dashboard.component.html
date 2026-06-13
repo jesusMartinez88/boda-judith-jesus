@@ -1,6 +1,11 @@
 <div class="dashboard-container">
   <!-- Hamburguer Button (Mobile) -->
-  <button class="menu-toggle" [class.open]="isMenuOpen()" (click)="toggleMenu()" aria-label="Menu Toggle">
+  <button
+    class="menu-toggle"
+    [class.open]="isMenuOpen()"
+    (click)="toggleMenu()"
+    aria-label="Menu Toggle"
+  >
     <div class="hamburger">
       <span></span>
       <span></span>
@@ -9,9 +14,17 @@
   </button>
 
   <!-- Overlay Backdrop -->
-  <div class="sidebar-overlay" [class.show]="isMenuOpen()" (click)="closeMenu()"></div>
+  <button
+    type="button"
+    class="sidebar-overlay"
+    [class.show]="isMenuOpen()"
+    (click)="closeMenu()"
+    (keyup.enter)="closeMenu()"
+    aria-label="Cerrar menú"
+    tabindex="0"
+  ></button>
 
-  <aside class="sidebar" [class.open]="isMenuOpen()">
+  <aside class="sidebar" [class.open]="isMenuOpen()" [class.collapsed]="isSidebarCollapsed()">
     <div class="user-info-mobile">
       <div class="user-avatar">👤</div>
       <div class="user-details">
@@ -22,336 +35,605 @@
     <div class="sidebar-header">
       <span class="logo">💍</span>
       <h2>Admin Panel</h2>
+      <button
+        type="button"
+        class="sidebar-collapse-btn"
+        (click)="toggleSidebarCollapse()"
+        [attr.aria-label]="isSidebarCollapsed() ? 'Expandir menú' : 'Contraer menú'"
+        [attr.title]="isSidebarCollapsed() ? 'Expandir menú' : 'Contraer menú'"
+      >
+        {{ isSidebarCollapsed() ? '»' : '«' }}
+      </button>
     </div>
     <nav class="sidebar-nav">
-      <a class="nav-item" [class.active]="currentView() === 'stats'" (click)="setView('stats')">
-        <span class="icon">📊</span> Resumen
+      <button
+        type="button"
+        class="nav-item"
+        aria-label="Resumen"
+        title="Resumen"
+        [class.active]="currentView() === 'stats'"
+        (click)="setView('stats')"
+      >
+        <span class="icon">📊</span>
+        <span class="nav-label">Resumen</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item"
+        aria-label="Mesas"
+        title="Mesas"
+        [class.active]="currentView() === 'tables'"
+        (click)="setView('tables')"
+      >
+        <span class="icon">🪑</span>
+        <span class="nav-label">Mesas</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item"
+        aria-label="Control de gastos"
+        title="Control de gastos"
+        [class.active]="currentView() === 'finances'"
+        (click)="setView('finances')"
+      >
+        <span class="icon">💰</span>
+        <span class="nav-label">Control de Gastos</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item"
+        aria-label="Tareas"
+        title="Tareas"
+        [class.active]="currentView() === 'todos'"
+        (click)="setView('todos')"
+      >
+        <span class="icon">📝</span>
+        <span class="nav-label">Tareas</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item"
+        aria-label="Música"
+        title="Música"
+        [class.active]="currentView() === 'music'"
+        (click)="setView('music')"
+      >
+        <span class="icon">🎵</span>
+        <span class="nav-label">Música</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item"
+        aria-label="Invitaciones"
+        title="Invitaciones"
+        [class.active]="currentView() === 'contacts'"
+        (click)="setView('contacts')"
+      >
+        <span class="icon">📱</span>
+        <span class="nav-label">Invitaciones</span>
+      </button>
+      <a
+        class="nav-item"
+        href="/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Ver invitación"
+        title="Ver invitación"
+      >
+        <span class="icon">✉️</span>
+        <span class="nav-label">Ver invitación</span>
       </a>
-      <a class="nav-item" [class.active]="currentView() === 'tables'" (click)="setView('tables')">
-        <span class="icon">🪑</span> Mesas
-      </a>
-      <a class="nav-item" [class.active]="currentView() === 'finances'" (click)="setView('finances')">
-        <span class="icon">💰</span> Control de Gastos
-      </a>
-      <a class="nav-item" [class.active]="currentView() === 'todos'" (click)="setView('todos')">
-        <span class="icon">📝</span> Tareas
-      </a>
-      <a class="nav-item" [class.active]="currentView() === 'music'" (click)="setView('music')">
-        <span class="icon">🎵</span> Música
-      </a>
-      <a class="nav-item" [class.active]="currentView() === 'contacts'" (click)="setView('contacts')">
-        <span class="icon">📱</span> Invitaciones
-      </a>
-      <a class="nav-item" href="/" target="_blank">
-        <span class="icon">✉️</span> Ver invitación
-      </a>
-      <a class="nav-item" [class.active]="currentView() === 'settings'" (click)="setView('settings')">
-        <span class="icon">⚙️</span> Configuración
-      </a>
-      <a class="nav-item" (click)="loadStats()">
-        <span class="icon">🔄</span> Actualizar
-      </a>
+      <button
+        type="button"
+        class="nav-item"
+        aria-label="Configuración"
+        title="Configuración"
+        [class.active]="currentView() === 'settings'"
+        (click)="setView('settings')"
+      >
+        <span class="icon">⚙️</span>
+        <span class="nav-label">Configuración</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item"
+        aria-label="Actualizar"
+        title="Actualizar"
+        (click)="loadStats()"
+      >
+        <span class="icon">🔄</span>
+        <span class="nav-label">Actualizar</span>
+      </button>
     </nav>
     <div class="sidebar-footer">
-      <button (click)="logout()" class="logout-btn">
+      <button
+        type="button"
+        class="logout-btn"
+        (click)="logout()"
+        aria-label="Cerrar sesión"
+        title="Cerrar sesión"
+      >
         <span class="icon logout-icon-container">
-          <svg class="logout-door-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            class="logout-door-svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <!-- Marco de la puerta -->
-            <path class="door-frame" d="M10 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H10"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              <path class="door-frame-top" d="M10 3V21" stroke="currentColor" stroke-width="2"
-                stroke-opacity="0.2" />
+            <path
+              class="door-frame"
+              d="M10 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H10"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <path
+              class="door-frame-top"
+              d="M10 3V21"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-opacity="0.2"
+            />
 
-                <!-- Flecha de salida (animada) -->
-                <path class="exit-arrow" d="M15 12H22M22 12L19 9M22 12L19 15" stroke="currentColor"
-                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Flecha de salida (animada) -->
+            <path
+              class="exit-arrow"
+              d="M15 12H22M22 12L19 9M22 12L19 15"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
 
-                  <!-- La puerta (animada en 3D) -->
-                  <g class="door-wrapper">
-                    <path class="door-leaf"
-                      d="M10 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H10V3Z"
-                      fill="currentColor" fill-opacity="0.9" stroke="currentColor" stroke-width="2" />
-                      <circle class="door-knob" cx="18" cy="12" r="1.2" fill="white" />
-                    </g>
-                  </svg>
-                </span>
-                Cerrar Sesión
-              </button>
-            </div>
-          </aside>
+            <!-- La puerta (animada en 3D) -->
+            <g class="door-wrapper">
+              <path
+                class="door-leaf"
+                d="M10 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H10V3Z"
+                fill="currentColor"
+                fill-opacity="0.9"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <circle class="door-knob" cx="18" cy="12" r="1.2" fill="white" />
+            </g>
+          </svg>
+        </span>
+        <span class="logout-label">Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
 
-          <main class="main-content">
-            @if (currentView() === 'stats') {
-              <header class="content-header">
-                <h1>Panel de Estadísticas</h1>
-                <div class="user-info user-info-desktop">
-                  <span>Bienvenido, Admin 👋</span>
-                </div>
-              </header>
+  <main class="main-content">
+    @if (currentView() === 'stats') {
+      <header class="content-header">
+        <h1>Panel de Estadísticas</h1>
+        <div class="user-info user-info-desktop">
+          <span>Bienvenido, Admin 👋</span>
+        </div>
+      </header>
 
-              @if (isLoading()) {
-                <div class="loading-state">
-                  <div class="loader"></div>
-                  <p>Cargando estadísticas...</p>
-                </div>
-              }
+      @if (isLoading()) {
+        <div class="loading-state">
+          <div class="loader"></div>
+          <p>Cargando estadísticas...</p>
+        </div>
+      }
 
-              @if (error()) {
-                <div class="error-state">
-                  {{ error() }}
-                  <button (click)="loadStats()">Reintentar</button>
-                </div>
-              }
+      @if (error()) {
+        <div class="error-state">
+          {{ error() }}
+          <button (click)="loadStats()">Reintentar</button>
+        </div>
+      }
 
-              @if (!isLoading() && stats()) {
-                <div class="stats-grid animate-fade-in">
-                  <!-- Attendance Progress Card -->
-                  <app-attendance-progress [stats]="stats()"></app-attendance-progress>
+      @if (!isLoading() && stats()) {
+        <div class="stats-grid animate-fade-in">
+          <!-- Attendance Progress Card -->
+          <app-attendance-progress [stats]="stats()"></app-attendance-progress>
 
-                  <!-- Total Guests Card -->
-                  <div class="stats-card total" style="flex-direction: column; align-items: stretch;">
-                    <div style="display: flex; align-items: center; gap: 2rem;">
-                      <div class="card-icon">👥</div>
-                      <div class="card-info">
-                        <h3>Total Invitados</h3>
-                        <p class="value">{{ displayTotal() }}</p>
-                        @if (stats()?.declined !== undefined) {
-                          <p class="declined-note">Rechazados: {{ stats()?.declined }}</p>
-                        }
-                      </div>
-                    </div>
-                    <!-- Adults and Children Counters inside Total -->
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                      <div class="stat-item adults clickable" style="flex: 1;" (click)="openGuestsModal('adults')">
-                        <span class="label">Adultos</span>
-                        <span class="count" style="font-size: 1.5rem;">{{ adultsCount() }}</span>
-                      </div>
-                      <div class="stat-item children clickable" style="flex: 1;" (click)="openGuestsModal('children')">
-                        <span class="label">Niños</span>
-                        <span class="count" style="font-size: 1.5rem;">{{ childrenCount() }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Attendance Breakdown -->
-                  <div class="stats-card attendance">
-                    <h3>Estado de Asistencia</h3>
-                    <div class="attendance-summary">
-                      <div class="stat-item confirmed clickable" (click)="openGuestsModal('confirmed')">
-                        <span class="label">Confirmados</span>
-                        <span class="count">{{ stats()?.confirmed }}</span>
-                      </div>
-                      <!-- <div class="stat-item pending" *ngIf="sentGuestsCount() !== null">
-                      <span class="label">Sentados</span>
-                      <span class="count">{{ sentGuestsCount() }}</span>
-                    </div> -->
-                    <div class="stat-item pending">
-                      <span class="label">Pendientes de respuesta</span>
-                      <span class="count">{{ pendings() }}</span>
-                    </div>
-                    @if (stats()?.declined !== undefined) {
-                      <div class="stat-item declined clickable" (click)="openDeclinedGuestsModal()">
-                        <span class="label">No asisten</span>
-                        <span class="count">{{ stats()?.declined }}</span>
-                      </div>
-                    }
-                    @if (unassignedGuestsCount() !== null) {
-                      <div class="stat-item unassigned clickable" (click)="openGuestsModal('unassigned')">
-                        <span class="label">Sin mesa</span>
-                        <span class="count">{{ unassignedGuestsCount() }}</span>
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                <!-- Transportation and Children Cards -->
-                <!-- Transportation Card -->
-                <div class="stats-card transport clickable-card" (click)="openGuestsModal('transport')">
-                  <h3>Transporte</h3>
-                  <div class="transport-info">
-                    <div class="transport-item">
-                      <span class="icon">🚌</span>
-                      <div class="details">
-                        <span class="label">Necesitan Bus</span>
-                        <span class="count">{{ stats()?.needTransport }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Allergies Card -->
-                @if (allergiesCount() !== null) {
-                  <div class="stats-card allergies clickable-card" (click)="openGuestsModal('allergies')">
-                    <div class="card-icon">🥗</div>
-                    <div class="card-info">
-                      <h3>Con Alergias / Intolerancias</h3>
-                      <p class="value">{{ allergiesCount() }}</p>
-                    </div>
-                  </div>
+          <!-- Total Guests Card -->
+          <div class="stats-card total" style="flex-direction: column; align-items: stretch">
+            <div style="display: flex; align-items: center; gap: 2rem">
+              <div class="card-icon">👥</div>
+              <div class="card-info">
+                <h3>Total Invitados</h3>
+                <p class="value">{{ displayTotal() }}</p>
+                @if (stats()?.declined !== undefined) {
+                  <p class="declined-note">Rechazados: {{ stats()?.declined }}</p>
                 }
               </div>
+            </div>
+            <!-- Adults and Children Counters inside Total -->
+            <div style="display: flex; gap: 1rem; margin-top: 1rem">
+              <button
+                type="button"
+                class="stat-item adults clickable"
+                style="flex: 1"
+                (click)="openGuestsModal('adults')"
+              >
+                <span class="label">Adultos</span>
+                <span class="count" style="font-size: 1.5rem">{{ adultsCount() }}</span>
+              </button>
+              <button
+                type="button"
+                class="stat-item children clickable"
+                style="flex: 1"
+                (click)="openGuestsModal('children')"
+              >
+                <span class="label">Niños</span>
+                <span class="count" style="font-size: 1.5rem">{{ childrenCount() }}</span>
+              </button>
+            </div>
+          </div>
 
-              @if (showDeclinedGuestsModal()) {
-                <div class="modal-backdrop" (click)="closeDeclinedGuestsModal()">
-                  <div class="modal-container declined-modal" (click)="$event.stopPropagation()">
-                    <div class="modal-header">
-                      <h3>Invitados que no asisten</h3>
-                      <button class="close-btn" (click)="closeDeclinedGuestsModal()">×</button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="search-container" style="margin-bottom: 1rem; position: relative;">
-                        <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Buscar invitado..." style="width: 100%; padding: 0.5rem 0.75rem 0.5rem 2rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
-                        <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.85rem;">🔍</span>
-                      </div>
-
-                      @if (filteredDeclinedGuestsList().length === 0) {
-                        <div style="text-align: center; padding: 2rem; color: #64748b;">
-                          <p style="margin: 0; font-size: 0.95rem;">No se encontraron invitados.</p>
-                        </div>
-                      } @else {
-                        <ul class="declined-list">
-                          @for (guest of filteredDeclinedGuestsList(); track guest.id) {
-                            <li class="declined-item">
-                              <div class="declined-main">
-                                <span class="name">{{ guest.name }}</span>
-                                @if (guest.phone) {
-                                  <span class="phone">📱 {{ guest.phone }}</span>
-                                }
-                                @if (guest.email) {
-                                  <span class="email">📧 {{ guest.email }}</span>
-                                }
-                                @if (guest.notes) {
-                                  <span class="notes-indicator" title="Tiene notas">💬</span>
-                                }
-                              </div>
-                              @if (guest.notes) {
-                                <p class="notes">💬 {{ guest.notes }}</p>
-                              }
-                              <div class="declined-actions">
-                                <button type="button" class="btn-secondary-modal"
-                                  (click)="moveDeclinedToUnassigned(guest); $event.stopPropagation()">
-                                  ✓ Pasar a "Por asignar"
-                                </button>
-                                <button type="button" class="btn-danger"
-                                  (click)="deleteDeclinedGuest(guest); $event.stopPropagation()">
-                                  🗑️ Eliminar
-                                </button>
-                              </div>
-                            </li>
-                          }
-                        </ul>
-                      }
-                    </div>
-                  </div>
-                </div>
+          <!-- Attendance Breakdown -->
+          <div class="stats-card attendance">
+            <h3>Estado de Asistencia</h3>
+            <div class="attendance-summary">
+              <button
+                type="button"
+                class="stat-item confirmed clickable"
+                (click)="openGuestsModal('confirmed')"
+              >
+                <span class="label">Confirmados</span>
+                <span class="count">{{ stats()?.confirmed }}</span>
+              </button>
+              <div class="stat-item pending">
+                <span class="label">Pendientes de respuesta</span>
+                <span class="count">{{ pendings() }}</span>
+              </div>
+              @if (stats()?.declined !== undefined) {
+                <button
+                  type="button"
+                  class="stat-item declined clickable"
+                  (click)="openDeclinedGuestsModal()"
+                >
+                  <span class="label">No asisten</span>
+                  <span class="count">{{ stats()?.declined }}</span>
+                </button>
               }
-
-              <!-- Modal Genérico para otras listas de invitados -->
-              @if (showGuestsModal()) {
-                <div class="modal-backdrop" (click)="closeGuestsModal()">
-                  <div class="modal-container declined-modal" (click)="$event.stopPropagation()">
-                    <div class="modal-header">
-                      <h3>{{ modalTitle() }}</h3>
-                      <button class="close-btn" (click)="closeGuestsModal()">×</button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="search-container" style="margin-bottom: 1rem; position: relative;">
-                        <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Buscar invitado..." style="width: 100%; padding: 0.5rem 0.75rem 0.5rem 2rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
-                        <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.85rem;">🔍</span>
-                      </div>
-
-                      @if (filteredModalGuestsList().length === 0) {
-                        <div style="text-align: center; padding: 2rem; color: #64748b;">
-                          <p style="margin: 0; font-size: 0.95rem;">No se encontraron invitados.</p>
-                        </div>
-                      } @else {
-                        <ul class="declined-list">
-                          @for (guest of filteredModalGuestsList(); track guest.id) {
-                            <li class="declined-item">
-                              <button type="button" class="edit-icon-btn" title="Editar invitado"
-                                (click)="openEditGuestModal(guest); $event.stopPropagation()">
-                                📝
-                              </button>
-                              <div class="declined-main">
-                                <span class="name">{{ guest.name }} {{ guest.phone ? ' - 📱' + guest.phone : '' }}</span>
-                                @if (guest.email) {
-                                  <span class="email">📧 {{ guest.email }}</span>
-                                }
-                              </div>
-                              @if (guest.tableId && guest.tableId !== 0 && modalTitle() === 'Invitados Confirmados') {
-                                <p class="notes">🪑 Mesa {{ guest.tableId }}@if (guest.seatNumber) { - Asiento {{ guest.seatNumber }}}</p>
-                              }
-                              @if (guest.allergies && guest.allergies.trim() !== '' && ['Invitados Confirmados', 'Invitados con Alergias'].some((title) => title === modalTitle())) {
-                                <p class="notes allergies-note">🥗 Alergias: {{ guest.allergies }}</p>
-                              }
-                              @if (guest.notes && modalTitle() === 'Invitados Confirmados') {
-                                <p class="notes">💬 {{ guest.notes }}</p>
-                              }
-                              @if (guest.needsTransport && modalTitle() === 'Invitados Confirmados') {
-                                <p class="notes transport-note">🚌 Necesita transporte</p>
-                              }
-                            </li>
-                          }
-                        </ul>
-                      }
-                    </div>
-                  </div>
-                </div>
+              @if (unassignedGuestsCount() !== null) {
+                <button
+                  type="button"
+                  class="stat-item unassigned clickable"
+                  (click)="openGuestsModal('unassigned')"
+                >
+                  <span class="label">Sin mesa</span>
+                  <span class="count">{{ unassignedGuestsCount() }}</span>
+                </button>
               }
-            }
+            </div>
+          </div>
 
-            @if (showExitConfirm()) {
-              <div class="modal-backdrop" (click)="cancelExit()">
-                <div class="modal-container confirm-exit-modal" (click)="$event.stopPropagation()">
-                  <div class="modal-header">
-                    <h3>¿Deseas salir de la aplicación?</h3>
-                    <button class="close-btn" (click)="cancelExit()">×</button>
-                  </div>
-                  <div class="modal-body">
-                    <p>Si sales volverás a la pantalla de acceso. ¿Estás seguro?</p>
-                  </div>
-                  <div class="modal-actions">
-                    <button class="btn-secondary-modal" (click)="cancelExit()">No</button>
-                    <button class="btn-danger" (click)="confirmExit()">Sí, salir</button>
-                  </div>
+          <!-- Transportation and Children Cards -->
+          <!-- Transportation Card -->
+          <button
+            type="button"
+            class="stats-card transport clickable-card"
+            (click)="openGuestsModal('transport')"
+          >
+            <h3>Transporte</h3>
+            <div class="transport-info">
+              <div class="transport-item">
+                <span class="icon">🚌</span>
+                <div class="details">
+                  <span class="label">Necesitan Bus</span>
+                  <span class="count">{{ stats()?.needTransport }}</span>
                 </div>
               </div>
-            }
+            </div>
+          </button>
 
+          <!-- Allergies Card -->
+          @if (allergiesCount() !== null) {
+            <button
+              type="button"
+              class="stats-card allergies clickable-card"
+              (click)="openGuestsModal('allergies')"
+            >
+              <div class="card-icon">🥗</div>
+              <div class="card-info">
+                <h3>Con Alergias / Intolerancias</h3>
+                <p class="value">{{ allergiesCount() }}</p>
+              </div>
+            </button>
           }
+        </div>
 
-<!-- Modal para Editar Invitado -->
-@if (showEditGuestModal()) {
-  <app-guest-form-modal [guest]="selectedGuestForEdit()" (close)="closeEditGuestModal()"></app-guest-form-modal>
-}
+        @if (showDeclinedGuestsModal()) {
+          <button
+            type="button"
+            class="modal-backdrop"
+            (click)="closeDeclinedGuestsModal()"
+            (keydown.enter)="closeDeclinedGuestsModal()"
+            (keyup.enter)="closeDeclinedGuestsModal()"
+            aria-label="Cerrar modal"
+            tabindex="0"
+          ></button>
+          <div
+            class="modal-container declined-modal"
+            role="dialog"
+            aria-modal="true"
+            tabindex="0"
+            (click)="$event.stopPropagation()"
+            (keydown.enter)="$event.stopPropagation()"
+          >
+            <div class="modal-header">
+              <h3>Invitados que no asisten</h3>
+              <button class="close-btn" (click)="closeDeclinedGuestsModal()">×</button>
+            </div>
+            <div class="modal-body">
+              <div class="search-container" style="margin-bottom: 1rem; position: relative">
+                <input
+                  type="text"
+                  [value]="searchQuery()"
+                  (input)="searchQuery.set($any($event.target).value)"
+                  placeholder="Buscar invitado..."
+                  style="
+                    width: 100%;
+                    padding: 0.5rem 0.75rem 0.5rem 2rem;
+                    border-radius: 0.5rem;
+                    border: 1px solid #e2e8f0;
+                  "
+                />
+                <span
+                  style="
+                    position: absolute;
+                    left: 0.75rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    opacity: 0.5;
+                    font-size: 0.85rem;
+                  "
+                  >🔍</span
+                >
+              </div>
 
-          @if (currentView() === 'tables') {
-            <app-tables></app-tables>
-          }
+              @if (filteredDeclinedGuestsList().length === 0) {
+                <div style="text-align: center; padding: 2rem; color: #64748b">
+                  <p style="margin: 0; font-size: 0.95rem">No se encontraron invitados.</p>
+                </div>
+              } @else {
+                <ul class="declined-list">
+                  @for (guest of filteredDeclinedGuestsList(); track guest.id) {
+                    <li class="declined-item">
+                      <div class="declined-main">
+                        <span class="name">{{ guest.name }}</span>
+                        @if (guest.phone) {
+                          <span class="phone">📱 {{ guest.phone }}</span>
+                        }
+                        @if (guest.email) {
+                          <span class="email">📧 {{ guest.email }}</span>
+                        }
+                        @if (guest.notes) {
+                          <span class="notes-indicator" title="Tiene notas">💬</span>
+                        }
+                      </div>
+                      @if (guest.notes) {
+                        <p class="notes">💬 {{ guest.notes }}</p>
+                      }
+                      <div class="declined-actions">
+                        <button
+                          type="button"
+                          class="btn-secondary-modal"
+                          (click)="moveDeclinedToUnassigned(guest); $event.stopPropagation()"
+                        >
+                          ✓ Pasar a "Por asignar"
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-danger"
+                          (click)="deleteDeclinedGuest(guest); $event.stopPropagation()"
+                        >
+                          🗑️ Eliminar
+                        </button>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          </div>
+        }
 
-          @if (currentView() === 'settings') {
-            <app-settings></app-settings>
-          }
+        <!-- Modal Genérico para otras listas de invitados -->
+        @if (showGuestsModal()) {
+          <button
+            type="button"
+            class="modal-backdrop"
+            (click)="closeGuestsModal()"
+            (keydown.enter)="closeGuestsModal()"
+            (keyup.enter)="closeGuestsModal()"
+            aria-label="Cerrar modal"
+            tabindex="0"
+          ></button>
+          <div
+            class="modal-container declined-modal"
+            role="dialog"
+            aria-modal="true"
+            tabindex="0"
+            (click)="$event.stopPropagation()"
+            (keydown.enter)="$event.stopPropagation()"
+          >
+            <div class="modal-header">
+              <h3>{{ modalTitle() }}</h3>
+              <button class="close-btn" (click)="closeGuestsModal()">×</button>
+            </div>
+            <div class="modal-body">
+              <div class="search-container" style="margin-bottom: 1rem; position: relative">
+                <input
+                  type="text"
+                  [value]="searchQuery()"
+                  (input)="searchQuery.set($any($event.target).value)"
+                  placeholder="Buscar invitado..."
+                  style="
+                    width: 100%;
+                    padding: 0.5rem 0.75rem 0.5rem 2rem;
+                    border-radius: 0.5rem;
+                    border: 1px solid #e2e8f0;
+                  "
+                />
+                <span
+                  style="
+                    position: absolute;
+                    left: 0.75rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    opacity: 0.5;
+                    font-size: 0.85rem;
+                  "
+                  >🔍</span
+                >
+              </div>
 
-          @if (currentView() === 'finances') {
-            <app-finances></app-finances>
-          }
+              @if (filteredModalGuestsList().length === 0) {
+                <div style="text-align: center; padding: 2rem; color: #64748b">
+                  <p style="margin: 0; font-size: 0.95rem">No se encontraron invitados.</p>
+                </div>
+              } @else {
+                <ul class="declined-list">
+                  @for (guest of filteredModalGuestsList(); track guest.id) {
+                    <li class="declined-item">
+                      <div class="declined-actions">
+                        <button
+                          type="button"
+                          class="icon-btn edit-icon-btn"
+                          title="Editar invitado"
+                          (click)="openEditGuestModal(guest); $event.stopPropagation()"
+                        >
+                          📝
+                        </button>
+                        <button
+                            type="button"
+                            class="icon-btn delete-icon-btn"
+                            (click)="deleteGuestFromModal(guest); $event.stopPropagation()"
+                          >
+                            🗑️
+                          </button>
+                      </div>
+                      <div class="declined-main">
+                        <span class="name"
+                          >{{ guest.name }} {{ guest.phone ? ' - 📱' + guest.phone : '' }}</span
+                        >
+                        @if (guest.email) {
+                          <span class="email">📧 {{ guest.email }}</span>
+                        }
+                      </div>
+                      @if (
+                        guest.tableId &&
+                        guest.tableId !== 0 &&
+                        modalTitle() === 'Invitados Confirmados'
+                      ) {
+                        <p class="notes">
+                          🪑 Mesa {{ guest.tableId }}
+                          @if (guest.seatNumber) {
+                            - Asiento {{ guest.seatNumber }}
+                          }
+                        </p>
+                      }
+                      @if (
+                        guest.allergies &&
+                        guest.allergies.trim() !== '' &&
+                        ['Invitados Confirmados', 'Invitados con Alergias'].some(
+                          (title) => title === modalTitle()
+                        )
+                      ) {
+                        <p class="notes allergies-note">🥗 Alergias: {{ guest.allergies }}</p>
+                      }
+                      @if (guest.notes && modalTitle() === 'Invitados Confirmados') {
+                        <p class="notes">💬 {{ guest.notes }}</p>
+                      }
+                      @if (guest.needsTransport && modalTitle() === 'Invitados Confirmados') {
+                        <p class="notes transport-note">🚌 Necesita transporte</p>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          </div>
+        }
 
-          @if (currentView() === 'todos') {
-            <app-todos></app-todos>
-          }
+        @if (showExitConfirm()) {
+          <button
+            type="button"
+            class="modal-backdrop"
+            (click)="cancelExit()"
+            (keydown.enter)="cancelExit()"
+            (keyup.enter)="cancelExit()"
+            aria-label="Cerrar confirmación"
+            tabindex="0"
+          ></button>
+          <div
+            class="modal-container confirm-exit-modal"
+            role="dialog"
+            aria-modal="true"
+            tabindex="0"
+            (click)="$event.stopPropagation()"
+            (keydown.enter)="$event.stopPropagation()"
+          >
+            <div class="modal-header">
+              <h3>¿Deseas salir de la aplicación?</h3>
+              <button class="close-btn" (click)="cancelExit()">×</button>
+            </div>
+            <div class="modal-body">
+              <p>Si sales volverás a la pantalla de acceso. ¿Estás seguro?</p>
+            </div>
+            <div class="modal-actions">
+              <button class="btn-secondary-modal" (click)="cancelExit()">No</button>
+              <button class="btn-danger" (click)="confirmExit()">Sí, salir</button>
+            </div>
+          </div>
+        }
+      }
+    }
 
-@if (currentView() === 'contacts') {
-            <app-contacts></app-contacts>
-          }
+    <!-- Modal para Editar Invitado -->
+    @if (showEditGuestModal()) {
+      <app-guest-form-modal
+        [guest]="selectedGuestForEdit()"
+        (modalClose)="closeEditGuestModal()"
+      ></app-guest-form-modal>
+    }
 
-          @if (currentView() === 'music') {
-            <app-music></app-music>
-          }
+    <!-- Modal para Confirmar Eliminación de Invitado -->
+    @if (showGuestDeleteConfirm()) {
+      <app-guest-delete-modal
+        [guest]="guestToDelete()"
+        (confirmDelete)="confirmDeleteGuest()"
+        (cancelDelete)="cancelDeleteGuest()"
+      ></app-guest-delete-modal>
+    }
 
-          <footer class="content-footer">
-            <p>© 2026 Admin Dashboard - Judith & Jesús</p>
-            <p class="version-info">{{ versionService.getFullVersion() }}</p>
-          </footer>
-        </main>
-      </div>
+    @if (currentView() === 'tables') {
+      <app-tables></app-tables>
+    }
+
+    @if (currentView() === 'settings') {
+      <app-settings></app-settings>
+    }
+
+    @if (currentView() === 'finances') {
+      <app-finances></app-finances>
+    }
+
+    @if (currentView() === 'todos') {
+      <app-todos></app-todos>
+    }
+
+    @if (currentView() === 'contacts') {
+      <app-contacts></app-contacts>
+    }
+
+    @if (currentView() === 'music') {
+      <app-music></app-music>
+    }
+
+    <footer class="content-footer">
+      <p>© 2026 Admin Dashboard - Judith & Jesús</p>
+      <p class="version-info">{{ versionService.getFullVersion() }}</p>
+    </footer>
+  </main>
+</div>

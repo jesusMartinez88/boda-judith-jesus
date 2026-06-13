@@ -2,121 +2,135 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { tap } from 'rxjs';
+import { ApiResponse, TableEntity } from '../../types/api';
 
 export interface TableConfig {
-    id: number;
-    name?: string;
-    capacity?: number;
-    shape: 'round' | 'square' | 'rectangular' | 'presidential';
-    posX?: number;
-    posY?: number;
+  id: number;
+  name?: string;
+  capacity?: number;
+  shape: 'round' | 'square' | 'rectangular' | 'presidential';
+  posX?: number;
+  posY?: number;
 }
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root',
 })
 export class TableService {
-    private http = inject(HttpClient);
-    private baseUrl = environment.apiBaseUrl;
+  private http = inject(HttpClient);
+  private baseUrl = environment.apiBaseUrl;
 
-    tables = signal<TableConfig[]>([]);
+  tables = signal<TableConfig[]>([]);
 
-    private normalizeTable(item: any): TableConfig | null {
-        if (!item) return null;
-        const id = Number(item.id);
-        if (isNaN(id)) return null;
+  private normalizeTable(item: Record<string, unknown> | TableEntity | null): TableConfig | null {
+    if (!item) return null;
+    const id = Number(item.id);
+    if (isNaN(id)) return null;
 
-        // Mapeo de shapes: consolidamos layout 'one-side' -> 'presidential'
-        let shape = item.shape || 'round';
-        if (shape === 'rectangular' && item.layout === 'one-side') {
-            shape = 'presidential';
+    // Mapeo de shapes: consolidamos layout 'one-side' -> 'presidential'
+    const obj = item as Record<string, unknown>;
+    let shape = (obj['shape'] as string) || 'round';
+    if (shape === 'rectangular' && obj['layout'] === 'one-side') {
+      shape = 'presidential';
+    }
+
+    return {
+      ...item,
+      id,
+      name:
+        (obj['name'] as string) || (obj['number'] !== undefined ? String(obj['number']) : 'Mesa X'),
+      shape: shape as TableConfig['shape'],
+      capacity: (obj['capacity'] as number) || undefined,
+      posX: obj['posX'] !== undefined ? Number(obj['posX'] as unknown) : undefined,
+      posY: obj['posY'] !== undefined ? Number(obj['posY'] as unknown) : undefined,
+    };
+  }
+
+  loadTables() {
+    return this.http.get<ApiResponse<TableEntity[]>>(`${this.baseUrl}/api/tables`).pipe(
+      tap((response) => {
+        let list = response.data as TableEntity[] | undefined;
+
+        if (!Array.isArray(list)) {
+          list = [];
         }
 
-        return {
-            ...item,
-            id,
-            name: item.name || (item.number !== undefined ? String(item.number) : "Mesa X"),
-            shape: shape as any,
-            capacity: item.capacity || undefined,
-            posX: item.posX !== undefined ? Number(item.posX) : undefined,
-            posY: item.posY !== undefined ? Number(item.posY) : undefined
-        };
-    }
+        // Normalizar items: asegurar que tengan un ID único
+        const tableMap = new Map<number, TableConfig>();
 
-    loadTables() {
-        return this.http.get<{ data: TableConfig[] }>(`${this.baseUrl}/api/tables`).pipe(
-            tap(response => {
-                let list = response.data;
+        list.forEach((item: TableEntity) => {
+          const normalized = this.normalizeTable(item);
+          if (normalized && !tableMap.has(normalized.id)) {
+            tableMap.set(normalized.id, normalized);
+          }
+        });
 
-                if (!Array.isArray(list)) {
-                    list = [];
-                }
+        this.tables.set(Array.from(tableMap.values()));
+      }),
+    );
+  }
 
-                // Normalizar items: asegurar que tengan un ID único
-                const tableMap = new Map<number, TableConfig>();
+  addTable(table: TableConfig) {
+    // Enviamos el objeto tal cual, dejando que el backend decida qué campos usar.
+    // Quitamos la redundancia si queremos que el 'name' sea el protagonista.
+    const payload = { ...table };
+    return this.http.post<ApiResponse<TableEntity>>(`${this.baseUrl}/api/tables`, payload).pipe(
+      tap((response) => {
+        const newTableRaw =
+          (response as ApiResponse<TableEntity>).data || (response as unknown as TableEntity);
+        const normalized = this.normalizeTable(newTableRaw as TableEntity);
 
-                list.forEach((item: TableConfig) => {
-                    const normalized = this.normalizeTable(item);
-                    if (normalized && !tableMap.has(normalized.id)) {
-                        tableMap.set(normalized.id, normalized);
-                    }
-                });
-
-                this.tables.set(Array.from(tableMap.values()));
-            })
-        );
-    }
-
-    addTable(table: TableConfig) {
-        // Enviamos el objeto tal cual, dejando que el backend decida qué campos usar.
-        // Quitamos la redundancia si queremos que el 'name' sea el protagonista.
-        const payload = { ...table };
-        return this.http.post<any>(`${this.baseUrl}/api/tables`, payload).pipe(
-            tap(response => {
-                const newTableRaw = (response as any).data || response;
-                const normalized = this.normalizeTable(newTableRaw);
-
-                if (normalized) {
-                    this.tables.update(current => [...current, normalized]);
-                } else {
-                    console.warn('⚠️ Could not normalize newly created table:', response);
-                    // Fallback con el objeto original si la normalización falla pero el ID era conocido
-                    this.tables.update(current => [...current, table]);
-                }
-            })
-        );
-    }
-
-    updateTable(id: number, config: Partial<TableConfig>) {
-        return this.http.patch<TableConfig>(`${this.baseUrl}/api/tables/${id}`, config).pipe(
-            tap(updatedTable => {
-                this.tables.update(current =>
-                    current.map(t => t.id === id ? { ...t, ...config } : t)
-                );
-            })
-        );
-    }
-
-    deleteTable(id: number) {
-        return this.http.delete(`${this.baseUrl}/api/table/${id}`).pipe(
-            tap(() => {
-                this.tables.update(current => current.filter(t => t.id !== id));
-            })
-        );
-    }
-
-    requestDeleteCode(): Promise<any> {
-        // triggers an email with a code for confirmation
-        return this.http.post(`${this.baseUrl}/api/tables/request-delete`, {}).toPromise().then(r => r!);
-    }
-
-    deleteAllTables(code?: string): Promise<any> {
-        this.tables.set([]);
-        let url = `${this.baseUrl}/api/tables`;
-        if (code) {
-            const separator = url.includes('?') ? '&' : '?';
-            url = `${url}${separator}code=${encodeURIComponent(code)}`;
+        if (normalized) {
+          this.tables.update((current) => [...current, normalized]);
+        } else {
+          console.warn('⚠️ Could not normalize newly created table:', response);
+          // Fallback con el objeto original si la normalización falla pero el ID era conocido
+          this.tables.update((current) => [...current, table]);
         }
-        return this.http.delete(url).toPromise().then(r => r!);
+      }),
+    );
+  }
+
+  updateTable(id: number, config: Partial<TableConfig>) {
+    return this.http.patch<TableEntity>(`${this.baseUrl}/api/tables/${id}`, config).pipe(
+      tap(() => {
+        this.tables.update((current) =>
+          current.map((t) => (t.id === id ? { ...t, ...config } : t)),
+        );
+      }),
+    );
+  }
+
+  deleteTable(id: number) {
+    return this.http
+      .delete<
+        ApiResponse<{ id: number; name: string; unassignedGuests: number; configDeleted: boolean }>
+      >(`${this.baseUrl}/api/table/${id}`)
+      .pipe(
+        tap(() => {
+          this.tables.update((current) => current.filter((t) => t.id !== id));
+        }),
+      );
+  }
+
+  requestDeleteCode(): Promise<ApiResponse<{ code?: string }>> {
+    // triggers an email with a code for confirmation
+    return this.http
+      .post<ApiResponse<{ code?: string }>>(`${this.baseUrl}/api/tables/request-delete`, {})
+      .toPromise()
+      .then((r) => r!);
+  }
+
+  deleteAllTables(code?: string): Promise<ApiResponse<{ deletedAll: boolean; resetSeq: boolean }>> {
+    this.tables.set([]);
+    let url = `${this.baseUrl}/api/tables`;
+    if (code) {
+      const separator = url.includes('?') ? '&' : '?';
+      url = `${url}${separator}code=${encodeURIComponent(code)}`;
     }
+    return this.http
+      .delete<ApiResponse<{ deletedAll: boolean; resetSeq: boolean }>>(url)
+      .toPromise()
+      .then((r) => r!);
+  }
 }

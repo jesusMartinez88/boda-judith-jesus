@@ -9,8 +9,8 @@ import L from 'leaflet';
 })
 export class MapComponent implements OnInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
-   
-  private map!: L.Map ;
+
+  private map!: L.Map;
 
   ngOnInit() {
     setTimeout(() => this.initializeMap(), 100);

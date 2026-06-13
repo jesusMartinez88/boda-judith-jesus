@@ -1,17 +1,28 @@
 <!-- Prompt de instalación - Solo en /dashboard -->
 @if (isInDashboard() && pwaService.showInstallPrompt()) {
-  <div class="pwa-overlay" (click)="dismissInstall()">
-    <div class="pwa-prompt install-prompt" (click)="$event.stopPropagation()">
+  <div
+    class="pwa-overlay"
+    (click)="dismissInstall()"
+    (keydown.enter)="dismissInstall()"
+    tabindex="0"
+    role="button"
+    aria-label="Cerrar instalación"
+  >
+    <div
+      class="pwa-prompt install-prompt"
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+      tabindex="-1"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="install-prompt-title"
+    >
       <div class="prompt-icon">📱</div>
-      <h3>Instalar aplicación</h3>
+      <h3 id="install-prompt-title">Instalar aplicación</h3>
       <p>Añade esta app a tu pantalla de inicio para un acceso rápido y una mejor experiencia</p>
       <div class="prompt-actions">
-        <button class="btn-primary" (click)="installApp()">
-          Instalar
-        </button>
-        <button class="btn-secondary" (click)="dismissInstall()">
-          Ahora no
-        </button>
+        <button class="btn-primary" (click)="installApp()">Instalar</button>
+        <button class="btn-secondary" (click)="dismissInstall()">Ahora no</button>
       </div>
     </div>
   </div>
@@ -19,18 +30,14 @@
 
 <!-- Prompt de actualización - Solo en /dashboard -->
 @if (isInDashboard() && pwaService.showUpdatePrompt()) {
-  <div class="pwa-overlay">
+  <div class="pwa-overlay" role="dialog" aria-modal="true" aria-labelledby="update-prompt-title">
     <div class="pwa-prompt update-prompt">
       <div class="prompt-icon">🔄</div>
-      <h3>Nueva versión disponible</h3>
+      <h3 id="update-prompt-title">Nueva versión disponible</h3>
       <p>Hay una actualización disponible. Recarga la página para obtener la última versión</p>
       <div class="prompt-actions">
-        <button class="btn-primary" (click)="reloadApp()">
-          Actualizar ahora
-        </button>
-        <button class="btn-secondary" (click)="dismissUpdate()">
-          Más tarde
-        </button>
+        <button class="btn-primary" (click)="reloadApp()">Actualizar ahora</button>
+        <button class="btn-secondary" (click)="dismissUpdate()">Más tarde</button>
       </div>
     </div>
   </div>

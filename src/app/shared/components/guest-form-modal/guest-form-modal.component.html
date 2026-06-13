@@ -1,82 +1,131 @@
-        <div class="modal-backdrop" (click)="closeModal()">
-            <div class="modal-container" (click)="$event.stopPropagation()">
-                <div class="modal-header">
-                    <h3>{{ isEditingGuest() ? 'Editar Invitado' : 'Nuevo Invitado' }}</h3>
-                    <button class="close-btn" type="button" (click)="closeModal()">×</button>
-                </div>
+<div
+  class="modal-backdrop"
+  (click)="closeModal()"
+  (keyup.enter)="closeModal()"
+  tabindex="0"
+  role="button"
+  aria-label="Cerrar modal"
+>
+  <div
+    class="modal-container"
+    (click)="$event.stopPropagation()"
+    (keyup.enter)="$event.stopPropagation()"
+    tabindex="-1"
+    role="dialog"
+    aria-label="Formulario de invitado"
+  >
+    <div class="modal-header">
+      <h3>{{ isEditingGuest() ? 'Editar Invitado' : 'Nuevo Invitado' }}</h3>
+      <button class="close-btn" type="button" (click)="closeModal()">×</button>
+    </div>
 
-                <form class="modal-form" [formGroup]="guestForm" (ngSubmit)="saveGuest()">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nombre Completo</label>
-                            <input type="text" formControlName="name" name="name"
-                                placeholder="Ej: Juan Pérez" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" formControlName="email" name="email"
-                                placeholder="email@ejemplo.com">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Teléfono</label>
-                            <input type="tel" formControlName="phone" name="phone"
-                                placeholder="600 000 000">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Tipo de invitado</label>
-                            <select formControlName="isAdult" name="isAdult">
-                                <option [ngValue]="1">Adulto</option>
-                                <option [ngValue]="0">Niño</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Tipo de Menú</label>
-                            <select formControlName="mealType" name="mealType">
-                                <option value="normal">Normal</option>
-                                <option value="vegetariano">Vegetariano</option>
-                                <option value="vegano">Vegano</option>
-                                <option value="celiaco">Celiaco</option>
-                                <option value="sin_gluten">Sin Gluten</option>
-                                <option value="intolerante_lactosa">Intolerante a la lactosa</option>
-                                <option value="intolerante_frutos_secos">Intolerante a los frutos secos</option>
-                                <option value="kid">Infantil</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label>Alergias</label>
-                            <textarea formControlName="allergies" name="allergies"
-                                placeholder="Ej: No puede comer marisco..."></textarea>
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label>Notas</label>
-                            <textarea formControlName="notes" name="notes"
-                                placeholder="Ej: me hace mucha ilusion vuestra boda..."></textarea>
-                        </div>
-
-                        <div class="form-check full-width">
-                            <input type="checkbox" id="transport" formControlName="needsTransport" name="needsTransport">
-                            <label for="transport">Necesita Transporte 🚌</label>
-                        </div>
-
-                        <div class="form-check full-width">
-                            <input type="checkbox" id="attendance" formControlName="attendance" name="attendance">
-                            <label for="attendance">Asistirá a la boda ✅</label>
-                        </div>
-                    </div>
-
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
-                        <button type="submit" class="btn-primary" [disabled]="isLoading()">
-                            @if (isLoading()) { Guardando... }
-                            @else { {{ isEditingGuest() ? 'Actualizar Invitado' : 'Guardar Invitado' }} }
-                        </button>
-                    </div>
-                </form>
-            </div>
+    <form class="modal-form" [formGroup]="guestForm" (ngSubmit)="saveGuest()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="name">Nombre Completo</label>
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            name="name"
+            placeholder="Ej: Juan Pérez"
+            required
+          />
+          @if (guestForm.get('name')?.touched && guestForm.get('name')?.invalid) {
+            <small class="error-message">El nombre es obligatorio (mínimo 3 caracteres)</small>
+          }
         </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            name="email"
+            placeholder="email@ejemplo.com"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Teléfono</label>
+          <input
+            type="tel"
+            id="phone"
+            formControlName="phone"
+            name="phone"
+            placeholder="600 000 000"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="isAdult">Tipo de invitado</label>
+          <select id="isAdult" formControlName="isAdult" name="isAdult">
+            <option [ngValue]="1">Adulto</option>
+            <option [ngValue]="0">Niño</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="mealType">Tipo de Menú</label>
+          <select id="mealType" formControlName="mealType" name="mealType">
+            <option value="normal">Normal</option>
+            <option value="vegetariano">Vegetariano</option>
+            <option value="vegano">Vegano</option>
+            <option value="celiaco">Celiaco</option>
+            <option value="sin_gluten">Sin Gluten</option>
+            <option value="intolerante_lactosa">Intolerante a la lactosa</option>
+            <option value="intolerante_frutos_secos">Intolerante a los frutos secos</option>
+            <option value="kid">Infantil</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="allergies">Alergias</label>
+          <textarea
+            id="allergies"
+            formControlName="allergies"
+            name="allergies"
+            placeholder="Ej: No puede comer marisco..."
+          ></textarea>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="notes">Notas</label>
+          <textarea
+            id="notes"
+            formControlName="notes"
+            name="notes"
+            placeholder="Ej: me hace mucha ilusion vuestra boda..."
+          ></textarea>
+        </div>
+
+        <div class="form-check full-width">
+          <input
+            type="checkbox"
+            id="transport"
+            formControlName="needsTransport"
+            name="needsTransport"
+          />
+          <label for="transport">Necesita Transporte 🚌</label>
+        </div>
+
+        <div class="form-check full-width">
+          <input type="checkbox" id="attendance" formControlName="attendance" name="attendance" />
+          <label for="attendance">Asistirá a la boda ✅</label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="isLoading()">
+          @if (isLoading()) {
+            Guardando...
+          } @else {
+            {{ isEditingGuest() ? 'Actualizar Invitado' : 'Guardar Invitado' }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

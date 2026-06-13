@@ -7,14 +7,14 @@ import { Guest, GuestService } from '../../../services/guest.service';
   standalone: true,
   imports: [ReactiveFormsModule],
   templateUrl: './guest-form-modal.component.html',
-  styleUrl: './guest-form-modal.component.css'
+  styleUrl: './guest-form-modal.component.css',
 })
 export class GuestFormModalComponent implements OnInit {
   private fb = inject(FormBuilder);
   private guestService = inject(GuestService);
 
   @Input() guest: Guest | null = null;
-  @Output() close = new EventEmitter<void>();
+  @Output() modalClose = new EventEmitter<void>();
 
   isLoading = signal(false);
   isEditingGuest = signal(false);
@@ -29,7 +29,7 @@ export class GuestFormModalComponent implements OnInit {
     mealType: ['normal', [Validators.required]],
     allergies: [''],
     notes: [''],
-    needsTransport: [false]
+    needsTransport: [false],
   });
 
   ngOnInit() {
@@ -41,11 +41,11 @@ export class GuestFormModalComponent implements OnInit {
         email: this.guest.email || '',
         phone: this.guest.phone || '',
         attendance: this.guest.attendance !== false && this.guest.attending !== 0,
-        isAdult: (this.guest.isAdult ?? 1),
+        isAdult: this.guest.isAdult ?? 1,
         mealType: this.guest.mealType || 'normal',
         allergies: this.guest.allergies || '',
         notes: this.guest.notes || '',
-        needsTransport: !!this.guest.needsTransport
+        needsTransport: !!this.guest.needsTransport,
       });
     } else {
       this.isEditingGuest.set(false);
@@ -54,20 +54,19 @@ export class GuestFormModalComponent implements OnInit {
   }
 
   closeModal() {
-    this.close.emit();
+    this.modalClose.emit();
   }
 
   async saveGuest() {
     if (this.guestForm.invalid) {
       this.guestForm.markAllAsTouched();
-      alert('Por favor, rellena al menos el nombre del invitado con un formato válido.');
       return;
     }
 
     try {
       this.isLoading.set(true);
 
-      const formValue = this.guestForm.value as any;
+      const formValue: Guest = this.guestForm.value;
       const isAdult = Number(formValue.isAdult) === 1;
       const guestData: Guest = {
         name: (formValue.name || '').trim(),
@@ -77,18 +76,18 @@ export class GuestFormModalComponent implements OnInit {
         isAdult: isAdult ? 1 : 0,
         adults: isAdult ? 1 : 0,
         children: isAdult ? 0 : 1,
-        attending: (formValue.attendance === false) ? 0 : 1,
+        attending: formValue.attendance === false ? 0 : 1,
         mealType: formValue.mealType || 'normal',
         allergies: formValue.allergies || '',
         notes: formValue.notes || '',
         needsTransport: !!formValue.needsTransport,
-        isSavedInBbdd: false
+        isSavedInBbdd: false,
       };
 
       if (this.isEditingGuest() && this.editingGuestId()) {
         await this.guestService.updateGuest(this.editingGuestId()!, guestData);
       } else {
-        (guestData as any).sendEmail = false;
+        guestData.sendEmail = false;
         await this.guestService.registerGuest(guestData);
       }
 

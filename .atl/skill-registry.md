@@ -10,6 +10,7 @@
 | Skill                  | Trigger                                 | Source                                |
 | ---------------------- | --------------------------------------- | ------------------------------------- |
 | angular-best-practices | Angular components, services, templates | .agents/skills/angular-best-practices |
+| angular-lint           | Angular lint, ESLint, ng lint scripts   | .agents/skills/angular-lint           |
 | svg-animations         | SVG animations, @property               | .agents/skills/svg-animations         |
 | branch-pr              | Creating a PR                           | global                                |
 | issue-creation         | Creating an issue                       | global                                |

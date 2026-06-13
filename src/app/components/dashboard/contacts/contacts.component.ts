@@ -1,16 +1,32 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ToastComponent } from '../../../shared/toast/toast.component';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { ContactService, Contact } from '../../../services/contact.service';
 import { AiGenerateService } from '../../../services/ai-generate.service';
+import {
+  InfoPopupComponent,
+  InfoPopupType,
+} from '../../../shared/components/info-popup/info-popup.component';
+
+interface InfoPopupState {
+  title: string;
+  message: string;
+  type: InfoPopupType;
+}
 
 @Component({
   selector: 'app-contacts',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastComponent, InfoPopupComponent],
   templateUrl: './contacts.component.html',
-  styleUrl: './contacts.component.css'
+  styleUrl: './contacts.component.css',
 })
 export class ContactsComponent implements OnInit {
   private contactService = inject(ContactService);
@@ -36,12 +52,13 @@ export class ContactsComponent implements OnInit {
   showToast = signal(false);
   toastMessage = signal('');
   toastType = signal<'success' | 'error'>('success');
+  infoPopup = signal<InfoPopupState | null>(null);
 
   constructor() {
     this.contactForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       countryCode: ['+34', [Validators.required]],
-      phone: ['', [Validators.required, Validators.pattern(/^[67]\d{8}$/)]]
+      phone: ['', [Validators.required, Validators.pattern(/^[67]\d{8}$/)]],
     });
   }
 
@@ -54,37 +71,46 @@ export class ContactsComponent implements OnInit {
     const query = this.searchQuery().toLowerCase();
     const tab = this.activeTab();
     const status = this.statusFilter();
-    return this.contacts().filter(c => {
+    return this.contacts().filter((c) => {
       const matchesTab = c.side === tab;
       const matchesSearch = c.name.toLowerCase().includes(query) || c.phone.includes(query);
-      
+
       let matchesStatus = true;
       if (status !== 'all') {
         const contactStatus = this.getInvitationStatus(c.linkSent, c.invitationStatus);
         matchesStatus = contactStatus === status;
       }
-      
+
       return matchesTab && matchesSearch && matchesStatus;
     });
   });
 
   async ngOnInit() {
     const cats = await this.contactService.loadCategories();
-    const saved = (() => {
-      try { return localStorage.getItem('contacts.activeTab'); } catch (e) { return null; }
+    const savedTab = (() => {
+      try {
+        return localStorage.getItem('contacts.activeTab');
+      } catch {
+        return null;
+      }
     })();
 
-    if (saved && cats.some(c => c.slug === saved)) {
-      this.activeTab.set(saved);
+    if (savedTab) {
+      this.activeTab.set(savedTab);
     } else if (cats.length > 0) {
       this.activeTab.set(cats[0].slug);
     }
+
     this.contactService.loadContacts();
   }
 
   setTab(slug: string) {
     this.activeTab.set(slug);
-    try { localStorage.setItem('contacts.activeTab', slug); } catch (e) { /* ignore */ }
+    try {
+      localStorage.setItem('contacts.activeTab', slug);
+    } catch {
+      /* ignore */
+    }
   }
 
   async addCategory() {
@@ -103,32 +129,47 @@ export class ContactsComponent implements OnInit {
   async importFromDevice() {
     // ... (rest of the method stays same, but uses dynamic activeTab)
     if (!('contacts' in navigator && 'ContactsManager' in window)) {
-      alert('Tu navegador no soporta la importación de contactos. Por favor, añádelos manualmente.');
+      this.showInfoPopup(
+        'Importacion no disponible',
+        'Tu navegador no soporta la importación de contactos. Por favor, añádelos manualmente.',
+      );
       return;
     }
 
     try {
+      interface ImportedContact {
+        name?: string[];
+        tel?: string[];
+      }
       const props = ['name', 'tel'];
       const opts = { multiple: true };
-      const selectedContacts = await (navigator as any).contacts.select(props, opts);
+      const selectedContacts = await (
+        navigator as unknown as {
+          contacts: { select(props: string[], opts: { multiple: boolean }): ImportedContact[] };
+        }
+      ).contacts.select(props, opts);
 
       if (selectedContacts.length > 0) {
         const contactsToCreate: Contact[] = selectedContacts
-          .map((c: any) => {
-            const result = this.parsePhoneNumber(c.tel[0]);
+          .map((contact) => {
+            const rawTel = contact.tel?.[0] ?? '';
+            const result = this.parsePhoneNumber(rawTel);
 
             return {
-              name: c.name[0],
+              name: contact.name?.[0] ?? 'Invitado',
               phone: result.phone,
               countryCode: result.countryCode,
               side: this.activeTab(),
-              linkSent: false
+              linkSent: false,
             };
           })
-          .filter((c: any) => this.isValidPhone(c.phone));
+          .filter((contact) => this.isValidPhone(contact.phone));
 
         if (contactsToCreate.length === 0) {
-          alert('No se encontraron contactos con teléfonos válidos (9 dígitos, empezando por 6 o 7).');
+          this.showInfoPopup(
+            'Sin telefonos validos',
+            'No se encontraron contactos con teléfonos válidos (9 dígitos, empezando por 6 o 7).',
+          );
           return;
         }
 
@@ -153,7 +194,7 @@ export class ContactsComponent implements OnInit {
         phone,
         countryCode,
         side: this.activeTab(),
-        linkSent: false
+        linkSent: false,
       });
       this.contactForm.reset({ countryCode: '+34' });
       this.isAddingManual.set(false);
@@ -173,7 +214,7 @@ export class ContactsComponent implements OnInit {
    */
   parsePhoneNumber(rawPhone: string): { countryCode: string; phone: string } {
     // Limpiar: eliminar espacios, guiones, paréntesis
-    const clean = rawPhone.replace(/[\s\-\(\)]/g, '');
+    const clean = rawPhone.replace(/[\s\-()]/g, '');
 
     let countryCode = '+34'; // Por defecto España
     let phone = clean;
@@ -232,7 +273,7 @@ export class ContactsComponent implements OnInit {
       const message = await this.aiService.generate({
         type: 'invitation_text',
         guestName: contact.name,
-        stream: false
+        stream: false,
       });
 
       const cleanMessage = String(message).trim();
@@ -244,7 +285,7 @@ export class ContactsComponent implements OnInit {
       await this.contactService.patchContact(contact.id, {
         linkSent: true,
         invitationStatus: 'sent',
-        sentAt: new Date().toISOString()
+        sentAt: new Date().toISOString(),
       });
 
       const link = document.createElement('a');
@@ -254,7 +295,11 @@ export class ContactsComponent implements OnInit {
       link.click();
     } catch (err) {
       console.error('Error sending invitation:', err);
-      alert('Error al generar el mensaje. Por favor, intenta de nuevo.');
+      this.showInfoPopup(
+        'No se pudo generar el mensaje',
+        'Error al generar el mensaje. Por favor, intenta de nuevo.',
+        'error',
+      );
     } finally {
       this.isGenerating.set(null);
     }
@@ -285,13 +330,20 @@ export class ContactsComponent implements OnInit {
       const willBeSent = !contact.linkSent;
       await this.contactService.patchContact(contact.id, {
         linkSent: willBeSent,
-        sentAt: willBeSent ? new Date().toISOString() : undefined
+        sentAt: willBeSent ? new Date().toISOString() : undefined,
       });
       // show toast
-      this.showAppToast(willBeSent ? 'Invitación marcada como enviada' : 'Invitación desmarcada (no enviada)', 'success');
+      this.showAppToast(
+        willBeSent ? 'Invitación marcada como enviada' : 'Invitación desmarcada (no enviada)',
+        'success',
+      );
     } catch (err) {
       console.error('Error toggling sent state:', err);
-      alert('No se pudo actualizar el estado de envío. Intenta de nuevo.');
+      this.showInfoPopup(
+        'Estado no actualizado',
+        'No se pudo actualizar el estado de envío. Intenta de nuevo.',
+        'error',
+      );
       this.showAppToast('No se pudo actualizar el estado de envío. Intenta de nuevo.', 'error');
     }
   }
@@ -309,9 +361,14 @@ export class ContactsComponent implements OnInit {
   async setInvitationStatus(contact: Contact, status: 'not_sent' | 'sent' | 'responded') {
     if (!contact?.id) return;
     try {
-      const updateData: any = {
+      const updateData: {
+        invitationStatus: 'not_sent' | 'sent' | 'responded';
+        linkSent: boolean;
+        sentAt?: string;
+        respondedAt?: string;
+      } = {
         invitationStatus: status,
-        linkSent: status !== 'not_sent'
+        linkSent: status !== 'not_sent',
       };
       if (status === 'sent' && !contact.sentAt) {
         updateData.sentAt = new Date().toISOString();
@@ -320,7 +377,8 @@ export class ContactsComponent implements OnInit {
         updateData.respondedAt = new Date().toISOString();
       }
       await this.contactService.patchContact(contact.id, updateData);
-      const statusLabel = status === 'not_sent' ? 'No enviado' : status === 'sent' ? 'Enviado' : 'Respondido';
+      const statusLabel =
+        status === 'not_sent' ? 'No enviado' : status === 'sent' ? 'Enviado' : 'Respondido';
       this.showAppToast(`Estado cambiado a: ${statusLabel}`, 'success');
     } catch (err) {
       console.error('Error changing invitation status:', err);
@@ -334,11 +392,11 @@ export class ContactsComponent implements OnInit {
   }
 
   getSentCount(slug: string) {
-    return this.contacts().filter(c => c.side === slug && c.linkSent).length;
+    return this.contacts().filter((c) => c.side === slug && c.linkSent).length;
   }
 
   getTotalCount(slug: string) {
-    return this.contacts().filter(c => c.side === slug).length;
+    return this.contacts().filter((c) => c.side === slug).length;
   }
 
   getInvitationStatus(linkSent: boolean, invitationStatus?: string): string {
@@ -356,7 +414,7 @@ export class ContactsComponent implements OnInit {
       const message = await this.aiService.generate({
         type: 'invitation_text',
         guestName: 'todos',
-        stream: false
+        stream: false,
       });
 
       this.genericInvitationText.set(String(message).trim());
@@ -365,7 +423,11 @@ export class ContactsComponent implements OnInit {
       await this.copyToClipboard();
     } catch (err) {
       console.error('Error generating generic invitation:', err);
-      alert('Error al generar la invitación. Por favor, intenta de nuevo.');
+      this.showInfoPopup(
+        'No se pudo generar la invitacion',
+        'Error al generar la invitación. Por favor, intenta de nuevo.',
+        'error',
+      );
       this.showGenericInvitation.set(false);
     } finally {
       this.isGeneratingGeneric.set(false);
@@ -379,14 +441,18 @@ export class ContactsComponent implements OnInit {
       setTimeout(() => this.copySuccess.set(false), 2000);
     } catch (err) {
       console.error('Error copying to clipboard:', err);
-      alert('No se pudo copiar al portapapeles. Por favor, copia el texto manualmente.');
+      this.showInfoPopup(
+        'Copia manual requerida',
+        'No se pudo copiar al portapapeles. Por favor, copia el texto manualmente.',
+        'warning',
+      );
     }
   }
 
   // Mark all contacts in the active tab as sent
   async markAllInTab() {
     const tab = this.activeTab();
-    const toMark = this.contacts().filter(c => c.side === tab && !c.linkSent);
+    const toMark = this.contacts().filter((c) => c.side === tab && !c.linkSent);
     if (toMark.length === 0) {
       this.showAppToast('No hay contactos pendientes de marcar en esta pestaña.', 'success');
       return;
@@ -394,10 +460,14 @@ export class ContactsComponent implements OnInit {
 
     this.isMarkingAll.set(true);
     try {
-      await Promise.all(toMark.map(c => this.contactService.patchContact(c.id!, {
-        linkSent: true,
-        sentAt: new Date().toISOString()
-      })));
+      await Promise.all(
+        toMark.map((c) =>
+          this.contactService.patchContact(c.id!, {
+            linkSent: true,
+            sentAt: new Date().toISOString(),
+          }),
+        ),
+      );
       this.showAppToast(`${toMark.length} contactos marcados como enviados`, 'success');
     } catch (err) {
       console.error('Error marking all contacts:', err);
@@ -411,6 +481,14 @@ export class ContactsComponent implements OnInit {
     this.showGenericInvitation.set(false);
     this.genericInvitationText.set('');
     this.copySuccess.set(false);
+  }
+
+  showInfoPopup(title: string, message: string, type: InfoPopupType = 'info') {
+    this.infoPopup.set({ title, message, type });
+  }
+
+  closeInfoPopup() {
+    this.infoPopup.set(null);
   }
 
   openWhatsApp(contact: Contact) {

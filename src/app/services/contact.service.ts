@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ApiResponse, ContactEntity } from '../../types/api';
 
 export interface Contact {
   id?: number;
@@ -25,7 +26,7 @@ export interface ContactCategory {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ContactService {
   private apiUrl = `${environment.apiBaseUrl}/api/contacts`;
@@ -37,10 +38,13 @@ export class ContactService {
 
   async loadCategories(): Promise<ContactCategory[]> {
     try {
-      const response = await firstValueFrom(this.http.get<{ success: boolean, data: ContactCategory[] }>(this.categoriesUrl));
+      const response = await firstValueFrom(
+        this.http.get<ApiResponse<ContactCategory[]>>(this.categoriesUrl),
+      );
       if (response.success) {
-        this.categories.set(response.data);
-        return response.data;
+        const data = response.data || [];
+        this.categories.set(data);
+        return data;
       }
       return [];
     } catch (error) {
@@ -49,11 +53,14 @@ export class ContactService {
     }
   }
 
-  async createCategory(name: string): Promise<any> {
+  async createCategory(name: string): Promise<ApiResponse<ContactCategory>> {
     try {
-      const response = await firstValueFrom(this.http.post<{ success: boolean, data: ContactCategory }>(this.categoriesUrl, { name }));
-      if (response.success) {
-        this.categories.update(current => [...current, response.data]);
+      const response = await firstValueFrom(
+        this.http.post<ApiResponse<ContactCategory>>(this.categoriesUrl, { name }),
+      );
+      if (response.success && response.data) {
+        const newCat = response.data;
+        this.categories.update((current) => [...current, newCat]);
       }
       return response;
     } catch (error) {
@@ -65,10 +72,11 @@ export class ContactService {
   async loadContacts(side?: string): Promise<Contact[]> {
     try {
       const url = side ? `${this.apiUrl}?side=${side}` : this.apiUrl;
-      const response = await firstValueFrom(this.http.get<{ success: boolean, data: Contact[] }>(url));
+      const response = await firstValueFrom(this.http.get<ApiResponse<Contact[]>>(url));
       if (response.success) {
-        this.contacts.set(response.data);
-        return response.data;
+        const data = response.data || [];
+        this.contacts.set(data);
+        return data;
       }
       return [];
     } catch (error) {
@@ -77,11 +85,14 @@ export class ContactService {
     }
   }
 
-  async createContact(contact: Contact): Promise<any> {
+  async createContact(contact: Contact): Promise<ApiResponse<Contact>> {
     try {
-      const response = await firstValueFrom(this.http.post<{ success: boolean, data: Contact }>(this.apiUrl, contact));
-      if (response.success) {
-        this.contacts.update(current => [...current, response.data]);
+      const response = await firstValueFrom(
+        this.http.post<ApiResponse<Contact>>(this.apiUrl, contact),
+      );
+      if (response.success && response.data) {
+        const newContact = response.data;
+        this.contacts.update((current) => [...current, newContact]);
       }
       return response;
     } catch (error) {
@@ -90,9 +101,11 @@ export class ContactService {
     }
   }
 
-  async createContactsBulk(contacts: Contact[]): Promise<any> {
+  async createContactsBulk(contacts: Contact[]): Promise<ApiResponse<ContactEntity[]>> {
     try {
-      const response = await firstValueFrom(this.http.post<{ success: boolean, data: any }>(this.apiUrl, contacts));
+      const response = await firstValueFrom(
+        this.http.post<ApiResponse<ContactEntity[]>>(this.apiUrl, contacts),
+      );
       if (response.success) {
         await this.loadContacts();
       }
@@ -103,13 +116,18 @@ export class ContactService {
     }
   }
 
-  async patchContact(id: number, partialData: Partial<Contact>): Promise<any> {
+  async patchContact(id: number, partialData: Partial<Contact>): Promise<ApiResponse<Contact>> {
     try {
-      const response = await firstValueFrom(this.http.patch<{ success: boolean, data: Contact }>(`${this.apiUrl}/${id}`, partialData));
+      const response = await firstValueFrom(
+        this.http.patch<ApiResponse<Contact>>(`${this.apiUrl}/${id}`, partialData),
+      );
       if (response.success) {
-        this.contacts.update(current => 
-          current.map(c => c.id === id ? { ...c, ...response.data } : c)
-        );
+        const newData = response.data;
+        if (newData) {
+          this.contacts.update((current) =>
+            current.map((c) => (c.id === id ? { ...c, ...newData } : c)),
+          );
+        }
       }
       return response;
     } catch (error) {
@@ -118,11 +136,13 @@ export class ContactService {
     }
   }
 
-  async deleteContact(id: number): Promise<any> {
+  async deleteContact(id: number): Promise<ApiResponse<{ message: string }>> {
     try {
-      const response = await firstValueFrom(this.http.delete<{ success: boolean }>(`${this.apiUrl}/${id}`));
+      const response = await firstValueFrom(
+        this.http.delete<ApiResponse<{ message: string }>>(`${this.apiUrl}/${id}`),
+      );
       if (response.success) {
-        this.contacts.update(current => current.filter(c => c.id !== id));
+        this.contacts.update((current) => current.filter((c) => c.id !== id));
       }
       return response;
     } catch (error) {

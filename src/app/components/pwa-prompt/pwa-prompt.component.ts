@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { PwaService } from '../../services/pwa.service';
@@ -7,12 +7,12 @@ import { PwaService } from '../../services/pwa.service';
   selector: 'app-pwa-prompt',
   standalone: true,
   templateUrl: './pwa-prompt.component.html',
-  styleUrl: './pwa-prompt.component.css'
+  styleUrl: './pwa-prompt.component.css',
 })
 export class PwaPromptComponent {
   pwaService = inject(PwaService);
   private router = inject(Router);
-  
+
   // Signal para controlar si estamos en /dashboard
   isInDashboard = signal(false);
 
@@ -22,8 +22,8 @@ export class PwaPromptComponent {
 
     // Escuchar cambios de ruta
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: any) => {
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
         this.checkRoute(event.url);
       });
   }

@@ -12,7 +12,7 @@ jobs:
     permissions:
       contents: write # Necesario para hacer commit en la PR
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # Necesario para poder hacer commit en la rama de la PR
           token: ${{ secrets.GITHUB_TOKEN }}

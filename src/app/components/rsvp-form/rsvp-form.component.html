@@ -5,65 +5,94 @@
   </div>
 
   @if (submitSuccess()) {
-  <div class="success-toast">
-    <div class="success-icon-container">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="20 6 9 17 4 12"></polyline>
-      </svg>
+    <div class="success-toast">
+      <div class="success-icon-container">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="success-content">
+        <p class="success-title">¡Guardado con éxito!</p>
+        <p class="success-description">Tu asistencia ha sido registrada.</p>
+      </div>
     </div>
-    <div class="success-content">
-      <p class="success-title">¡Guardado con éxito!</p>
-      <p class="success-description">Tu asistencia ha sido registrada.</p>
-    </div>
-  </div>
   }
 
   @if (submitError()) {
-  <div class="error-message">
-    <p>{{ errorMessage() }}</p>
-  </div>
+    <div class="error-message">
+      <p>{{ errorMessage() }}</p>
+    </div>
   }
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="rsvp-form">
     <!-- Attendance Field -->
     <div class="form-group toggle-group">
-      <label class="form-label label-center">¿Asistirás a la boda?</label>
+      <label for="attendance-toggle" class="form-label label-center">¿Asistirás a la boda?</label>
       <div class="toggle-button-container">
-        <input type="checkbox" id="attendance-toggle" formControlName="attendance" class="toggle-input" />
+        <input
+          type="checkbox"
+          id="attendance-toggle"
+          formControlName="attendance"
+          class="toggle-input"
+        />
         <label for="attendance-toggle" class="toggle-button">
-          <span class="toggle-option" [class.active]="form.get('attendance')?.value">Sí, asistiré</span>
-          <span class="toggle-option" [class.active]="!form.get('attendance')?.value">No podré ir</span>
+          <span class="toggle-option" [class.active]="form.get('attendance')?.value"
+            >Sí, asistiré</span
+          >
+          <span class="toggle-option" [class.active]="!form.get('attendance')?.value"
+            >No podré ir</span
+          >
         </label>
       </div>
     </div>
-
 
     <!-- Name Field -->
     <div class="form-group">
       <label for="name" class="form-label">Nombre *</label>
       <div class="input-icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="input-icon"
+        >
           <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
-        <input type="text" id="name" formControlName="name" class="form-input"
-          [class.input-error]="isFieldInvalid('name')" placeholder="Tu nombre completo" />
+        <input
+          type="text"
+          id="name"
+          formControlName="name"
+          class="form-input"
+          [class.input-error]="isFieldInvalid('name')"
+          placeholder="Tu nombre completo"
+        />
       </div>
       @if (isFieldInvalid('name')) {
-      <span class="error-text">
-        Por favor ingresa un nombre válido (mínimo 3 caracteres)
-      </span>
+        <span class="error-text"> Por favor ingresa un nombre válido (mínimo 3 caracteres) </span>
       }
     </div>
 
     <!-- Show these fields only when attendance is true (Sí, asistiré) -->
     @if (form.get('attendance')?.value) {
-
-
-    <!-- Email Field (Oculto por el usuario) -->
-    <!-- <div class="form-group">
+      <!-- Email Field (Oculto por el usuario) -->
+      <!-- <div class="form-group">
       <label for="email" class="form-label">Email *</label>
       <input type="email" id="email" formControlName="email" class="form-input"
         [class.input-error]="isFieldInvalid('email')" placeholder="tu@email.com" />
@@ -74,297 +103,492 @@
       }
     </div> -->
 
-    <!-- Phone Field -->
-    <div class="form-group">
-      <label for="phone" class="form-label">Teléfono</label>
-      <div class="input-icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon">
-          <path
-            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-          </path>
-        </svg>
-        <input type="tel" id="phone" formControlName="phone" class="form-input"
-          [class.input-error]="isFieldInvalid('phone')" placeholder="+34 XXX XXX XXX" />
-      </div>
-      @if (isFieldInvalid('phone')) {
-      <span class="error-text">
-        Por favor ingresa un teléfono válido
-      </span>
-      }
-    </div>
-
-    <!-- Number of Guests (Adults & Children) -->
-    <div class="form-group flex-group">
-      <!-- Adults -->
-      <div class="flex-1">
-        <label for="adults" class="form-label">Adultos</label>
+      <!-- Phone Field -->
+      <div class="form-group">
+        <label for="phone" class="form-label">Teléfono</label>
         <div class="input-icon-wrapper">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="input-icon"
+          >
+            <path
+              d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+            ></path>
           </svg>
-          <select id="adults" formControlName="adults" class="form-input">
-            <option value="1">1 adulto</option>
-            <option value="2">2 adultos</option>
-            <option value="3">3 adultos</option>
-            <option value="4">4 adultos</option>
-            <option value="5">5 adultos</option>
-            <option value="6">6 adultos</option>
-            <option value="7">7 adultos</option>
-            <option value="8">8 adultos</option>
-            <option value="9">9 adultos</option>
-            <option value="10">10 adultos</option>
+          <input
+            type="tel"
+            id="phone"
+            formControlName="phone"
+            class="form-input"
+            [class.input-error]="isFieldInvalid('phone')"
+            placeholder="+34 XXX XXX XXX"
+          />
+        </div>
+        @if (isFieldInvalid('phone')) {
+          <span class="error-text"> Por favor ingresa un teléfono válido </span>
+        }
+      </div>
+
+      <!-- Number of Guests (Adults & Children) -->
+      <div class="form-group flex-group">
+        <!-- Adults -->
+        <div class="flex-1">
+          <label for="adults" class="form-label">Adultos</label>
+          <div class="input-icon-wrapper">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="input-icon"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <select id="adults" formControlName="adults" class="form-input">
+              <option value="1">1 adulto</option>
+              <option value="2">2 adultos</option>
+              <option value="3">3 adultos</option>
+              <option value="4">4 adultos</option>
+              <option value="5">5 adultos</option>
+              <option value="6">6 adultos</option>
+              <option value="7">7 adultos</option>
+              <option value="8">8 adultos</option>
+              <option value="9">9 adultos</option>
+              <option value="10">10 adultos</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Children -->
+        <div class="flex-1">
+          <label for="children" class="form-label">Niños</label>
+          <div class="input-icon-wrapper">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="input-icon"
+            >
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <select id="children" formControlName="children" class="form-input">
+              <option value="0">0 niños</option>
+              <option value="1">1 niño</option>
+              <option value="2">2 niños</option>
+              <option value="3">3 niños</option>
+              <option value="4">4 niños</option>
+              <option value="5">5 niños</option>
+              <option value="6">6 niños</option>
+              <option value="7">7 niños</option>
+              <option value="8">8 niños</option>
+              <option value="9">9 niños</option>
+              <option value="10">10 niños</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meal Type -->
+      <div class="form-group">
+        <label for="mealType" class="form-label">Tipo de Menú</label>
+        <div class="input-icon-wrapper">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="input-icon"
+          >
+            <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path>
+            <path d="M7 2v20"></path>
+            <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path>
+          </svg>
+          <select id="mealType" formControlName="mealType" class="form-input">
+            <option value="normal">Normal</option>
+            <option value="vegetariano">Vegetariano</option>
+            <option value="vegano">Vegano</option>
+            <option value="celiaco">Celiaco</option>
+            <option value="sin_gluten">Sin Gluten</option>
+            <option value="intolerante_lactosa">Intolerante a la lactosa</option>
+            <option value="intolerante_frutos_secos">Intolerante a los frutos secos</option>
           </select>
         </div>
       </div>
 
-      <!-- Children -->
-      <div class="flex-1">
-        <label for="children" class="form-label">Niños</label>
+      <!-- Transport -->
+      <div class="form-group toggle-group">
+        <label for="needsTransportInput" class="form-label"
+          >Queremos ofrecer servicio de autobús. ¿Necesitas Transporte?</label
+        >
+        <div class="toggle-container">
+          <div class="toggle-side">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="toggle-icon"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <span class="toggle-text" [class.active]="!form.get('needsTransport')?.value">No</span>
+          </div>
+          <label class="switch">
+            <input id="needsTransportInput" type="checkbox" formControlName="needsTransport" />
+            <span class="slider round"></span>
+          </label>
+          <div class="toggle-side">
+            <span
+              class="material-symbols-outlined bus-icon"
+              [class.active]="form.get('needsTransport')?.value"
+              >directions_bus</span
+            >
+            <span class="toggle-text" [class.active]="form.get('needsTransport')?.value"
+              >Sí, por favor</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Allergies -->
+      <div class="form-group">
+        <label for="allergies" class="form-label">Alergias</label>
         <div class="input-icon-wrapper">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon">
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="input-icon"
+          >
+            <path
+              d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
+            ></path>
+            <path d="M12 9v4"></path>
+            <path d="M12 17h.01"></path>
           </svg>
-          <select id="children" formControlName="children" class="form-input">
-            <option value="0">0 niños</option>
-            <option value="1">1 niño</option>
-            <option value="2">2 niños</option>
-            <option value="3">3 niños</option>
-            <option value="4">4 niños</option>
-            <option value="5">5 niños</option>
-            <option value="6">6 niños</option>
-            <option value="7">7 niños</option>
-            <option value="8">8 niños</option>
-            <option value="9">9 niños</option>
-            <option value="10">10 niños</option>
-          </select>
+          <input
+            type="text"
+            id="allergies"
+            formControlName="allergies"
+            class="form-input"
+            placeholder="Describe tus alergias o intolerancias"
+          />
         </div>
       </div>
-    </div>
 
-    <!-- Meal Type -->
-    <div class="form-group">
-      <label for="mealType" class="form-label">Tipo de Menú</label>
-      <div class="input-icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon">
-          <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path>
-          <path d="M7 2v20"></path>
-          <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path>
-        </svg>
-        <select id="mealType" formControlName="mealType" class="form-input">
-          <option value="normal">Normal</option>
-          <option value="vegetariano">Vegetariano</option>
-          <option value="vegano">Vegano</option>
-          <option value="celiaco">Celiaco</option>
-          <option value="sin_gluten">Sin Gluten</option>
-          <option value="intolerante_lactosa">Intolerante a la lactosa</option>
-          <option value="intolerante_frutos_secos">Intolerante a los frutos secos</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Transport -->
-    <div class="form-group toggle-group">
-      <label class="form-label">Queremos ofrecer servicio de autobús. ¿Necesitas Transporte?</label>
-      <div class="toggle-container">
-        <div class="toggle-side">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="15" y1="9" x2="9" y2="15"></line>
-            <line x1="9" y1="9" x2="15" y2="15"></line>
-          </svg>
-          <span class="toggle-text" [class.active]="!form.get('needsTransport')?.value">No</span>
+      <!-- Notes -->
+      <div class="form-group">
+        <div class="label-with-ai">
+          <label for="notes" class="form-label">Notas & Canción favorita 🎵</label>
+          <button
+            type="button"
+            class="ai-button"
+            (click)="generateAiSuggestion()"
+            [disabled]="aiLoading()"
+            title="Generar mensaje y canción con IA"
+          >
+            @if (!aiLoading()) {
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                ></polygon>
+              </svg>
+              <span>IA</span>
+            }
+            @if (aiLoading()) {
+              <span class="ai-loading">⏳</span>
+            }
+          </button>
         </div>
-        <label class="switch">
-          <input type="checkbox" formControlName="needsTransport" />
-          <span class="slider round"></span>
-        </label>
-        <div class="toggle-side">
-          <span class="material-symbols-outlined bus-icon"
-            [class.active]="form.get('needsTransport')?.value">directions_bus</span>
-          <span class="toggle-text" [class.active]="form.get('needsTransport')?.value">Sí, por favor</span>
+        <div class="input-icon-wrapper">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="input-icon textarea-icon"
+          >
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+          <textarea
+            id="notes"
+            formControlName="notes"
+            class="form-input form-textarea"
+            placeholder="¡Déjanos un mensaje especial! y elige una canción que te gustaria escuchar en la fiesta"
+            rows="4"
+          ></textarea>
         </div>
       </div>
-    </div>
-
-    <!-- Allergies -->
-    <div class="form-group">
-      <label for="allergies" class="form-label">Alergias</label>
-      <div class="input-icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon">
-          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
-          <path d="M12 9v4"></path>
-          <path d="M12 17h.01"></path>
-        </svg>
-        <input type="text" id="allergies" formControlName="allergies" class="form-input"
-          placeholder="Describe tus alergias o intolerancias" />
-      </div>
-    </div>
-
-    <!-- Notes -->
-    <div class="form-group">
-      <div class="label-with-ai">
-        <label for="notes" class="form-label">Notas & Canción favorita 🎵</label>
-        <button type="button" class="ai-button" (click)="generateAiSuggestion()" [disabled]="aiLoading()"
-          title="Generar mensaje y canción con IA">
-          @if (!aiLoading()) {
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon
-              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-            </polygon>
-          </svg>
-          <span>IA</span>
-          }
-          @if (aiLoading()) {
-          <span class="ai-loading">⏳</span>
-          }
-        </button>
-      </div>
-      <div class="input-icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          class="input-icon textarea-icon">
-          <path d="M9 18V5l12-2v13"></path>
-          <circle cx="6" cy="18" r="3"></circle>
-          <circle cx="18" cy="16" r="3"></circle>
-        </svg>
-        <textarea id="notes" formControlName="notes" class="form-input form-textarea"
-          placeholder="¡Déjanos un mensaje especial! y elige una canción que te gustaria escuchar en la fiesta"
-          rows="4"></textarea>
-      </div>
-    </div>
     }
-
-
 
     <!-- Show only when attendance is false (No podré ir) -->
     @if (!form.get('attendance')?.value) {
-    <div class="form-group">
-      <div class="label-with-ai">
-        <label for="notes" class="form-label">Motivo</label>
-        <button type="button" class="ai-button" (click)="generateAiExcuse()" [disabled]="aiLoading()"
-          title="Generar motivo con IA">
-          @if (!aiLoading()) {
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon
-              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-            </polygon>
+      <div class="form-group">
+        <div class="label-with-ai">
+          <label for="notes" class="form-label">Motivo</label>
+          <button
+            type="button"
+            class="ai-button"
+            (click)="generateAiExcuse()"
+            [disabled]="aiLoading()"
+            title="Generar motivo con IA"
+          >
+            @if (!aiLoading()) {
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                ></polygon>
+              </svg>
+              <span>IA</span>
+            }
+            @if (aiLoading()) {
+              <span class="ai-loading">⏳</span>
+            }
+          </button>
+        </div>
+        <div class="input-icon-wrapper">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="input-icon textarea-icon"
+          >
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
           </svg>
-          <span>IA</span>
-          }
-          @if (aiLoading()) {
-          <span class="ai-loading">⏳</span>
-          }
-        </button>
+          <textarea
+            id="notes"
+            formControlName="notes"
+            class="form-input form-textarea"
+            placeholder="Cuéntanos el motivo por el que no puedas asistir"
+            rows="4"
+          ></textarea>
+        </div>
       </div>
-      <div class="input-icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          class="input-icon textarea-icon">
-          <path d="M9 18V5l12-2v13"></path>
-          <circle cx="6" cy="18" r="3"></circle>
-          <circle cx="18" cy="16" r="3"></circle>
-        </svg>
-        <textarea id="notes" formControlName="notes" class="form-input form-textarea"
-          placeholder="Cuéntanos el motivo por el que no puedas asistir" rows="4"></textarea>
-      </div>
-    </div>
     }
 
     <!-- Submit Button -->
     <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
       @if (!isSubmitting()) {
-      <span>Enviar confirmación</span>
+        <span>Enviar confirmación</span>
       }
       @if (isSubmitting()) {
-      <span>Enviando...</span>
+        <span>Enviando...</span>
       }
     </button>
   </form>
 
   <!-- Modal de descarga de IA -->
   @if (showDownloadModal()) {
-  <div class="modal-overlay" (click)="cancelDownload()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="modal-icon">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        <h3>Primera vez usando IA</h3>
-      </div>
-      <div class="modal-body">
-        @if (!isDownloading()) {
-        <p>El modelo de inteligencia artificial necesita descargarse para funcionar.</p>
-        <ul class="modal-list">
-          <li>📦 Tamaño: ~1.5 GB</li>
-          <li>⏱️ Tiempo: varios minutos</li>
-          <li>✨ Solo se descarga una vez</li>
-        </ul>
-        <p class="modal-note">La descarga se realizará en segundo plano. Puedes seguir usando la aplicación.</p>
-        } @else {
-        <div class="download-progress-container">
-          <p class="download-status">Descargando modelo... {{ downloadProgress() }}%</p>
-          <div class="progress-bar-bg">
-            <div class="progress-bar-fill" [style.width.%]="downloadProgress()"></div>
-          </div>
-          <p class="modal-note" style="margin-top: 1rem;">Esto puede tardar unos minutos dependiendo de tu conexión.</p>
+    <div
+      class="modal-overlay"
+      (click)="cancelDownload()"
+      (keydown.enter)="cancelDownload()"
+      tabindex="0"
+      role="button"
+      aria-label="Cerrar modal"
+    >
+      <div
+        class="modal-content"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="download-modal-title"
+      >
+        <div class="modal-header">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="modal-icon"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <h3 id="download-modal-title">Primera vez usando IA</h3>
         </div>
-        }
-      </div>
-      <div class="modal-actions">
-        @if (!isDownloading()) {
-        <button type="button" class="modal-btn modal-btn-cancel" (click)="cancelDownload()">
-          Cancelar
-        </button>
-        <button type="button" class="modal-btn modal-btn-confirm" (click)="executeLocalDownloadProcess()">
-          Descargar y continuar
-        </button>
-        } @else {
-        <p class="download-wait-text">Iniciando generación en cuanto termine...</p>
-        }
+        <div class="modal-body">
+          @if (!isDownloading()) {
+            <p>El modelo de inteligencia artificial necesita descargarse para funcionar.</p>
+            <ul class="modal-list">
+              <li>📦 Tamaño: ~1.5 GB</li>
+              <li>⏱️ Tiempo: varios minutos</li>
+              <li>✨ Solo se descarga una vez</li>
+            </ul>
+            <p class="modal-note">
+              La descarga se realizará en segundo plano. Puedes seguir usando la aplicación.
+            </p>
+          } @else {
+            <div class="download-progress-container">
+              <p class="download-status">Descargando modelo... {{ downloadProgress() }}%</p>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" [style.width.%]="downloadProgress()"></div>
+              </div>
+              <p class="modal-note" style="margin-top: 1rem">
+                Esto puede tardar unos minutos dependiendo de tu conexión.
+              </p>
+            </div>
+          }
+        </div>
+        <div class="modal-actions">
+          @if (!isDownloading()) {
+            <button type="button" class="modal-btn modal-btn-cancel" (click)="cancelDownload()">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="modal-btn modal-btn-confirm"
+              (click)="executeLocalDownloadProcess()"
+            >
+              Descargar y continuar
+            </button>
+          } @else {
+            <p class="download-wait-text">Iniciando generación en cuanto termine...</p>
+          }
+        </div>
       </div>
     </div>
-  </div>
   }
 
   @if (showErrorModal()) {
-  <div class="modal-overlay" (click)="closeErrorModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="modal-icon"
-          style="color: #dc2626;">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <h3>No se pudo usar la IA</h3>
-      </div>
-      <div class="modal-body">
-        <p>{{ aiErrorMessage() }}</p>
-        <p class="modal-note" style="margin-top: 1rem;">Puedes escribir tu mensaje y canción manualmente en el campo de
-          notas.</p>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="modal-btn modal-btn-confirm" (click)="closeErrorModal()" style="width: 100%;">
-          Entendido
-        </button>
+    <div
+      class="modal-overlay"
+      (click)="closeErrorModal()"
+      (keydown.enter)="closeErrorModal()"
+      tabindex="0"
+      role="button"
+      aria-label="Cerrar modal"
+    >
+      <div
+        class="modal-content"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="error-modal-title"
+      >
+        <div class="modal-header">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="modal-icon"
+            style="color: #dc2626"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <h3>No se pudo usar la IA</h3>
+        </div>
+        <div class="modal-body">
+          <p>{{ aiErrorMessage() }}</p>
+          <p class="modal-note" style="margin-top: 1rem">
+            Puedes escribir tu mensaje y canción manualmente en el campo de notas.
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="modal-btn modal-btn-confirm"
+            (click)="closeErrorModal()"
+            style="width: 100%"
+          >
+            Entendido
+          </button>
+        </div>
       </div>
     </div>
-  </div>
   }
 </div>

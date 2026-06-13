@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { SettingsService } from './settings.service';
+import { ApiResponse, GuestEntity } from '../../types/api';
 import confetti from 'canvas-confetti';
 
 export interface Guest {
@@ -26,14 +27,21 @@ export interface Guest {
   notes?: string;
 }
 
-declare let window: any;
+type JsonpCallback = (data: Record<string, unknown>) => void;
+type JsonpCallbackWindow = Window & Record<string, JsonpCallback | undefined>;
+
+declare global {
+  interface Window {
+    NG_APP_SHEETURL?: string;
+  }
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GuestService {
   private apiUrl = environment.apiUrl;
-  private sheetUrl = (window as any).NG_APP_SHEETURL || process.env['NG_APP_SHEETURL'] || null;
+  private sheetUrl = window.NG_APP_SHEETURL || process.env['NG_APP_SHEETURL'] || null;
 
   // Master signal for all guests in the app
   guests = signal<Guest[]>([]);
@@ -44,47 +52,78 @@ export class GuestService {
   // Método público para cargar invitados
   async loadGuests(): Promise<Guest[]> {
     try {
-      const response = await firstValueFrom(this.http.get<any>(this.apiUrl));
+      const response = await firstValueFrom(this.http.get<unknown>(this.apiUrl));
 
-      // Unwrapping flexible de la respuesta
-      let list = null;
+      let list: unknown[] = [];
 
       if (Array.isArray(response)) {
-        list = response;
+        list = response as unknown[];
       } else if (response && typeof response === 'object') {
-        // Buscar en propiedades comunes
-        list = response.data || response.guests || response.items || response.rows || response.list;
+        const respObj = response as Record<string, unknown>;
+        list =
+          (respObj['data'] as unknown[]) ||
+          (respObj['guests'] as unknown[]) ||
+          (respObj['items'] as unknown[]) ||
+          (respObj['rows'] as unknown[]) ||
+          (respObj['list'] as unknown[]) ||
+          [];
 
-        // Si no se encuentra en las comunes, buscar el primer array que aparezca en el objeto
-        if (!list || !Array.isArray(list)) {
-          const firstArrayKey = Object.keys(response).find(key => Array.isArray(response[key]));
+        if ((!list || !Array.isArray(list)) && typeof respObj === 'object') {
+          const firstArrayKey = Object.keys(respObj).find((key) =>
+            Array.isArray(respObj[key] as unknown),
+          );
           if (firstArrayKey) {
-            list = response[firstArrayKey];
+            list = respObj[firstArrayKey] as unknown[];
           }
         }
       }
 
-      const finalItems = (Array.isArray(list) ? list : []).map((guest: any) => {
-        // Asegurar mapeo de ID (servidor suele devolver _id o id)
-        if (guest._id && !guest.id) guest.id = guest._id;
+      const finalItems: Guest[] = (Array.isArray(list) ? list : []).map((rawItem) => {
+        const raw = rawItem as Record<string, unknown>;
 
-        // Normalización de tableId (Prioridad camelCase del servidor)
-        let tVal = guest.tableId ?? guest.table_id ?? guest.tableName ?? guest.table_name;
-        if (typeof tVal === 'string') {
-          const match = tVal.match(/\d+/);
-          if (match) tVal = Number(match[0]);
+        const rawId = raw['_id'] ?? raw['id'];
+        const id = rawId !== undefined ? String(rawId) : undefined;
+
+        const tableRaw = raw['tableId'] ?? raw['table_id'] ?? raw['tableName'] ?? raw['table_name'];
+        let tableId: number | null = null;
+        if (tableRaw !== undefined && tableRaw !== null) {
+          const parsed = Number(tableRaw as unknown);
+          tableId = !isNaN(parsed) && parsed !== 0 ? parsed : null;
         }
-        guest.tableId = (tVal !== undefined && tVal !== null && !isNaN(Number(tVal)) && Number(tVal) !== 0) ? Number(tVal) : null;
 
-        // Normalización de seatNumber (Prioridad camelCase del servidor)
-        const sVal = guest.seatNumber ?? guest.seat_number;
-        guest.seatNumber = (sVal !== undefined && sVal !== null) ? Number(sVal) : null;
+        const seatRaw = raw['seatNumber'] ?? raw['seat_number'];
+        const seatNumber =
+          seatRaw !== undefined && seatRaw !== null ? Number(seatRaw as unknown) : null;
 
-        // Normalización de needsTransport
-        const transportVal = guest.needsTransport ?? guest.needs_transport ?? guest.needTransport;
-        guest.needsTransport = transportVal === true || transportVal === 1 || transportVal === '1' || transportVal === 'true';
+        const needsTransportRaw =
+          raw['needsTransport'] ?? raw['needs_transport'] ?? raw['needTransport'];
+        const needsTransport =
+          needsTransportRaw === true ||
+          needsTransportRaw === 'true' ||
+          needsTransportRaw === '1' ||
+          needsTransportRaw === 1;
 
-        return guest;
+        return {
+          id,
+          name: (raw['name'] as string) || '',
+          email: (raw['email'] as string) || '',
+          phone: (raw['phone'] as string) || '',
+          attending: Number(raw['attending'] ?? 0),
+          attendance:
+            typeof raw['attendance'] === 'boolean' ? (raw['attendance'] as boolean) : undefined,
+          adults: raw['adults'] !== undefined ? Number(raw['adults']) : undefined,
+          children: raw['children'] !== undefined ? Number(raw['children']) : undefined,
+          isAdult: raw['isAdult'] !== undefined ? Number(raw['isAdult']) : undefined,
+          mealType: (raw['mealType'] as string) || (raw['meal_type'] as string) || '',
+          needsTransport,
+          isSavedInBbdd: Boolean(raw['isSavedInBbdd'] ?? false),
+          sendEmail: raw['sendEmail'] as boolean | undefined,
+          tableId,
+          tableName: (raw['tableName'] as string) || (raw['table_name'] as string) || undefined,
+          seatNumber,
+          allergies: raw['allergies'] as string | undefined,
+          notes: raw['notes'] as string | undefined,
+        };
       });
 
       this.guests.set(finalItems);
@@ -96,11 +135,15 @@ export class GuestService {
   }
 
   // Registra un invitado y recarga el recurso de lista
-  async registerGuest(guest: Guest): Promise<any> {
+  async registerGuest(guest: Guest): Promise<ApiResponse<GuestEntity> | GuestEntity | null> {
     try {
       // Actualización optimista
       // Si sólo se ha indicado si es adulto/niño (flujo interno), derivamos adults/children
-      if (guest.isAdult !== undefined && guest.adults === undefined && guest.children === undefined) {
+      if (
+        guest.isAdult !== undefined &&
+        guest.adults === undefined &&
+        guest.children === undefined
+      ) {
         if (guest.isAdult) {
           guest.adults = 1;
           guest.children = 0;
@@ -125,30 +168,36 @@ export class GuestService {
       }
       this.guests.update((current: Guest[]) => [...current, guest]);
 
-      const response = await firstValueFrom(this.http.post(this.apiUrl, guest));
-      
+      const response = await firstValueFrom(
+        this.http.post<ApiResponse<GuestEntity>>(this.apiUrl, guest),
+      );
+
       // La respuesta tiene formato { success: true, data: { id: 75, ... }, message: "..." }
       // Necesitamos extraer data.id para actualizar el guest local
-      const responseData = response as any;
+      const responseData = response as ApiResponse<GuestEntity>;
       if (responseData && responseData.data && responseData.data.id) {
-        // Actualizar el guest con el nuevo ID
-        const guestWithId = { ...guest, id: responseData.data.id };
+        // Actualizar el guest con el nuevo ID (coerce a string)
+        const guestWithId = { ...guest, id: String(responseData.data.id) };
         this.guests.update((current: Guest[]) =>
-          current.map(g => g.name === guest.name && g.email === guest.email && g.phone === guest.phone ? guestWithId : g)
+          current.map((g) =>
+            g.name === guest.name && g.email === guest.email && g.phone === guest.phone
+              ? guestWithId
+              : g,
+          ),
         );
       }
 
       guest.isSavedInBbdd = true;
 
       // Enviar también a Google Sheets como backup (JSONP para evitar CORS)
-      this.addToGoogleSheetsJsonp(guest).catch(error => {
+      this.addToGoogleSheetsJsonp(guest).catch((error) => {
         console.warn('Error adding to Google Sheets backup (JSONP):', error);
       });
       confetti({
         particleCount: 150,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff']
+        colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff'],
       });
 
       return responseData;
@@ -156,14 +205,15 @@ export class GuestService {
       console.error('Error registering guest:', error);
       // Si falla el servidor, intentar guardar en Google Sheets vía JSONP
       try {
-        const sheetResult = await this.addToGoogleSheetsJsonp(guest);
+        await this.addToGoogleSheetsJsonp(guest);
         confetti({
           particleCount: 150,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff']
+          colors: ['#be185d', '#ec4899', '#f472b6', '#ffffff'],
         });
-        return sheetResult;
+        // Return null since JSONP backup does not conform to ApiResponse shape
+        return null;
       } catch (sheetError) {
         console.error('Error registering guest (both servers failed):', sheetError);
         throw error;
@@ -172,14 +222,16 @@ export class GuestService {
   }
 
   // Fallback usando JSONP (evita problemas CORS). Usa GET y un callback global.
-  private addToGoogleSheetsJsonp(guest: Guest): Promise<any> {
+  private addToGoogleSheetsJsonp(guest: Guest): Promise<Record<string, unknown>> {
     const base = this.sheetUrl;
     if (!base) {
       return Promise.reject(new Error('Google Sheets URL not configured'));
     }
     return new Promise((resolve, reject) => {
       const callbackName = 'gs_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-      (window as any)[callbackName] = (data: any) => {
+      const jsonpWindow = window as unknown as JsonpCallbackWindow;
+
+      jsonpWindow[callbackName] = (data: Record<string, unknown>) => {
         cleanup();
         resolve(data);
       };
@@ -200,7 +252,7 @@ export class GuestService {
 
       const script = document.createElement('script');
       script.src = base + '?' + params.toString();
-      script.onerror = (ev) => {
+      script.onerror = () => {
         cleanup();
         reject(new Error('JSONP script error'));
       };
@@ -208,8 +260,10 @@ export class GuestService {
 
       function cleanup() {
         try {
-          delete (window as any)[callbackName];
-        } catch { }
+          delete jsonpWindow[callbackName];
+        } catch {
+          // ignore cleanup error
+        }
         if (script.parentNode) script.parentNode.removeChild(script);
       }
     });
@@ -217,12 +271,8 @@ export class GuestService {
 
   // Obtiene la lista actual desde la API (no desde la cache)
   async getAllGuests(): Promise<Guest[]> {
-    try {
-      return firstValueFrom(this.http.get<Guest[]>(this.apiUrl));
-    } catch (error) {
-      console.error('Error fetching guests:', error);
-      throw error;
-    }
+    // Delegate to loadGuests which already normalizes and coerces IDs
+    return this.loadGuests();
   }
 
   // Devuelve el valor cacheado del recurso (si ya fue cargado)
@@ -230,53 +280,82 @@ export class GuestService {
     return this.guests();
   }
 
-  async updateGuest(guestId: string, guestData: Partial<Guest>): Promise<any> {
+  async updateGuest(
+    guestId: string | number,
+    guestData: Partial<Guest>,
+  ): Promise<ApiResponse<GuestEntity>> {
     // Optimístico
     this.guests.update((current: Guest[]) =>
-      current.map(g => g.id === guestId ? { ...g, ...guestData } : g)
+      current.map((g) => (g.id === guestId ? { ...g, ...guestData } : g)),
     );
 
-    return firstValueFrom(this.http.patch(`${this.apiUrl}/${guestId}`, guestData));
+    return firstValueFrom(
+      this.http.patch<ApiResponse<GuestEntity>>(`${this.apiUrl}/${guestId}`, guestData),
+    );
   }
 
-  async updateGuestTable(guestId: string, tableId: number | null, seatNumber: number | null = null): Promise<any> {
+  async updateGuestTable(
+    guestId: string | number,
+    tableId: number | null,
+    seatNumber: number | null = null,
+  ): Promise<ApiResponse<GuestEntity>> {
     if (!guestId) return Promise.reject('No guest ID provided');
 
     // Normalizar: 0 debe ser null
-    const normalizedTableId = (tableId === 0 || tableId === null || tableId === undefined) ? null : tableId;
-    const normalizedSeatNumber = (seatNumber === 0 || seatNumber === null || seatNumber === undefined) ? null : seatNumber;
+    const normalizedTableId =
+      tableId === 0 || tableId === null || tableId === undefined ? null : tableId;
+    const normalizedSeatNumber =
+      seatNumber === 0 || seatNumber === null || seatNumber === undefined ? null : seatNumber;
 
     // Optimístico
     this.guests.update((current: Guest[]) =>
-      current.map(g => (g.id === guestId || g.email === guestId || g.phone === guestId) ? { ...g, tableId: normalizedTableId, seatNumber: normalizedSeatNumber } : g)
+      current.map((g) =>
+        g.id === guestId || g.email === guestId || g.phone === guestId
+          ? { ...g, tableId: normalizedTableId, seatNumber: normalizedSeatNumber }
+          : g,
+      ),
     );
 
     // Enviamos solo los campos especificados por el usuario (camelCase)
     // tableId y seatNumber
-    return firstValueFrom(this.http.patch(`${this.apiUrl}/${guestId}`, {
-      tableId: normalizedTableId,
-      seatNumber: normalizedSeatNumber
-    }));
+    return firstValueFrom(
+      this.http.patch<ApiResponse<GuestEntity>>(`${this.apiUrl}/${guestId}`, {
+        tableId: normalizedTableId,
+        seatNumber: normalizedSeatNumber,
+      }),
+    );
   }
 
-  async deleteGuest(guestId: string): Promise<any> {
+  async deleteGuest(
+    guestId: string | number,
+  ): Promise<ApiResponse<{ deletedId: number; changes: number }>> {
     // Optimístico
-    this.guests.update((current: Guest[]) => current.filter(g => g.id !== guestId));
-    return firstValueFrom(this.http.delete(`${this.apiUrl}/${guestId}`));
+    this.guests.update((current: Guest[]) => current.filter((g) => g.id !== guestId));
+    return firstValueFrom(
+      this.http.delete<ApiResponse<{ deletedId: number; changes: number }>>(
+        `${this.apiUrl}/${guestId}`,
+      ),
+    );
   }
 
-  async requestDeleteCode(): Promise<any> {
+  async requestDeleteCode(): Promise<ApiResponse<{ success: true }>> {
     // Triggers an email with a code for confirmation
-    return firstValueFrom(this.http.post(`${this.apiUrl}/request-delete`, {}));
+    return firstValueFrom(
+      this.http.post<ApiResponse<{ success: true }>>(`${this.apiUrl}/request-delete`, {}),
+    );
   }
 
-  async deleteAllGuests(code?: string): Promise<any> {
+  async deleteAllGuests(
+    code?: string,
+  ): Promise<ApiResponse<{ deletedAll: boolean; resetSeq: boolean }>> {
     this.guests.set([]);
     let url = this.apiUrl;
     if (code) {
       const separator = url.includes('?') ? '&' : '?';
       url = `${url}${separator}code=${encodeURIComponent(code)}`;
     }
-    return firstValueFrom(this.http.delete(url));
+    return firstValueFrom(
+      this.http.delete<ApiResponse<{ deletedAll: boolean; resetSeq: boolean }>>(url),
+    );
   }
 }
