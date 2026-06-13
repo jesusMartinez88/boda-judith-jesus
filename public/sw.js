@@ -1,4 +1,4 @@
-const CACHE_NAME = 'boda-judith-jesus-v1.9.5';
+const CACHE_NAME = 'boda-judith-jesus-v1.9.6';
 const urlsToCache = ['/', '/index.html', '/styles.css', '/favicon.svg', '/favicon-ring.svg'];
 
 // Instalación del service worker
