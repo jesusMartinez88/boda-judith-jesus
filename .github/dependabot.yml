@@ -1,12 +1,25 @@
 version: 2
 updates:
-  #Cada semana, Dependabot revisará las dependencias de npm y creará un PR si hay actualizaciones disponibles.
-  - package-ecosystem: 'npm'
-    directory: '/'
+  # 1. Dependencias de producción: Críticas, siempre queremos verlas
+  - package-ecosystem: "npm"
+    directory: "/"
+    target-branch: "main"
+    open-pull-requests-limit: 10
     schedule:
-      interval: 'weekly'
-    #Agrupa todas las dependencias en un solo PR
+      interval: "weekly"
     groups:
-      dependencies:
-        patterns:
-          - '*'
+      production:
+        dependency-type: "production"
+        applies-to: "version-updates"
+
+  # 2. Dependencias de desarrollo: Agrupadas, pero aisladas de las de producción
+  - package-ecosystem: "npm"
+    directory: "/"
+    target-branch: "main"
+    schedule:
+      interval: "weekly"
+    groups:
+      dev-tools:
+        dependency-type: "development"
+        # Si un paquete de desarrollo falla, no detiene el grupo de producción
+        applies-to: "version-updates"
