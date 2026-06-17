@@ -1,4 +1,11 @@
-import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  AfterViewInit,
+  OnDestroy,
+  ElementRef,
+  ViewChild,
+  signal,
+} from '@angular/core';
 import { gsap } from 'gsap';
 
 interface Photo {
@@ -87,7 +94,7 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
     'assets/fotos/foto16.jpg',
   ];
 
-  selectedPhoto: Photo | null = null;
+  selectedPhoto = signal<Photo | null>(null);
   private ctx?: gsap.Context;
 
   ngAfterViewInit() {
@@ -126,10 +133,10 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
   }
 
   openModal(photo: Photo) {
-    this.selectedPhoto = photo;
+    this.selectedPhoto.set(photo);
   }
 
   closeModal() {
-    this.selectedPhoto = null;
+    this.selectedPhoto.set(null);
   }
 }

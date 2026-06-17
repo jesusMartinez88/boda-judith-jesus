@@ -1,10 +1,9 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 export type InfoPopupType = 'info' | 'success' | 'warning' | 'error';
 
 @Component({
   selector: 'app-info-popup',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './info-popup.component.html',
   styleUrl: './info-popup.component.css',
 })

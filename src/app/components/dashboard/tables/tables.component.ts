@@ -1,4 +1,12 @@
-import { Component, OnInit, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 
 import { GuestService, Guest } from '../../../services/guest.service';
 import { SettingsService } from '../../../services/settings.service';

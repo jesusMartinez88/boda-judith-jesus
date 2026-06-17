@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, Output, inject, signal, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  inject,
+  signal,
+  OnInit,
+} from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Guest, GuestService } from '../../../services/guest.service';
 

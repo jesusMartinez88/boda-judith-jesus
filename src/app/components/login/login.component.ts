@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, effect } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -33,10 +33,34 @@ export class LoginComponent {
   captchaQuestion = signal('');
   private correctCaptchaAnswer = 0;
 
-  private messageTimers: ReturnType<typeof setTimeout>[] = [];
+  private intervalId?: ReturnType<typeof setInterval>;
+  private loadingStartTime = 0;
 
   constructor() {
     this.generateCaptcha();
+
+    // effect() corre fuera de zona — no necesita NgZone ni ChangeDetectorRef
+    effect(() => {
+      if (this.isLoading()) {
+        this.loadingStartTime = Date.now();
+        this.intervalId = setInterval(() => {
+          const elapsed = Date.now() - this.loadingStartTime;
+          if (elapsed >= 45000) {
+            this.loadingMessage.set('Ya casi estamos, gracias por esperar...');
+          } else if (elapsed >= 30000) {
+            this.loadingMessage.set('El servidor está despertando, solo un momento más...');
+          } else if (elapsed >= 15000) {
+            this.loadingMessage.set('Gracias por tu paciencia, casi listo...');
+          } else if (elapsed >= 5000) {
+            this.loadingMessage.set('El servidor se está iniciando, esto puede tardar un minuto...');
+          }
+        }, 1000);
+      } else {
+        clearInterval(this.intervalId);
+        this.intervalId = undefined;
+        this.loadingMessage.set('');
+      }
+    }, { allowSignalWrites: true });
   }
 
   generateCaptcha() {
@@ -62,7 +86,6 @@ export class LoginComponent {
 
       this.isLoading.set(true);
       this.errorMessage.set(null);
-      this.startLoadingMessages();
 
       this.authService
         .login({
@@ -71,7 +94,7 @@ export class LoginComponent {
         })
         .subscribe({
           next: () => {
-            this.clearLoadingMessages();
+            this.isLoading.set(false);
             // Notificar al servicio PWA que el usuario se ha logueado
             this.pwaService.onUserLoggedIn();
             // Usar replaceUrl para que la página de login no quede en el historial
@@ -79,42 +102,11 @@ export class LoginComponent {
             this.router.navigate(['/dashboard'], { replaceUrl: true });
           },
           error: () => {
-            this.clearLoadingMessages();
             this.isLoading.set(false);
             this.errorMessage.set('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
             this.generateCaptcha(); // Regenerate on failure
           },
         });
     }
-  }
-
-  private startLoadingMessages() {
-    // Primer mensaje después de 5 segundos
-    const timer1 = setTimeout(() => {
-      this.loadingMessage.set('El servidor se está iniciando, esto puede tardar un minuto...');
-    }, 5000);
-
-    // Mensaje después de 15 segundos
-    const timer2 = setTimeout(() => {
-      this.loadingMessage.set('Gracias por tu paciencia, casi listo...');
-    }, 15000);
-
-    // Mensaje después de 30 segundos
-    const timer3 = setTimeout(() => {
-      this.loadingMessage.set('El servidor está despertando, solo un momento más...');
-    }, 30000);
-
-    // Mensaje después de 45 segundos
-    const timer4 = setTimeout(() => {
-      this.loadingMessage.set('Ya casi estamos, gracias por esperar...');
-    }, 45000);
-
-    this.messageTimers = [timer1, timer2, timer3, timer4];
-  }
-
-  private clearLoadingMessages() {
-    this.messageTimers.forEach((timer) => clearTimeout(timer));
-    this.messageTimers = [];
-    this.loadingMessage.set('');
   }
 }

@@ -240,7 +240,7 @@
               <div class="card-info">
                 <h3>Total Invitados</h3>
                 <p class="value">{{ displayTotal() }}</p>
-                @if (stats()?.declined !== undefined) {
+                @if ($safeNavigationMigration(stats()?.declined) !== undefined) {
                   <p class="declined-note">Rechazados: {{ stats()?.declined }}</p>
                 }
               </div>
@@ -284,7 +284,7 @@
                 <span class="label">Pendientes de respuesta</span>
                 <span class="count">{{ pendings() }}</span>
               </div>
-              @if (stats()?.declined !== undefined) {
+              @if ($safeNavigationMigration(stats()?.declined) !== undefined) {
                 <button
                   type="button"
                   class="stat-item declined clickable"
@@ -506,12 +506,12 @@
                           📝
                         </button>
                         <button
-                            type="button"
-                            class="icon-btn delete-icon-btn"
-                            (click)="deleteGuestFromModal(guest); $event.stopPropagation()"
-                          >
-                            🗑️
-                          </button>
+                          type="button"
+                          class="icon-btn delete-icon-btn"
+                          (click)="deleteGuestFromModal(guest); $event.stopPropagation()"
+                        >
+                          🗑️
+                        </button>
                       </div>
                       <div class="declined-main">
                         <span class="name"

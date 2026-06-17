@@ -51,7 +51,7 @@
   </div>
 
   <!-- Modal -->
-  @if (selectedPhoto) {
+  @if (selectedPhoto(); as photo) {
     <div
       class="modal-overlay"
       (click)="closeModal()"
@@ -71,9 +71,9 @@
       >
         <button class="modal-close" (click)="closeModal()" aria-label="Cerrar">✕</button>
         <div class="modal-photo">
-          <img [src]="selectedPhoto.placeholder" [alt]="selectedPhoto.title" />
+          <img [src]="photo.placeholder" [alt]="photo.title" />
         </div>
-        <h3>{{ selectedPhoto.title }}</h3>
+        <h3>{{ photo.title }}</h3>
         <p>Haz clic afuera para cerrar</p>
       </div>
     </div>

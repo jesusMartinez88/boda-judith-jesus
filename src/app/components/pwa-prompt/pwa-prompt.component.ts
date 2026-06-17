@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { PwaService } from '../../services/pwa.service';
@@ -12,6 +12,7 @@ import { PwaService } from '../../services/pwa.service';
 export class PwaPromptComponent {
   pwaService = inject(PwaService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   // Signal para controlar si estamos en /dashboard
   isInDashboard = signal(false);
@@ -25,6 +26,7 @@ export class PwaPromptComponent {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.checkRoute(event.url);
+        this.cdr.markForCheck();
       });
   }
 

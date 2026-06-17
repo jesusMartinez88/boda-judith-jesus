@@ -36,9 +36,7 @@ import { Guest } from '../../../services/guest.service';
           </p>
 
           <div class="modal-actions full-width-btns">
-            <button class="btn-danger" (click)="confirmDelete.emit()">
-              Sí, eliminar invitado
-            </button>
+            <button class="btn-danger" (click)="confirmDelete.emit()">Sí, eliminar invitado</button>
             <button class="btn-secondary-modal" (click)="cancelDelete.emit()">
               No, mantener invitado
             </button>
@@ -46,7 +44,7 @@ import { Guest } from '../../../services/guest.service';
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class GuestDeleteModalComponent {
   guest = input<Guest | null>(null);

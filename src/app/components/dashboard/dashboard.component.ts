@@ -530,7 +530,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     try {
       await this.guestService.deleteGuest(guestId);
-      
+
       if (this.deleteGuestSource() === 'modal') {
         this.modalGuestsList.update((current) =>
           current.filter((item) => this.resolveGuestId(item) !== guestId),

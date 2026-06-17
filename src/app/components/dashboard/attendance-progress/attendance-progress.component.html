@@ -10,7 +10,7 @@
           ><span class="legend-dot dot-confirmed"></span>Confirmados {{ stats()?.confirmed }}</span
         >
         <span><span class="legend-dot dot-total"></span>No asisten {{ stats()?.declined }}</span>
-        @if (stats()?.declined !== undefined) {
+        @if ($safeNavigationMigration(stats()?.declined) !== undefined) {
           <span
             ><span class="legend-dot dot-declined"></span>Sin respuesta
             {{

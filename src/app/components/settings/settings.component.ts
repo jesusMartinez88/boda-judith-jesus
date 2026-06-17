@@ -1,4 +1,10 @@
-import { Component, inject, computed, signal, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  computed,
+  signal,
+  OnInit,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../../services/settings.service';

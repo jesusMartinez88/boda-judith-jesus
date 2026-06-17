@@ -1,4 +1,10 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 import { ToastComponent } from '../../../shared/toast/toast.component';
 import { CommonModule } from '@angular/common';
 import {

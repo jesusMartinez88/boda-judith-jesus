@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectorRef,
+  inject,
+} from '@angular/core';
 
 @Component({
   selector: 'app-toast',
@@ -7,6 +16,8 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from
   styleUrls: ['./toast.component.css'],
 })
 export class ToastComponent implements OnChanges {
+  private cdr = inject(ChangeDetectorRef);
+
   @Input() show = false;
   @Input() type: 'success' | 'error' = 'success';
   @Input() title = '';
@@ -19,7 +30,10 @@ export class ToastComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['show'] && this.show) {
       if (this.timeoutId) clearTimeout(this.timeoutId);
-      this.timeoutId = setTimeout(() => this.handleClose(), this.duration);
+      this.timeoutId = setTimeout(() => {
+        this.handleClose();
+        this.cdr.markForCheck();
+      }, this.duration);
     }
   }
 
