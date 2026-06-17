@@ -1,12 +1,11 @@
 import {
   Component,
-  Input,
-  Output,
-  EventEmitter,
   OnChanges,
   SimpleChanges,
   ChangeDetectorRef,
   inject,
+  input,
+  output,
 } from '@angular/core';
 
 @Component({
@@ -18,22 +17,22 @@ import {
 export class ToastComponent implements OnChanges {
   private cdr = inject(ChangeDetectorRef);
 
-  @Input() show = false;
-  @Input() type: 'success' | 'error' = 'success';
-  @Input() title = '';
-  @Input() message = '';
-  @Input() duration = 3500;
-  @Output() closed = new EventEmitter<void>();
+  readonly show = input(false);
+  readonly type = input<'success' | 'error'>('success');
+  readonly title = input('');
+  readonly message = input('');
+  readonly duration = input(3500);
+  readonly closed = output<void>();
 
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['show'] && this.show) {
+    if (changes['show'] && this.show()) {
       if (this.timeoutId) clearTimeout(this.timeoutId);
       this.timeoutId = setTimeout(() => {
         this.handleClose();
         this.cdr.markForCheck();
-      }, this.duration);
+      }, this.duration());
     }
   }
 

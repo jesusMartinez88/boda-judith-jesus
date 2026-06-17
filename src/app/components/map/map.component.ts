@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ElementRef, viewChild } from '@angular/core';
 import L from 'leaflet';
 
 @Component({
@@ -8,7 +8,7 @@ import L from 'leaflet';
   styleUrl: './map.component.css',
 })
 export class MapComponent implements OnInit {
-  @ViewChild('mapContainer') mapContainer!: ElementRef;
+  readonly mapContainer = viewChild.required<ElementRef>('mapContainer');
 
   private map!: L.Map;
 
@@ -21,7 +21,7 @@ export class MapComponent implements OnInit {
     const lat = 38.2151126;
     const lng = -1.3497794;
 
-    this.map = L.map(this.mapContainer.nativeElement).setView([lat, lng], 15);
+    this.map = L.map(this.mapContainer().nativeElement).setView([lat, lng], 15);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',

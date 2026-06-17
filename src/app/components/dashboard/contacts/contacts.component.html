@@ -244,8 +244,7 @@
         [title]="toastType() === 'success' ? 'Listo' : 'Error'"
         [message]="toastMessage()"
         (closed)="hideToast()"
-      >
-      </app-toast>
+      />
     }
   </div>
 
@@ -368,6 +367,6 @@
       [message]="popup.message"
       [type]="popup.type"
       (closed)="closeInfoPopup()"
-    ></app-info-popup>
+    />
   }
 </div>

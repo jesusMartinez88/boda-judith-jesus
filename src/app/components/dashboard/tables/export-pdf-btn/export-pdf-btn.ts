@@ -1,4 +1,4 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, signal, input } from '@angular/core';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -10,17 +10,18 @@ import html2canvas from 'html2canvas';
   styleUrl: './export-pdf-btn.css',
 })
 export class ExportPdfBtnComponent {
-  @Input({ required: true }) hallElement!: HTMLElement | undefined;
+  readonly hallElement = input.required<HTMLElement | undefined>();
 
   isExportingPdf = signal(false);
 
   async exportHallToPdf() {
-    if (!this.hallElement) return;
+    const hallElement = this.hallElement();
+    if (!hallElement) return;
 
     this.isExportingPdf.set(true);
 
     try {
-      const element = this.hallElement;
+      const element = hallElement;
 
       const canvas = await html2canvas(element, {
         scale: 2, // Buena resolución

@@ -4,8 +4,8 @@ import {
   OnDestroy,
   AfterViewInit,
   ElementRef,
-  ViewChild,
   signal,
+  viewChild,
 } from '@angular/core';
 import { gsap } from 'gsap';
 
@@ -24,9 +24,9 @@ interface TimeRemaining {
   styleUrl: './countdown.component.css',
 })
 export class CountdownComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('countdownContainer') countdownContainer!: ElementRef;
-  @ViewChild('countdownHeader') countdownHeader!: ElementRef;
-  @ViewChild('countdownGrid') countdownGrid!: ElementRef;
+  readonly countdownContainer = viewChild.required<ElementRef>('countdownContainer');
+  readonly countdownHeader = viewChild.required<ElementRef>('countdownHeader');
+  readonly countdownGrid = viewChild.required<ElementRef>('countdownGrid');
 
   timeRemaining = signal<TimeRemaining>({
     days: 0,
@@ -61,23 +61,25 @@ export class CountdownComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private initAnimations() {
-    if (!this.countdownContainer || !this.countdownHeader || !this.countdownGrid) {
+    const countdownContainer = this.countdownContainer();
+    if (!countdownContainer || !this.countdownHeader() || !this.countdownGrid()) {
       return;
     }
 
     this.ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 1 } });
 
-      const items = this.countdownGrid.nativeElement.querySelectorAll('.countdown-item');
+      const items = this.countdownGrid().nativeElement.querySelectorAll('.countdown-item');
 
       // Set initial states explicitly to avoid "stuck" invisible items
-      gsap.set(this.countdownHeader.nativeElement, { opacity: 0, y: 30 });
+      const countdownHeader = this.countdownHeader();
+      gsap.set(countdownHeader.nativeElement, { opacity: 0, y: 30 });
       if (items.length > 0) {
         gsap.set(items, { opacity: 0, y: 20, scale: 0.9 });
       }
 
       // Animate to visible
-      tl.to(this.countdownHeader.nativeElement, {
+      tl.to(countdownHeader.nativeElement, {
         opacity: 1,
         y: 0,
         delay: 0.2,
@@ -96,7 +98,7 @@ export class CountdownComponent implements OnInit, OnDestroy, AfterViewInit {
           '-=0.5',
         );
       }
-    }, this.countdownContainer.nativeElement);
+    }, countdownContainer.nativeElement);
   }
 
   private updateCountdown() {
@@ -135,10 +137,11 @@ export class CountdownComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private animateNumberChange() {
-    if (!this.countdownGrid) return;
+    const countdownGrid = this.countdownGrid();
+    if (!countdownGrid) return;
 
     // Pulse effect on seconds change
-    const secondEl = this.countdownGrid.nativeElement.querySelector(
+    const secondEl = countdownGrid.nativeElement.querySelector(
       '.countdown-item:last-child .countdown-number',
     );
     if (secondEl) {

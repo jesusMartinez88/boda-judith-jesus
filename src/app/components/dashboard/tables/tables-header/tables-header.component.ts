@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-tables-header',
@@ -8,10 +8,10 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   styleUrl: './tables-header.component.css',
 })
 export class TablesHeaderComponent {
-  @Input() isEditMode = false;
-  @Input() totalTables = 0;
-  @Output() addTable = new EventEmitter<void>();
-  @Output() toggleEditMode = new EventEmitter<void>();
+  readonly isEditMode = input(false);
+  readonly totalTables = input(0);
+  readonly addTable = output<void>();
+  readonly toggleEditMode = output<void>();
 
   onAddTable() {
     this.addTable.emit();

@@ -1,11 +1,5 @@
-import {
-  Component,
-  OnInit,
-  inject,
-  signal,
-  computed,
-} from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TodosService, Todo } from '../../../services/todos.service';
 import { ToastComponent } from '../../../shared/toast/toast.component';
@@ -13,7 +7,7 @@ import { ToastComponent } from '../../../shared/toast/toast.component';
 @Component({
   selector: 'app-todos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DatePipe, ToastComponent],
+  imports: [ReactiveFormsModule, DatePipe, ToastComponent],
   templateUrl: './todos.component.html',
   styleUrl: './todos.component.css',
 })

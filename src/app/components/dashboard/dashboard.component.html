@@ -231,7 +231,7 @@
       @if (!isLoading() && stats()) {
         <div class="stats-grid animate-fade-in">
           <!-- Attendance Progress Card -->
-          <app-attendance-progress [stats]="stats()"></app-attendance-progress>
+          <app-attendance-progress [stats]="stats()" />
 
           <!-- Total Guests Card -->
           <div class="stats-card total" style="flex-direction: column; align-items: stretch">
@@ -592,10 +592,7 @@
 
     <!-- Modal para Editar Invitado -->
     @if (showEditGuestModal()) {
-      <app-guest-form-modal
-        [guest]="selectedGuestForEdit()"
-        (modalClose)="closeEditGuestModal()"
-      ></app-guest-form-modal>
+      <app-guest-form-modal [guest]="selectedGuestForEdit()" (modalClose)="closeEditGuestModal()" />
     }
 
     <!-- Modal para Confirmar Eliminación de Invitado -->
@@ -604,31 +601,31 @@
         [guest]="guestToDelete()"
         (confirmDelete)="confirmDeleteGuest()"
         (cancelDelete)="cancelDeleteGuest()"
-      ></app-guest-delete-modal>
+      />
     }
 
     @if (currentView() === 'tables') {
-      <app-tables></app-tables>
+      <app-tables />
     }
 
     @if (currentView() === 'settings') {
-      <app-settings></app-settings>
+      <app-settings />
     }
 
     @if (currentView() === 'finances') {
-      <app-finances></app-finances>
+      <app-finances />
     }
 
     @if (currentView() === 'todos') {
-      <app-todos></app-todos>
+      <app-todos />
     }
 
     @if (currentView() === 'contacts') {
-      <app-contacts></app-contacts>
+      <app-contacts />
     }
 
     @if (currentView() === 'music') {
-      <app-music></app-music>
+      <app-music />
     }
 
     <footer class="content-footer">

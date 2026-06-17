@@ -1,10 +1,4 @@
-import {
-  Component,
-  AfterViewInit,
-  ElementRef,
-  ViewChild,
-  OnDestroy,
-} from '@angular/core';
+import { Component, AfterViewInit, ElementRef, OnDestroy, viewChild } from '@angular/core';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CountdownComponent } from '../countdown/countdown.component';
@@ -19,15 +13,15 @@ gsap.registerPlugin(ScrollTrigger);
   styleUrl: './hero.component.css',
 })
 export class HeroComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('heroContent') heroContent!: ElementRef;
-  @ViewChild('heroTitle') heroTitle!: ElementRef;
-  @ViewChild('heroSubtitle') heroSubtitle!: ElementRef;
-  @ViewChild('heroLocation') heroLocation!: ElementRef;
-  @ViewChild('heroCta') heroCta!: ElementRef;
-  @ViewChild('countdownWrapper') countdownWrapper!: ElementRef;
-  @ViewChild('heroBackground') heroBackground!: ElementRef;
-  @ViewChild('heroOverlay') heroOverlay!: ElementRef;
-  @ViewChild('particlesCanvas') particlesCanvas!: ElementRef<HTMLCanvasElement>;
+  readonly heroContent = viewChild.required<ElementRef>('heroContent');
+  readonly heroTitle = viewChild.required<ElementRef>('heroTitle');
+  readonly heroSubtitle = viewChild.required<ElementRef>('heroSubtitle');
+  readonly heroLocation = viewChild.required<ElementRef>('heroLocation');
+  readonly heroCta = viewChild.required<ElementRef>('heroCta');
+  readonly countdownWrapper = viewChild.required<ElementRef>('countdownWrapper');
+  readonly heroBackground = viewChild.required<ElementRef>('heroBackground');
+  readonly heroOverlay = viewChild.required<ElementRef>('heroOverlay');
+  readonly particlesCanvas = viewChild.required<ElementRef<HTMLCanvasElement>>('particlesCanvas');
 
   private particles: {
     x: number;
@@ -53,13 +47,12 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   }
 
   private initAnimations() {
-    if (
-      !this.heroTitle ||
-      !this.heroSubtitle ||
-      !this.heroLocation ||
-      !this.heroCta ||
-      !this.countdownWrapper
-    ) {
+    const heroTitle = this.heroTitle();
+    const heroSubtitle = this.heroSubtitle();
+    const heroLocation = this.heroLocation();
+    const heroCta = this.heroCta();
+    const countdownWrapper = this.countdownWrapper();
+    if (!heroTitle || !heroSubtitle || !heroLocation || !heroCta || !countdownWrapper) {
       console.warn('HeroComponent: Some elements not found for animations');
       return;
     }
@@ -69,11 +62,11 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     // Configurar estado inicial de todos los elementos
     gsap.set(
       [
-        this.heroTitle.nativeElement,
-        this.heroSubtitle.nativeElement,
-        this.heroLocation.nativeElement,
-        this.countdownWrapper.nativeElement,
-        this.heroCta.nativeElement,
+        heroTitle.nativeElement,
+        heroSubtitle.nativeElement,
+        heroLocation.nativeElement,
+        countdownWrapper.nativeElement,
+        heroCta.nativeElement,
       ],
       {
         opacity: 0,
@@ -82,13 +75,13 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     );
 
     // Animación de entrada secuencial
-    tl.to(this.heroTitle.nativeElement, {
+    tl.to(heroTitle.nativeElement, {
       opacity: 1,
       y: 0,
       delay: 0.5,
     })
       .to(
-        this.heroSubtitle.nativeElement,
+        heroSubtitle.nativeElement,
         {
           opacity: 1,
           y: 0,
@@ -96,7 +89,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
         '-=0.8',
       )
       .to(
-        this.heroLocation.nativeElement,
+        heroLocation.nativeElement,
         {
           opacity: 1,
           y: 0,
@@ -104,7 +97,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
         '-=0.8',
       )
       .to(
-        this.countdownWrapper.nativeElement,
+        countdownWrapper.nativeElement,
         {
           opacity: 1,
           y: 0,
@@ -112,7 +105,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
         '-=0.8',
       )
       .to(
-        this.heroCta.nativeElement,
+        heroCta.nativeElement,
         {
           opacity: 1,
           y: 0,
@@ -124,17 +117,20 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   }
 
   private initScrollEffects() {
-    if (!this.heroBackground || !this.heroContent || !this.heroOverlay) {
+    const heroBackground = this.heroBackground();
+    const heroContent = this.heroContent();
+    const heroOverlay = this.heroOverlay();
+    if (!heroBackground || !heroContent || !heroOverlay) {
       return;
     }
 
     // Parallax 3D en el fondo con zoom
-    gsap.to(this.heroBackground.nativeElement, {
+    gsap.to(heroBackground.nativeElement, {
       scale: 1.3,
       y: '30%',
       ease: 'none',
       scrollTrigger: {
-        trigger: this.heroBackground.nativeElement,
+        trigger: heroBackground.nativeElement,
         start: 'top top',
         end: 'bottom top',
         scrub: 1,
@@ -142,12 +138,12 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     });
 
     // Efecto de zoom out en el contenido
-    gsap.to(this.heroContent.nativeElement, {
+    gsap.to(heroContent.nativeElement, {
       scale: 0.8,
       y: -100,
       ease: 'power2.in',
       scrollTrigger: {
-        trigger: this.heroContent.nativeElement,
+        trigger: heroContent.nativeElement,
         start: 'top top',
         end: 'bottom top',
         scrub: 1,
@@ -155,12 +151,12 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     });
 
     // Morphing de colores en el overlay
-    gsap.to(this.heroOverlay.nativeElement, {
+    gsap.to(heroOverlay.nativeElement, {
       background:
         'linear-gradient(135deg, rgba(190, 24, 93, 0.7) 0%, rgba(219, 39, 119, 0.8) 100%)',
       ease: 'none',
       scrollTrigger: {
-        trigger: this.heroOverlay.nativeElement,
+        trigger: heroOverlay.nativeElement,
         start: 'top top',
         end: 'bottom top',
         scrub: 1,
@@ -171,7 +167,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   }
 
   private initParticles() {
-    const canvas = this.particlesCanvas?.nativeElement;
+    const canvas = this.particlesCanvas()?.nativeElement;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');

@@ -7,10 +7,10 @@ import {
   computed,
   effect,
   AfterViewInit,
-  ViewChild,
   ElementRef,
+  viewChild,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MusicPlaylistService, MusicSong } from '../../../services/music-playlist.service';
@@ -51,7 +51,7 @@ declare const YT: YouTubeApi | undefined;
 @Component({
   selector: 'app-music',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DragDropModule],
+  imports: [ReactiveFormsModule, DragDropModule],
   templateUrl: './music.component.html',
   styleUrl: './music.component.css',
 })
@@ -62,7 +62,7 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
   private youtubeService = inject(YouTubeService);
   private destroy$ = new Subject<void>();
 
-  @ViewChild('keepAliveAudio') keepAliveAudio!: ElementRef<HTMLAudioElement>;
+  readonly keepAliveAudio = viewChild.required<ElementRef<HTMLAudioElement>>('keepAliveAudio');
 
   // Signals para el estado de la UI
   songs = this.musicService.songs;
@@ -209,16 +209,18 @@ export class MusicComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // --- Lógica de Keep-Alive ---
   private startKeepAlive() {
-    if (this.keepAliveAudio?.nativeElement) {
-      this.keepAliveAudio.nativeElement.volume = 0.01;
-      this.keepAliveAudio.nativeElement.play().catch(() => undefined);
+    const keepAliveAudio = this.keepAliveAudio();
+    if (keepAliveAudio?.nativeElement) {
+      keepAliveAudio.nativeElement.volume = 0.01;
+      keepAliveAudio.nativeElement.play().catch(() => undefined);
     }
   }
 
   private stopKeepAlive() {
-    if (this.keepAliveAudio?.nativeElement) {
-      this.keepAliveAudio.nativeElement.pause();
-      this.keepAliveAudio.nativeElement.currentTime = 0;
+    const keepAliveAudio = this.keepAliveAudio();
+    if (keepAliveAudio?.nativeElement) {
+      keepAliveAudio.nativeElement.pause();
+      keepAliveAudio.nativeElement.currentTime = 0;
     }
   }
 

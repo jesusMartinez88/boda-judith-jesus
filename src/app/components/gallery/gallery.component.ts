@@ -1,11 +1,4 @@
-import {
-  Component,
-  AfterViewInit,
-  OnDestroy,
-  ElementRef,
-  ViewChild,
-  signal,
-} from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, ElementRef, signal, viewChild } from '@angular/core';
 import { gsap } from 'gsap';
 
 interface Photo {
@@ -24,7 +17,7 @@ interface Photo {
   styleUrl: './gallery.component.css',
 })
 export class GalleryComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('sliderTrack') sliderTrack!: ElementRef;
+  readonly sliderTrack = viewChild.required<ElementRef>('sliderTrack');
 
   photos: Photo[] = [
     {
@@ -108,10 +101,10 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
   }
 
   private initInfiniteSlider() {
-    if (!this.sliderTrack) return;
+    if (!this.sliderTrack()) return;
 
     this.ctx = gsap.context(() => {
-      const track = this.sliderTrack.nativeElement;
+      const track = this.sliderTrack().nativeElement;
 
       // Calculate total width of one set of items
       const totalWidth = track.scrollWidth / 2;

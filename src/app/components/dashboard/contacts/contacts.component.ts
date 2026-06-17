@@ -1,12 +1,6 @@
-import {
-  Component,
-  OnInit,
-  inject,
-  signal,
-  computed,
-} from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ToastComponent } from '../../../shared/toast/toast.component';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -30,7 +24,7 @@ interface InfoPopupState {
 @Component({
   selector: 'app-contacts',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastComponent, InfoPopupComponent],
+  imports: [FormsModule, ReactiveFormsModule, ToastComponent, InfoPopupComponent, DatePipe],
   templateUrl: './contacts.component.html',
   styleUrl: './contacts.component.css',
 })

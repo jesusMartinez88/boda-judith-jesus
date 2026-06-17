@@ -1,12 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  inject,
-  signal,
-  OnInit,
-} from '@angular/core';
+import { Component, inject, signal, OnInit, input, output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Guest, GuestService } from '../../../services/guest.service';
 
@@ -21,8 +13,8 @@ export class GuestFormModalComponent implements OnInit {
   private fb = inject(FormBuilder);
   private guestService = inject(GuestService);
 
-  @Input() guest: Guest | null = null;
-  @Output() modalClose = new EventEmitter<void>();
+  readonly guest = input<Guest | null>(null);
+  readonly modalClose = output<void>();
 
   isLoading = signal(false);
   isEditingGuest = signal(false);
@@ -41,19 +33,20 @@ export class GuestFormModalComponent implements OnInit {
   });
 
   ngOnInit() {
-    if (this.guest) {
+    const guest = this.guest();
+    if (guest) {
       this.isEditingGuest.set(true);
-      this.editingGuestId.set(this.guest.id || null);
+      this.editingGuestId.set(guest.id || null);
       this.guestForm.patchValue({
-        name: this.guest.name || '',
-        email: this.guest.email || '',
-        phone: this.guest.phone || '',
-        attendance: this.guest.attendance !== false && this.guest.attending !== 0,
-        isAdult: this.guest.isAdult ?? 1,
-        mealType: this.guest.mealType || 'normal',
-        allergies: this.guest.allergies || '',
-        notes: this.guest.notes || '',
-        needsTransport: !!this.guest.needsTransport,
+        name: guest.name || '',
+        email: guest.email || '',
+        phone: guest.phone || '',
+        attendance: guest.attendance !== false && guest.attending !== 0,
+        isAdult: guest.isAdult ?? 1,
+        mealType: guest.mealType || 'normal',
+        allergies: guest.allergies || '',
+        notes: guest.notes || '',
+        needsTransport: !!guest.needsTransport,
       });
     } else {
       this.isEditingGuest.set(false);

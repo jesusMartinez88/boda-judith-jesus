@@ -1,7 +1,7 @@
-@if (show) {
-  <div class="app-toast" [class.success]="type === 'success'" [class.error]="type === 'error'">
+@if (show()) {
+  <div class="app-toast" [class.success]="type() === 'success'" [class.error]="type() === 'error'">
     <div class="toast-icon">
-      @if (type === 'success') {
+      @if (type() === 'success') {
         <svg
           width="20"
           height="20"
@@ -32,10 +32,10 @@
       }
     </div>
     <div class="toast-body">
-      @if (title) {
-        <div class="toast-title">{{ title }}</div>
+      @if (title()) {
+        <div class="toast-title">{{ title() }}</div>
       }
-      <div class="toast-message">{{ message }}</div>
+      <div class="toast-message">{{ message() }}</div>
     </div>
   </div>
 }

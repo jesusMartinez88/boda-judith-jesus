@@ -1,12 +1,4 @@
-import {
-  Component,
-  OnInit,
-  inject,
-  signal,
-  computed,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ElementRef, viewChild } from '@angular/core';
 
 import { GuestService, Guest } from '../../../services/guest.service';
 import { SettingsService } from '../../../services/settings.service';
@@ -96,7 +88,7 @@ export class TablesComponent implements OnInit {
   isLoading = signal(true);
   draggedGuest: Guest | null = null;
 
-  @ViewChild('hall') hallElement!: ElementRef;
+  readonly hallElement = viewChild.required<ElementRef>('hall');
 
   // Drag animation state
   draggingGuestId = signal<string | undefined>(undefined);

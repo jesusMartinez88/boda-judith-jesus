@@ -7,8 +7,8 @@ import { PwaPromptComponent } from './components/pwa-prompt/pwa-prompt.component
   standalone: true,
   imports: [RouterOutlet, PwaPromptComponent],
   template: `
-    <router-outlet></router-outlet>
-    <app-pwa-prompt></app-pwa-prompt>
+    <router-outlet />
+    <app-pwa-prompt />
   `,
 })
 export class App {}

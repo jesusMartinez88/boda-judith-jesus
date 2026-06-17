@@ -1,11 +1,5 @@
-import {
-  Component,
-  OnInit,
-  inject,
-  signal,
-  computed,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { DatePipe, CurrencyPipe, DecimalPipe } from '@angular/common';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -20,7 +14,7 @@ import { FinanceEntity } from '../../../../types/api';
 @Component({
   selector: 'app-finances',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastComponent],
+  imports: [FormsModule, ReactiveFormsModule, ToastComponent, CurrencyPipe, DatePipe, DecimalPipe],
   templateUrl: './finances.component.html',
   styleUrl: './finances.component.css',
 })
