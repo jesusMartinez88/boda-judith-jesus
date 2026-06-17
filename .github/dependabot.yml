@@ -1,25 +1,17 @@
 version: 2
 updates:
-  # 1. Dependencias de producción: Críticas, siempre queremos verlas
   - package-ecosystem: "npm"
     directory: "/"
     target-branch: "main"
-    open-pull-requests-limit: 10
     schedule:
       interval: "weekly"
+    # Aquí definimos grupos separados bajo el mismo ecosistema
     groups:
-      production:
+      production-updates:
         dependency-type: "production"
-        applies-to: "version-updates"
+        update-types: ["minor", "patch"]
 
-  # 2. Dependencias de desarrollo: Agrupadas, pero aisladas de las de producción
-  - package-ecosystem: "npm"
-    directory: "/"
-    target-branch: "main"
-    schedule:
-      interval: "weekly"
-    groups:
-      dev-tools:
+      development-updates:
         dependency-type: "development"
-        # Si un paquete de desarrollo falla, no detiene el grupo de producción
+        # Esto agrupa todo lo de desarrollo
         applies-to: "version-updates"
