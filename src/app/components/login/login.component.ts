@@ -1,5 +1,5 @@
 import { Component, inject, signal, effect } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { form, FormField, submit, required, minLength } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { PwaService } from '../../services/pwa.service';
@@ -9,20 +9,29 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [FormField, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
 export class LoginComponent {
-  private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
   private pwaService = inject(PwaService);
 
-  loginForm = this.fb.group({
-    username: ['', [Validators.required, Validators.minLength(4)]],
-    password: ['', [Validators.required, Validators.minLength(4)]],
-    captcha: ['', [Validators.required]],
+  // Model signal - never use null/undefined as initial values
+  protected readonly loginModel = signal({
+    username: '',
+    password: '',
+    captcha: '',
+  });
+
+  // Signal Forms
+  protected readonly loginForm = form(this.loginModel, (s) => {
+    required(s.username, { message: 'El usuario es obligatorio' });
+    minLength(s.username, 4, { message: 'Mínimo 4 caracteres' });
+    required(s.password, { message: 'La contraseña es obligatoria' });
+    minLength(s.password, 4, { message: 'Mínimo 4 caracteres' });
+    required(s.captcha, { message: 'Resuelve el CAPTCHA' });
   });
 
   isLoading = signal(false);
@@ -69,13 +78,13 @@ export class LoginComponent {
     this.correctCaptchaAnswer = num1 + num2;
     this.captchaQuestion.set(`${num1} + ${num2}`);
 
-    // Reset captcha field in form
-    this.loginForm.patchValue({ captcha: '' });
+    // Reset captcha field in form model
+    this.loginModel.update((m) => ({ ...m, captcha: '' }));
   }
 
   onSubmit() {
-    if (this.loginForm.valid) {
-      const formValue = this.loginForm.getRawValue();
+    submit(this.loginForm, async () => {
+      const formValue = this.loginModel();
       const userAnswer = parseInt(formValue.captcha || '', 10);
 
       if (userAnswer !== this.correctCaptchaAnswer) {
@@ -87,26 +96,30 @@ export class LoginComponent {
       this.isLoading.set(true);
       this.errorMessage.set(null);
 
-      this.authService
-        .login({
-          username: formValue.username!,
-          password: formValue.password!,
-        })
-        .subscribe({
-          next: () => {
-            this.isLoading.set(false);
-            // Notificar al servicio PWA que el usuario se ha logueado
-            this.pwaService.onUserLoggedIn();
-            // Usar replaceUrl para que la página de login no quede en el historial
-            // y al pulsar "atrás" no vuelva al login
-            this.router.navigate(['/dashboard'], { replaceUrl: true });
-          },
-          error: () => {
-            this.isLoading.set(false);
-            this.errorMessage.set('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
-            this.generateCaptcha(); // Regenerate on failure
-          },
+      try {
+        await new Promise<void>((resolve, reject) => {
+          this.authService
+            .login({
+              username: formValue.username,
+              password: formValue.password,
+            })
+            .subscribe({
+              next: () => resolve(),
+              error: () => reject(),
+            });
         });
-    }
+
+        // Notificar al servicio PWA que el usuario se ha logueado
+        this.pwaService.onUserLoggedIn();
+        // Usar replaceUrl para que la página de login no quede en el historial
+        // y al pulsar "atrás" no vuelva al login
+        this.router.navigate(['/dashboard'], { replaceUrl: true });
+      } catch {
+        this.errorMessage.set('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
+        this.generateCaptcha();
+      } finally {
+        this.isLoading.set(false);
+      }
+    });
   }
 }

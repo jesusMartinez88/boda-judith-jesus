@@ -1,21 +1,33 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { form, FormField, submit, required, minLength } from '@angular/forms/signals';
 import { TodosService, Todo } from '../../../services/todos.service';
 import { ToastComponent } from '../../../shared/toast/toast.component';
 
 @Component({
   selector: 'app-todos',
   standalone: true,
-  imports: [ReactiveFormsModule, DatePipe, ToastComponent],
+  imports: [FormField, DatePipe, ToastComponent],
   templateUrl: './todos.component.html',
   styleUrl: './todos.component.css',
 })
 export class TodosComponent implements OnInit {
   private todosService = inject(TodosService);
-  private fb = inject(FormBuilder);
 
-  todoForm: FormGroup;
+  // Model signal - never use null/undefined
+  protected readonly todoModel = signal({
+    name: '',
+    date: '',
+    status: 'pending' as 'pending' | 'completed',
+  });
+
+  // Signal Forms
+  protected readonly todoForm = form(this.todoModel, (s) => {
+    required(s.name, { message: 'La descripción es obligatoria' });
+    minLength(s.name, 3, { message: 'Mínimo 3 caracteres' });
+    required(s.date, { message: 'La fecha es obligatoria' });
+  });
+
   todos = this.todosService.todos;
   isLoading = this.todosService.isLoading;
   isSubmitting = signal(false);
@@ -49,14 +61,6 @@ export class TodosComponent implements OnInit {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
   });
-
-  constructor() {
-    this.todoForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      date: ['', [Validators.required]],
-      status: ['pending'],
-    });
-  }
 
   ngOnInit() {
     this.loadData();
@@ -99,50 +103,47 @@ export class TodosComponent implements OnInit {
     return `(En ${diffDays} días)`;
   }
 
-  async onSubmit() {
-    if (this.todoForm.invalid) {
-      this.todoForm.markAllAsTouched();
-      return;
-    }
+  onSubmit() {
+    submit(this.todoForm, async () => {
+      this.isSubmitting.set(true);
+      const formValue = this.todoModel();
 
-    this.isSubmitting.set(true);
-    const formValue = this.todoForm.value;
-
-    try {
-      if (this.editingTodoId()) {
-        await this.todosService.updateTodo(this.editingTodoId()!, formValue);
-      } else {
-        await this.todosService.createTodo(formValue);
-      }
-      // Determine which todo was saved so we can highlight it
-      let savedId: number | null = null;
-      if (this.editingTodoId()) {
-        savedId = this.editingTodoId();
-      } else {
-        const matches = this.todos().filter(
-          (t) => t.name === formValue.name && t.date === formValue.date && t.id,
-        );
-        if (matches.length > 0) {
-          savedId = Math.max(...matches.map((m) => m.id!));
+      try {
+        if (this.editingTodoId()) {
+          await this.todosService.updateTodo(this.editingTodoId()!, formValue);
+        } else {
+          await this.todosService.createTodo(formValue);
         }
+        // Determine which todo was saved so we can highlight it
+        let savedId: number | null = null;
+        if (this.editingTodoId()) {
+          savedId = this.editingTodoId();
+        } else {
+          const matches = this.todos().filter(
+            (t) => t.name === formValue.name && t.date === formValue.date && t.id,
+          );
+          if (matches.length > 0) {
+            savedId = Math.max(...matches.map((m) => m.id!));
+          }
+        }
+        if (savedId) {
+          this.lastSavedTodoId.set(savedId);
+          setTimeout(() => this.lastSavedTodoId.set(null), 2500);
+        }
+        // Close modal if open, else just reset inline form
+        if (this.showFormModal && this.showFormModal()) {
+          this.closeFormModal();
+        } else {
+          this.cancelEdit();
+        }
+        this.showAppToast('Tarea guardada correctamente', 'success');
+      } catch (error) {
+        console.error('Error saving todo:', error);
+        this.showAppToast('No se pudo guardar la tarea', 'error');
+      } finally {
+        this.isSubmitting.set(false);
       }
-      if (savedId) {
-        this.lastSavedTodoId.set(savedId);
-        setTimeout(() => this.lastSavedTodoId.set(null), 2500);
-      }
-      // Close modal if open, else just reset inline form
-      if (this.showFormModal && this.showFormModal()) {
-        this.closeFormModal();
-      } else {
-        this.cancelEdit();
-      }
-      this.showAppToast('Tarea guardada correctamente', 'success');
-    } catch (error) {
-      console.error('Error saving todo:', error);
-      this.showAppToast('No se pudo guardar la tarea', 'error');
-    } finally {
-      this.isSubmitting.set(false);
-    }
+    });
   }
 
   showAppToast(message: string, type: 'success' | 'error') {
@@ -164,10 +165,10 @@ export class TodosComponent implements OnInit {
 
   editTodo(todo: Todo) {
     this.editingTodoId.set(todo.id!);
-    this.todoForm.patchValue({
-      name: todo.name,
-      date: todo.date,
-      status: todo.status,
+    this.todoModel.set({
+      name: todo.name || '',
+      date: todo.date || '',
+      status: todo.status as 'pending' | 'completed',
     });
     // If on narrow screens, open modal for editing
     try {
@@ -181,7 +182,7 @@ export class TodosComponent implements OnInit {
 
   cancelEdit() {
     this.editingTodoId.set(null);
-    this.todoForm.reset({ status: 'pending' });
+    this.todoModel.set({ name: '', date: '', status: 'pending' });
   }
 
   async toggleStatus(todo: Todo) {

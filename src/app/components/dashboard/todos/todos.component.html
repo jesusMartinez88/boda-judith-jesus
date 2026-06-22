@@ -9,16 +9,19 @@
     <section class="form-section">
       <div class="card" [class.editing-mode]="editingTodoId() !== null">
         <h3>{{ editingTodoId() ? '✏️ Editar Tarea' : 'Nueva Tarea' }}</h3>
-        <form [formGroup]="todoForm" (ngSubmit)="onSubmit()" class="todo-form">
+        <form (submit)="onSubmit(); $event.preventDefault()" class="todo-form">
           <div class="form-group">
             <label for="todoNameInput">Descripción de la tarea</label>
             <input
               id="todoNameInput"
               type="text"
-              formControlName="name"
+              [formField]="todoForm.name"
               placeholder="Ej: Comprar las flores"
-              [class.error]="todoForm.get('name')?.invalid && todoForm.get('name')?.touched"
+              [class.error]="todoForm.name().touched() && todoForm.name().errors().length"
             />
+            @if (todoForm.name().touched() && todoForm.name().errors().length) {
+              <span class="error-msg">{{ todoForm.name().errors()[0].message }}</span>
+            }
           </div>
 
           <div class="form-row">
@@ -27,13 +30,16 @@
               <input
                 id="todoDateInput"
                 type="date"
-                formControlName="date"
-                [class.error]="todoForm.get('date')?.invalid && todoForm.get('date')?.touched"
+                [formField]="todoForm.date"
+                [class.error]="todoForm.date().touched() && todoForm.date().errors().length"
               />
+              @if (todoForm.date().touched() && todoForm.date().errors().length) {
+                <span class="error-msg">{{ todoForm.date().errors()[0].message }}</span>
+              }
             </div>
             <div class="form-group">
               <label for="todoStatusSelect">Estado</label>
-              <select id="todoStatusSelect" formControlName="status">
+              <select id="todoStatusSelect" [formField]="todoForm.status">
                 <option value="pending">Pendiente</option>
                 <option value="completed">Completada</option>
               </select>
@@ -222,16 +228,19 @@
           <button class="close-btn" (click)="closeFormModal()" aria-label="Cerrar">&times;</button>
         </div>
         <div class="modal-body">
-          <form [formGroup]="todoForm" (ngSubmit)="onSubmit()" class="todo-form">
+          <form (submit)="onSubmit(); $event.preventDefault()" class="todo-form">
             <div class="form-group">
               <label for="todoNameModalInput">Descripción de la tarea</label>
               <input
                 id="todoNameModalInput"
                 type="text"
-                formControlName="name"
+                [formField]="todoForm.name"
                 placeholder="Ej: Comprar las flores"
-                [class.error]="todoForm.get('name')?.invalid && todoForm.get('name')?.touched"
+                [class.error]="todoForm.name().touched() && todoForm.name().errors().length"
               />
+              @if (todoForm.name().touched() && todoForm.name().errors().length) {
+                <span class="error-msg">{{ todoForm.name().errors()[0].message }}</span>
+              }
             </div>
 
             <div class="form-row">
@@ -240,13 +249,16 @@
                 <input
                   id="todoDateModalInput"
                   type="date"
-                  formControlName="date"
-                  [class.error]="todoForm.get('date')?.invalid && todoForm.get('date')?.touched"
+                  [formField]="todoForm.date"
+                  [class.error]="todoForm.date().touched() && todoForm.date().errors().length"
                 />
+                @if (todoForm.date().touched() && todoForm.date().errors().length) {
+                  <span class="error-msg">{{ todoForm.date().errors()[0].message }}</span>
+                }
               </div>
               <div class="form-group">
                 <label for="todoStatusModalSelect">Estado</label>
-                <select id="todoStatusModalSelect" formControlName="status">
+                <select id="todoStatusModalSelect" [formField]="todoForm.status">
                   <option value="pending">Pendiente</option>
                   <option value="completed">Completada</option>
                 </select>

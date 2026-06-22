@@ -1,16 +1,31 @@
-import { Component, inject, signal, OnInit, input, output } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  OnInit,
+  input,
+  output,
+  linkedSignal,
+} from '@angular/core';
+import {
+  form,
+  FormField,
+  required,
+  email,
+  minLength,
+  submit,
+} from '@angular/forms/signals';
 import { Guest, GuestService } from '../../../services/guest.service';
 
 @Component({
   selector: 'app-guest-form-modal',
-  standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [FormField],
   templateUrl: './guest-form-modal.component.html',
   styleUrl: './guest-form-modal.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GuestFormModalComponent implements OnInit {
-  private fb = inject(FormBuilder);
   private guestService = inject(GuestService);
 
   readonly guest = input<Guest | null>(null);
@@ -20,16 +35,37 @@ export class GuestFormModalComponent implements OnInit {
   isEditingGuest = signal(false);
   editingGuestId = signal<string | null>(null);
 
-  guestForm: FormGroup = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(3)]],
-    email: ['', [Validators.email]],
-    phone: [''],
-    attendance: [true],
-    isAdult: [1, [Validators.required]],
-    mealType: ['normal', [Validators.required]],
-    allergies: [''],
-    notes: [''],
-    needsTransport: [false],
+  protected readonly guestModel = linkedSignal<Guest | null, {
+    name: string;
+    email: string;
+    phone: string;
+    attendance: boolean;
+    isAdult: string;
+    mealType: string;
+    allergies: string;
+    notes: string;
+    needsTransport: boolean;
+  }>({
+    source: () => this.guest(),
+    computation: (guest) => ({
+      name: guest?.name || '',
+      email: guest?.email || '',
+      phone: guest?.phone || '',
+      attendance: guest ? (guest.attendance !== false && guest.attending !== 0) : true,
+      isAdult: String(guest?.isAdult ?? 1),
+      mealType: guest?.mealType || 'normal',
+      allergies: guest?.allergies || '',
+      notes: guest?.notes || '',
+      needsTransport: !!guest?.needsTransport,
+    }),
+  });
+
+  protected readonly guestForm = form(this.guestModel, (s) => {
+    required(s.name, { message: 'El nombre es obligatorio' });
+    minLength(s.name, 3);
+    email(s.email);
+    required(s.isAdult);
+    required(s.mealType);
   });
 
   ngOnInit() {
@@ -37,17 +73,6 @@ export class GuestFormModalComponent implements OnInit {
     if (guest) {
       this.isEditingGuest.set(true);
       this.editingGuestId.set(guest.id || null);
-      this.guestForm.patchValue({
-        name: guest.name || '',
-        email: guest.email || '',
-        phone: guest.phone || '',
-        attendance: guest.attendance !== false && guest.attending !== 0,
-        isAdult: guest.isAdult ?? 1,
-        mealType: guest.mealType || 'normal',
-        allergies: guest.allergies || '',
-        notes: guest.notes || '',
-        needsTransport: !!guest.needsTransport,
-      });
     } else {
       this.isEditingGuest.set(false);
       this.editingGuestId.set(null);
@@ -59,45 +84,42 @@ export class GuestFormModalComponent implements OnInit {
   }
 
   async saveGuest() {
-    if (this.guestForm.invalid) {
-      this.guestForm.markAllAsTouched();
-      return;
-    }
+    submit(this.guestForm, async () => {
+      try {
+        this.isLoading.set(true);
 
-    try {
-      this.isLoading.set(true);
+        const formValue = this.guestModel();
+        const isAdult = formValue.isAdult === '1';
+        const guestData: Guest = {
+          name: (formValue.name || '').trim(),
+          email: (formValue.email || '').trim(),
+          phone: (formValue.phone || '').trim(),
+          attendance: formValue.attendance !== false,
+          isAdult: isAdult ? 1 : 0,
+          adults: isAdult ? 1 : 0,
+          children: isAdult ? 0 : 1,
+          attending: formValue.attendance === false ? 0 : 1,
+          mealType: formValue.mealType || 'normal',
+          allergies: formValue.allergies || '',
+          notes: formValue.notes || '',
+          needsTransport: !!formValue.needsTransport,
+          isSavedInBbdd: false,
+        };
 
-      const formValue: Guest = this.guestForm.value;
-      const isAdult = Number(formValue.isAdult) === 1;
-      const guestData: Guest = {
-        name: (formValue.name || '').trim(),
-        email: (formValue.email || '').trim(),
-        phone: (formValue.phone || '').trim(),
-        attendance: formValue.attendance !== false,
-        isAdult: isAdult ? 1 : 0,
-        adults: isAdult ? 1 : 0,
-        children: isAdult ? 0 : 1,
-        attending: formValue.attendance === false ? 0 : 1,
-        mealType: formValue.mealType || 'normal',
-        allergies: formValue.allergies || '',
-        notes: formValue.notes || '',
-        needsTransport: !!formValue.needsTransport,
-        isSavedInBbdd: false,
-      };
+        if (this.isEditingGuest() && this.editingGuestId()) {
+          await this.guestService.updateGuest(this.editingGuestId()!, guestData);
+        } else {
+          guestData.sendEmail = false;
+          await this.guestService.registerGuest(guestData);
+        }
 
-      if (this.isEditingGuest() && this.editingGuestId()) {
-        await this.guestService.updateGuest(this.editingGuestId()!, guestData);
-      } else {
-        guestData.sendEmail = false;
-        await this.guestService.registerGuest(guestData);
+        this.closeModal();
+      } catch (error) {
+        console.error('Error saving guest:', error);
+        alert('Hubo un problema al guardar los datos. Por favor, inténtalo de nuevo.');
+      } finally {
+        this.isLoading.set(false);
       }
-
-      this.closeModal();
-    } catch (error) {
-      console.error('Error saving guest:', error);
-      alert('Hubo un problema al guardar los datos. Por favor, inténtalo de nuevo.');
-    } finally {
-      this.isLoading.set(false);
-    }
+    });
   }
 }

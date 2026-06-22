@@ -1,13 +1,14 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ToastComponent } from '../../../shared/toast/toast.component';
 import { DatePipe } from '@angular/common';
 import {
-  FormsModule,
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+  form,
+  FormField,
+  required,
+  minLength,
+  pattern,
+  submit,
+} from '@angular/forms/signals';
 import { ContactService, Contact } from '../../../services/contact.service';
 import { AiGenerateService } from '../../../services/ai-generate.service';
 import {
@@ -23,46 +24,47 @@ interface InfoPopupState {
 
 @Component({
   selector: 'app-contacts',
-  standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, ToastComponent, InfoPopupComponent, DatePipe],
+  imports: [FormField, ToastComponent, InfoPopupComponent, DatePipe],
   templateUrl: './contacts.component.html',
   styleUrl: './contacts.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContactsComponent implements OnInit {
   private contactService = inject(ContactService);
   private aiService = inject(AiGenerateService);
-  private fb = inject(FormBuilder);
 
-  contactForm: FormGroup;
+  protected readonly contactModel = signal({
+    name: '',
+    countryCode: '+34',
+    phone: '',
+  });
 
-  activeTab = signal<string>('novio');
+  protected readonly contactForm = form(this.contactModel, (s) => {
+    required(s.name, { message: 'Nombre es obligatorio' });
+    minLength(s.name, 3);
+    required(s.countryCode);
+    required(s.phone);
+    pattern(s.phone, /^[67]\d{8}$/);
+  });
+
+  newCategoryName = signal('');
+  activeTab = signal('');
   searchQuery = signal('');
   statusFilter = signal<'all' | 'not_sent' | 'sent' | 'responded'>('all');
-  isAddingManual = signal(false);
   isAddingCategory = signal(false);
+  isAddingManual = signal(false);
   isGenerating = signal<number | null>(null);
+  isGeneratingGeneric = signal(false);
   isMarkingAll = signal(false);
   showDeleteConfirm = signal(false);
   contactToDelete = signal<Contact | null>(null);
-  showGenericInvitation = signal(false);
-  genericInvitationText = signal('');
-  isGeneratingGeneric = signal(false);
-  copySuccess = signal(false);
-  // Toast notifications
   showToast = signal(false);
   toastMessage = signal('');
   toastType = signal<'success' | 'error'>('success');
+  showGenericInvitation = signal(false);
+  genericInvitationText = signal('');
+  copySuccess = signal(false);
   infoPopup = signal<InfoPopupState | null>(null);
-
-  constructor() {
-    this.contactForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      countryCode: ['+34', [Validators.required]],
-      phone: ['', [Validators.required, Validators.pattern(/^[67]\d{8}$/)]],
-    });
-  }
-
-  newCategoryName = '';
 
   contacts = this.contactService.contacts;
   categories = this.contactService.categories;
@@ -113,12 +115,22 @@ export class ContactsComponent implements OnInit {
     }
   }
 
+  setStatusFilter(value: string) {
+    if (value === 'not_sent' || value === 'sent' || value === 'responded') {
+      this.statusFilter.set(value);
+      return;
+    }
+
+    this.statusFilter.set('all');
+  }
+
   async addCategory() {
-    if (!this.newCategoryName.trim()) return;
+    const categoryName = this.newCategoryName().trim();
+    if (!categoryName) return;
     try {
-      const response = await this.contactService.createCategory(this.newCategoryName);
+      const response = await this.contactService.createCategory(categoryName);
       if (response.success) {
-        this.newCategoryName = '';
+        this.newCategoryName.set('');
         this.isAddingCategory.set(false);
       }
     } catch (err) {
@@ -181,26 +193,24 @@ export class ContactsComponent implements OnInit {
   }
 
   async addManual() {
-    if (this.contactForm.invalid) {
-      this.contactForm.markAllAsTouched();
-      return;
-    }
+    submit(this.contactForm, async () => {
+      const { name, phone, countryCode } = this.contactModel();
 
-    const { name, phone, countryCode } = this.contactForm.value;
-
-    try {
-      await this.contactService.createContact({
-        name,
-        phone,
-        countryCode,
-        side: this.activeTab(),
-        linkSent: false,
-      });
-      this.contactForm.reset({ countryCode: '+34' });
-      this.isAddingManual.set(false);
-    } catch (err) {
-      console.error('Error adding manual contact:', err);
-    }
+      try {
+        await this.contactService.createContact({
+          name: name.trim(),
+          phone: phone.trim(),
+          countryCode,
+          side: this.activeTab(),
+          linkSent: false,
+        });
+        this.contactModel.set({ name: '', phone: '', countryCode: '+34' });
+        this.contactForm().reset();
+        this.isAddingManual.set(false);
+      } catch (err) {
+        console.error('Error adding manual contact:', err);
+      }
+    });
   }
 
   /**

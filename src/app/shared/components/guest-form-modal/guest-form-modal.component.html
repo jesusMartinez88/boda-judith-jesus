@@ -19,19 +19,17 @@
       <button class="close-btn" type="button" (click)="closeModal()">×</button>
     </div>
 
-    <form class="modal-form" [formGroup]="guestForm" (ngSubmit)="saveGuest()">
+    <form class="modal-form" (submit)="saveGuest(); $event.preventDefault()">
       <div class="form-grid">
         <div class="form-group">
           <label for="name">Nombre Completo</label>
           <input
             type="text"
             id="name"
-            formControlName="name"
-            name="name"
+            [formField]="guestForm.name"
             placeholder="Ej: Juan Pérez"
-            required
           />
-          @if (guestForm.get('name')?.touched && guestForm.get('name')?.invalid) {
+          @if (guestForm.name().touched() && guestForm.name().invalid()) {
             <small class="error-message">El nombre es obligatorio (mínimo 3 caracteres)</small>
           }
         </div>
@@ -41,8 +39,7 @@
           <input
             type="email"
             id="email"
-            formControlName="email"
-            name="email"
+            [formField]="guestForm.email"
             placeholder="email@ejemplo.com"
           />
         </div>
@@ -52,23 +49,22 @@
           <input
             type="tel"
             id="phone"
-            formControlName="phone"
-            name="phone"
+            [formField]="guestForm.phone"
             placeholder="600 000 000"
           />
         </div>
 
         <div class="form-group">
           <label for="isAdult">Tipo de invitado</label>
-          <select id="isAdult" formControlName="isAdult" name="isAdult">
-            <option [ngValue]="1">Adulto</option>
-            <option [ngValue]="0">Niño</option>
+          <select id="isAdult" [formField]="guestForm.isAdult">
+            <option value="1">Adulto</option>
+            <option value="0">Niño</option>
           </select>
         </div>
 
         <div class="form-group">
           <label for="mealType">Tipo de Menú</label>
-          <select id="mealType" formControlName="mealType" name="mealType">
+          <select id="mealType" [formField]="guestForm.mealType">
             <option value="normal">Normal</option>
             <option value="vegetariano">Vegetariano</option>
             <option value="vegano">Vegano</option>
@@ -84,8 +80,7 @@
           <label for="allergies">Alergias</label>
           <textarea
             id="allergies"
-            formControlName="allergies"
-            name="allergies"
+            [formField]="guestForm.allergies"
             placeholder="Ej: No puede comer marisco..."
           ></textarea>
         </div>
@@ -94,8 +89,7 @@
           <label for="notes">Notas</label>
           <textarea
             id="notes"
-            formControlName="notes"
-            name="notes"
+            [formField]="guestForm.notes"
             placeholder="Ej: me hace mucha ilusion vuestra boda..."
           ></textarea>
         </div>
@@ -104,21 +98,20 @@
           <input
             type="checkbox"
             id="transport"
-            formControlName="needsTransport"
-            name="needsTransport"
+            [formField]="guestForm.needsTransport"
           />
           <label for="transport">Necesita Transporte 🚌</label>
         </div>
 
         <div class="form-check full-width">
-          <input type="checkbox" id="attendance" formControlName="attendance" name="attendance" />
+          <input type="checkbox" id="attendance" [formField]="guestForm.attendance" />
           <label for="attendance">Asistirá a la boda ✅</label>
         </div>
       </div>
 
       <div class="modal-actions">
         <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
-        <button type="submit" class="btn-primary" [disabled]="isLoading()">
+        <button type="submit" class="btn-primary" [disabled]="isLoading() || guestForm().invalid()">
           @if (isLoading()) {
             Guardando...
           } @else {

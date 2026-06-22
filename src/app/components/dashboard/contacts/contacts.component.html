@@ -34,10 +34,11 @@
       <div class="form-grid-mini">
         <input
           type="text"
-          [(ngModel)]="newCategoryName"
+          [value]="newCategoryName()"
+          (input)="newCategoryName.set($any($event.target).value)"
           placeholder="Ej: Amigos, Familia Suegro..."
         />
-        <button class="btn-save" (click)="addCategory()" [disabled]="!newCategoryName.trim()">
+        <button class="btn-save" (click)="addCategory()" [disabled]="!newCategoryName().trim()">
           Crear Pestaña
         </button>
       </div>
@@ -48,17 +49,17 @@
     <!-- ... (form grid remains same) -->
     <div class="manual-form animate-slide-down">
       <h3>Añadir Contacto Nuevo</h3>
-      <form [formGroup]="contactForm" (ngSubmit)="addManual()" class="form-grid">
+      <form (submit)="addManual(); $event.preventDefault()" class="form-grid">
         <div class="form-group">
           <label for="contact-name">Nombre</label>
           <input
             id="contact-name"
             type="text"
-            formControlName="name"
+            [formField]="contactForm.name"
             placeholder="Ej: Juan Pérez"
-            [class.invalid]="contactForm.get('name')?.invalid && contactForm.get('name')?.touched"
+            [class.invalid]="contactForm.name().touched() && contactForm.name().errors().length"
           />
-          @if (contactForm.get('name')?.invalid && contactForm.get('name')?.touched) {
+          @if (contactForm.name().touched() && contactForm.name().errors().length) {
             <span class="error-msg">El nombre es obligatorio (mín. 3 letras)</span>
           }
         </div>
@@ -67,7 +68,7 @@
           <div class="phone-input-wrapper">
             <select
               id="contact-phone-country"
-              formControlName="countryCode"
+              [formField]="contactForm.countryCode"
               class="country-code-select"
             >
               <option value="+34">🇪🇸 +34</option>
@@ -84,21 +85,21 @@
             <input
               id="contact-phone"
               type="tel"
-              formControlName="phone"
+              [formField]="contactForm.phone"
               placeholder="Ej: 600112233"
               [class.invalid]="
-                contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched
+                contactForm.phone().touched() && contactForm.phone().errors().length
               "
             />
           </div>
-          @if (contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched) {
+          @if (contactForm.phone().touched() && contactForm.phone().errors().length) {
             <span class="error-msg">Debe empezar por 6 o 7 y tener 9 dígitos</span>
           }
         </div>
         <button
           type="submit"
           class="btn-save"
-          [disabled]="contactForm.invalid && contactForm.touched"
+          [disabled]="contactForm().invalid()"
         >
           Guardar
         </button>
@@ -124,14 +125,14 @@
         <span class="search-icon">🔍</span>
         <input
           type="text"
-          [ngModel]="searchQuery()"
-          (ngModelChange)="searchQuery.set($event)"
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)"
           placeholder="Buscar contacto..."
         />
       </div>
       <select
-        [ngModel]="statusFilter()"
-        (ngModelChange)="statusFilter.set($event)"
+        [value]="statusFilter()"
+        (change)="setStatusFilter($any($event.target).value)"
         class="status-select"
       >
         <option value="all">Todos</option>
