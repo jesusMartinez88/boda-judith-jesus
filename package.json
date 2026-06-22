@@ -77,7 +77,8 @@
     "vitest": "^4.1.9"
   },
   "overrides": {
-    "undici": ">=7.24.5",
-    "picomatch": ">=4.0.4"
+    "piscina": ">=5.1.5",
+    "esbuild": ">=0.28.1",
+    "@babel/core": ">=7.29.1"
   }
 }
