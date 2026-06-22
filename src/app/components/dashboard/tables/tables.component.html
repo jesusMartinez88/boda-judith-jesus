@@ -250,6 +250,45 @@
     </aside>
 
     <div class="hall-scroll-container">
+      <!-- Hall Controls -->
+      <div class="hall-controls">
+        <button
+          class="hall-control-btn"
+          (click)="zoomOut()"
+          [disabled]="zoomLevel() <= 0.5"
+          title="Reducir zoom"
+          aria-label="Reducir zoom"
+        >
+          <span>➖</span>
+        </button>
+        <button
+          class="hall-control-btn"
+          (click)="resetZoom()"
+          [disabled]="zoomLevel() === 1"
+          title="Restablecer zoom"
+          aria-label="Restablecer zoom"
+        >
+          <span>{{ zoomPercentage() }}%</span>
+        </button>
+        <button
+          class="hall-control-btn"
+          (click)="zoomIn()"
+          [disabled]="zoomLevel() >= 2"
+          title="Aumentar zoom"
+          aria-label="Aumentar zoom"
+        >
+          <span>➕</span>
+        </button>
+        <button
+          class="hall-control-btn fullscreen-btn"
+          (click)="toggleFullscreen()"
+          [title]="isFullscreen() ? 'Salir de pantalla completa' : 'Pantalla completa'"
+          [attr.aria-label]="isFullscreen() ? 'Salir de pantalla completa' : 'Pantalla completa'"
+        >
+          <span>@if (isFullscreen()) { ✕ } @else { ⛶ }</span>
+        </button>
+      </div>
+
       <div class="hall-search-bar" role="search">
         <label class="hall-search-label" for="hall-search-input">Buscar invitado en el salón</label>
         <div class="hall-search-input-wrap">
@@ -309,6 +348,8 @@
         [class.edit-mode]="isEditLayoutMode()"
         [style.min-height.px]="hallHeight()"
         [style.min-width.px]="hallWidth()"
+        [style.transform]="'scale(' + zoomLevel() + ')'"
+        [style.transform-origin]="'top left'"
       >
         <!-- Decoración floral en esquinas -->
         <span class="hall-corner hall-corner--tl">🌸🌿</span>
@@ -554,9 +595,11 @@
                         <div *cdkDragPlaceholder class="guest-seat-placeholder"></div>
 
                         @if (isCaptainAtTable(table, guest)) {
-                          <span class="seat-captain-crown" aria-hidden="true">👑</span>
+                          <span class="seat-captain-crown" aria-hidden="true">©️</span>
                         }
-                        <div class="seat-marker" [class]="getMenuClass(guest.mealType)">
+                        @let isCaptainBackground = isCaptainAtTable(table, guest) && guest.mealType === 'normal';
+                        <div class="seat-marker" [class]="getMenuClass(guest.mealType)"
+                        [class.guest-item]="isCaptainBackground" [class.is-captain]="isCaptainBackground">
                           <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
                         </div>
                         <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
@@ -628,7 +671,7 @@
             <h4 class="captain-section-title">Capitán de mesa</h4>
             @if (panelCaptain(); as captain) {
               <div class="captain-current">
-                <span class="captain-badge" aria-hidden="true">👑</span>
+                <span class="captain-badge" aria-hidden="true">©️</span>
                 <span class="captain-name">{{ captain.name }}</span>
                 <button
                   type="button"
@@ -661,7 +704,7 @@
                       <span class="guest-name">
                         @if (isCaptainOnPanel(guest)) {
                           <span class="captain-badge captain-badge--inline" aria-hidden="true"
-                            >👑</span
+                            >©️</span
                           >
                         }
                         {{ guest.name || 'Invitado' }}
@@ -676,7 +719,7 @@
                           class="captain-badge captain-badge--assigned"
                           title="Capitán de mesa"
                           aria-label="Capitán de mesa"
-                          >👑</span
+                          >©️</span
                         >
                       } @else {
                         <button
@@ -686,7 +729,7 @@
                           title="Asignar como capitán"
                           [attr.aria-label]="'Asignar como capitán a ' + guest.name"
                         >
-                          👑
+                          ©️
                         </button>
                       }
                       <button

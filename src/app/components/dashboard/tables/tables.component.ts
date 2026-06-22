@@ -145,6 +145,11 @@ export class TablesComponent implements OnInit {
   isEditLayoutMode = signal<boolean>(true);
   private tableWasDragged = false;
 
+  // Fullscreen and zoom controls
+  isFullscreen = signal<boolean>(false);
+  zoomLevel = signal<number>(1);
+  zoomPercentage = computed(() => Math.round(this.zoomLevel() * 100));
+
   private capacityControls = new Map<number, FormControl<number>>();
   private capacitySubs = new Map<number, Subscription>();
 
@@ -427,6 +432,9 @@ export class TablesComponent implements OnInit {
     this.assignSearchControl.valueChanges.subscribe((v) =>
       this.assignSearchTerm.set((v ?? '').toString()),
     );
+
+    // Listen for fullscreen changes
+    document.addEventListener('fullscreenchange', () => this.onFullscreenChange());
   }
 
   getHallSearchLocationMessage(result: HallSearchResult): string {
@@ -1205,5 +1213,54 @@ export class TablesComponent implements OnInit {
       return 120 + 90;
     }
     return 0;
+  }
+
+  // Fullscreen functionality
+  toggleFullscreen() {
+    const hallEl = this.hallElement().nativeElement;
+
+    if (!document.fullscreenElement) {
+      hallEl
+        .requestFullscreen()
+        .then(() => {
+          this.isFullscreen.set(true);
+        })
+        .catch((err: unknown) => {
+          console.error('Error entering fullscreen:', err);
+        });
+    } else {
+      document
+        .exitFullscreen()
+        .then(() => {
+          this.isFullscreen.set(false);
+        })
+        .catch((err: unknown) => {
+          console.error('Error exiting fullscreen:', err);
+        });
+    }
+  }
+
+  // Zoom functionality
+  zoomIn() {
+    const currentZoom = this.zoomLevel();
+    if (currentZoom < 2) {
+      this.zoomLevel.set(currentZoom + 0.1);
+    }
+  }
+
+  zoomOut() {
+    const currentZoom = this.zoomLevel();
+    if (currentZoom > 0.5) {
+      this.zoomLevel.set(currentZoom - 0.1);
+    }
+  }
+
+  resetZoom() {
+    this.zoomLevel.set(1);
+  }
+
+  // Listen for fullscreen changes
+  private onFullscreenChange() {
+    this.isFullscreen.set(!!document.fullscreenElement);
   }
 }
