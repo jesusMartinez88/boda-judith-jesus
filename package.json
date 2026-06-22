@@ -69,7 +69,7 @@
     "angular-cli-ghpages": "^3.1.0",
     "angular-eslint": "22.0.0",
     "eslint": "^10.5.0",
-    "jsdom": "^29.1.1",
+    "happy-dom": "^20.10.6",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "typescript": "~6.0.3",
@@ -77,8 +77,6 @@
     "vitest": "^4.1.9"
   },
   "overrides": {
-    "piscina": ">=5.1.5",
-    "esbuild": ">=0.28.1",
-    "@babel/core": ">=7.29.1"
+    "undici": "7.28.0"
   }
 }
