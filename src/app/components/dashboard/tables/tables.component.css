@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
 /* ===== TABLES VIEW ===== */
 .tables-view {
   display: flex;
@@ -421,6 +423,306 @@
 }
 
 /* ===== CELEBRATION HALL — Soft Wood + Flowers ===== */
+/* ===== PRINT DESIGN MODAL ===== */
+.print-design-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1150;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.print-design-modal {
+  width: min(980px, 100%);
+  max-height: min(90vh, 820px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+  animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.print-design-header,
+.print-design-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-color: #e2e8f0;
+  background: #f8fafc;
+}
+
+.print-design-header {
+  align-items: flex-start;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.print-design-actions {
+  justify-content: flex-end;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.print-design-header h3,
+.print-design-header p {
+  margin: 0;
+}
+
+.print-design-header h3 {
+  font-family: 'Playfair Display', serif;
+  color: #1e293b;
+  font-size: 1.25rem;
+}
+
+.print-design-header p,
+.print-design-description,
+.preview-count {
+  color: #64748b;
+}
+
+.print-design-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 1.2rem;
+  overflow: auto;
+  background: #f8fafc;
+}
+
+.print-design-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.print-design-card:hover,
+.print-design-card:focus-visible,
+.print-design-card.selected {
+  border-color: #ec4899;
+  box-shadow: 0 10px 24px rgba(236, 72, 153, 0.16);
+  outline: none;
+}
+
+.print-design-card.selected {
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.16);
+}
+
+.print-design-preview {
+  aspect-ratio: 2 / 3;
+  min-height: 240px;
+  padding: 1rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  overflow: hidden;
+  color: #1e293b;
+}
+
+.print-design-preview strong {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.45rem;
+  line-height: 1.05;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.preview-eyebrow,
+.preview-count,
+.preview-lines {
+  font-family: Arial, sans-serif;
+}
+
+.preview-eyebrow,
+.preview-count {
+  text-align: center;
+  font-weight: 800;
+}
+
+.preview-eyebrow {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.preview-count,
+.preview-lines {
+  font-size: 0.72rem;
+}
+
+.preview-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+}
+
+.preview-lines span {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding-bottom: 0.32rem;
+  border-bottom: 1px solid currentColor;
+  overflow: hidden;
+}
+
+.preview-lines em {
+  flex-shrink: 0;
+  font-style: normal;
+  opacity: 0.7;
+}
+
+.design-classic {
+  background: #fffdf9;
+  border: 5px solid #e8c3d4;
+}
+
+.design-classic .preview-eyebrow {
+  color: #be185d;
+}
+
+.design-botanical {
+  background: #fbfff8;
+  border: 5px solid #b7d8bc;
+  box-shadow: inset 0 0 0 8px #f0f8ee;
+}
+
+.design-botanical .preview-eyebrow {
+  color: #2f7d4f;
+}
+
+.design-modern {
+  background: #fff;
+  border: 5px solid #111827;
+  box-shadow: inset 0 0 0 6px #e5e7eb;
+}
+
+.design-modern,
+.design-modern strong {
+  font-family: Arial, sans-serif;
+}
+
+.design-romantic {
+  background: #fff8fb;
+  border: 6px double #d88ead;
+  box-shadow: inset 0 0 0 8px #fff;
+}
+
+.design-romantic .preview-eyebrow {
+  color: #a21caf;
+}
+
+.design-romantic strong {
+  color: #831843;
+}
+
+.design-aquamarine {
+  background-color: #92d7db;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'><path d='M 6 36 V 114 H 12 C 12 133, 30 144, 50 144 C 70 144, 88 133, 88 114 H 94 V 36 H 88 C 88 17, 70 6, 50 6 C 30 6, 12 17, 12 36 H 6 Z' fill='%2392d7db'/><path d='M 8.5 37.5 V 112.5 H 14 C 14 130.5, 30 141.5, 50 141.5 C 70 141.5, 86 130.5, 86 112.5 H 91.5 V 37.5 H 86 C 86 19.5, 70 8.5, 50 8.5 C 30 8.5, 14 19.5, 14 37.5 H 8.5 Z' fill='none' stroke='%23ffffff' stroke-width='0.6'/><g transform='translate(74, 102) scale(0.18)' stroke='%23114b53' stroke-width='3' fill='none'><g transform='rotate(-12 50 100)'><ellipse cx='50' cy='180' rx='30' ry='8' fill='%23ffffff' stroke='%23114b53' stroke-width='4'/><line x1='50' y1='180' x2='50' y2='110' stroke='%23114b53' stroke-width='4'/><path d='M 25 50 Q 25 110 50 110 Q 75 110 75 50 Z' fill='%23ffffff' stroke='%23114b53' stroke-width='4'/><path d='M 28 75 Q 50 80 72 75' stroke='%23114b53' stroke-width='3'/><circle cx='45' cy='65' r='2.5' fill='%23114b53'/><circle cx='55' cy='60' r='2' fill='%23114b53'/><circle cx='40' cy='55' r='2.5' fill='%23114b53'/></g><g transform='translate(35, 10) rotate(10 50 100)'><ellipse cx='50' cy='180' rx='30' ry='8' fill='%23ffffff' stroke='%23114b53' stroke-width='4'/><line x1='50' y1='180' x2='50' y2='110' stroke='%23114b53' stroke-width='4'/><path d='M 25 50 Q 25 110 50 110 Q 75 110 75 50 Z' fill='%23ffffff' stroke='%23114b53' stroke-width='4'/><path d='M 28 75 Q 50 80 72 75' stroke='%23114b53' stroke-width='3'/><circle cx='45' cy='65' r='2.5' fill='%23114b53'/><circle cx='52' cy='58' r='2' fill='%23114b53'/><circle cx='38' cy='70' r='3' fill='%23114b53'/></g></g></svg>");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem 1.1rem 0.8rem 1.1rem !important;
+  gap: 0.15rem !important;
+  justify-content: flex-start;
+  border: none !important;
+}
+
+.design-aquamarine strong {
+  order: 1;
+  color: #114b53;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  margin-bottom: 0.1rem;
+}
+
+.design-aquamarine .preview-count {
+  display: none !important;
+}
+
+.design-aquamarine .preview-lines {
+  order: 2;
+  background: #ffffff;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #ffffff;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem !important;
+  margin-top: 0.1rem;
+  margin-bottom: 0.1rem;
+}
+
+.design-aquamarine .preview-lines span {
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #114b53 !important;
+  font-family: Arial, sans-serif;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  padding-bottom: 0.12rem !important;
+}
+
+.design-aquamarine .preview-lines span em {
+  color: #1b5d67 !important;
+  font-size: 0.58rem;
+}
+
+.design-aquamarine .preview-eyebrow {
+  order: 3;
+  font-family: 'Great Vibes', cursive;
+  font-size: 1.35rem;
+  color: #114b53;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: normal;
+  margin-top: 0.15rem;
+  line-height: 1;
+}
+
+.design-aquamarine::after {
+  content: '11 DE JULIO DE 2026';
+  order: 4;
+  display: block;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  color: #114b53;
+  font-weight: bold;
+  margin-top: 0.05rem;
+}
+
+.print-design-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.print-design-name {
+  font-weight: 800;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+.print-design-description {
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
 .reception-queue {
   background: #f8fafc;
   padding: 1.5rem;
@@ -922,6 +1224,10 @@
   background: #ec4899;
   color: white;
   transform: scale(1.1) rotate(10deg);
+}
+
+.config-btn.print:hover {
+  background: #0f766e;
 }
 
 .config-btn.delete:hover {
@@ -1606,6 +1912,10 @@
     position: relative;
     top: 0;
   }
+
+  .print-design-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
@@ -1653,6 +1963,38 @@
 
   .assign-controls {
     grid-template-columns: 1fr;
+  }
+
+  .print-design-modal {
+    max-height: 92vh;
+  }
+
+  .print-design-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .print-design-card {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: center;
+  }
+
+  .print-design-preview {
+    min-height: 180px;
+    padding: 0.75rem 0.55rem;
+  }
+
+  .print-design-preview strong {
+    font-size: 1rem;
+  }
+
+  .print-design-actions {
+    flex-direction: column-reverse;
+  }
+
+  .print-design-actions .btn-primary,
+  .print-design-actions .btn-secondary {
+    width: 100%;
   }
 }
 

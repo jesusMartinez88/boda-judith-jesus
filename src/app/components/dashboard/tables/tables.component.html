@@ -363,6 +363,7 @@
                 tabindex="-1"
               >
                 <button
+                  type="button"
                   class="config-btn shape"
                   (click)="toggleTableShape(table.id, table.shape)"
                   [title]="'Cambiar tipo: ' + table.shape"
@@ -377,6 +378,15 @@
                           : '👥'
                   }}
                 </button>
+                <button
+                  type="button"
+                  class="config-btn print"
+                  (click)="printTableSticker(table, $event)"
+                  title="Imprimir pegatina de esta mesa"
+                  [attr.aria-label]="'Imprimir pegatina de ' + (table.name || 'Mesa ' + table.id)"
+                >
+                  🖨️
+                </button>
                 <div class="capacity-field">
                   <input
                     type="number"
@@ -387,6 +397,7 @@
                   />
                 </div>
                 <button
+                  type="button"
                   class="config-btn delete"
                   (click)="deleteTable(table.id)"
                   title="Eliminar mesa"
@@ -601,6 +612,13 @@
               </p>
             </div>
             <div class="table-panel-header-actions">
+              <button
+                type="button"
+                class="btn-secondary btn-sm"
+                (click)="printTableSticker(panelTable, $event)"
+              >
+                🖨️ Imprimir
+              </button>
               @if (selectedTableFreeSeats().length > 0) {
                 <button
                   type="button"
@@ -669,6 +687,107 @@
             }
           </div>
         </aside>
+      </div>
+    }
+
+    <!-- Modal: elegir diseño de pegatina -->
+    @if (selectedPrintTable(); as printTable) {
+      <div
+        class="print-design-backdrop"
+        (click)="closePrintDesignModal()"
+        (keydown.enter)="closePrintDesignModal()"
+        tabindex="0"
+        role="button"
+        aria-label="Cerrar selector de diseño"
+      >
+        <section
+          class="print-design-modal"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="-1"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="print-design-title"
+        >
+          <header class="print-design-header">
+            <div>
+              <h3 id="print-design-title">Diseño de pegatina</h3>
+              <p>
+                {{ printTable.name || 'Mesa ' + printTable.id }} ·
+                {{ printTable.guests.length }} invitados
+              </p>
+            </div>
+            <button
+              type="button"
+              class="close-btn"
+              (click)="closePrintDesignModal()"
+              aria-label="Cerrar selector de diseño"
+            >
+              ×
+            </button>
+          </header>
+
+          <div
+            class="print-design-grid"
+            role="radiogroup"
+            aria-label="Diseños disponibles para imprimir la pegatina"
+          >
+            @for (design of printStickerDesigns; track design.id) {
+              <button
+                type="button"
+                class="print-design-card"
+                [class.selected]="selectedPrintDesign() === design.id"
+                [attr.aria-pressed]="selectedPrintDesign() === design.id"
+                (click)="selectPrintDesign(design.id)"
+              >
+                <span
+                  class="print-design-preview"
+                  [class.design-classic]="design.id === 'classic'"
+                  [class.design-botanical]="design.id === 'botanical'"
+                  [class.design-modern]="design.id === 'modern'"
+                  [class.design-romantic]="design.id === 'romantic'"
+                  [class.design-aquamarine]="design.id === 'aquamarine'"
+                >
+                  <span class="preview-eyebrow">Judith & Jesús</span>
+                  <strong>{{ printTable.name || 'Mesa ' + printTable.id }}</strong>
+                  <span class="preview-count">{{ printTable.guests.length }} invitados</span>
+                  <span class="preview-lines">
+                    @for (guest of getPrintPreviewGuests(printTable); track guestKey(guest)) {
+                      <span>
+                        {{ guest.name || 'Invitado' }}
+                        @if (guest.seatNumber) {
+                          <em>{{ guest.seatNumber }}</em>
+                        }
+                      </span>
+                    }
+                    @if (printTable.guests.length === 0) {
+                      <span>Sin invitados sentados</span>
+                    }
+                  </span>
+                </span>
+                <span class="print-design-copy">
+                  <span class="print-design-name">{{ design.name }}</span>
+                  <span class="print-design-description">{{ design.description }}</span>
+                </span>
+              </button>
+            }
+          </div>
+
+          <footer class="print-design-actions">
+            <button type="button" class="btn-secondary" (click)="copyGuestsToClipboard()" title="Copiar lista de invitados para pegar en Canva">
+              Copiar lista
+            </button>
+            <button type="button" class="btn-secondary" (click)="downloadGuestsCSV()" title="Descargar CSV para importar en lote en Canva">
+              Descargar CSV
+            </button>
+            <button type="button" class="btn-secondary" (click)="closePrintDesignModal()">
+              Cancelar
+            </button>
+            <button type="button" class="btn-primary" (click)="confirmPrintTableSticker()">
+              Imprimir {{ getSelectedPrintDesignName() }}
+            </button>
+          </footer>
+        </section>
       </div>
     }
 

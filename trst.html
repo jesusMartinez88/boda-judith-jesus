@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <svg width="1080" height="1350" viewBox="0 0 1080 1350" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff8ed"/>
+      <stop offset="100%" stop-color="#ead8b8"/>
+    </linearGradient>
+
+    <linearGradient id="vidrio" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d7c39b"/>
+      <stop offset="35%" stop-color="#f6e6c7"/>
+      <stop offset="100%" stop-color="#b8955b"/>
+    </linearGradient>
+
+    <linearGradient id="oro" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7df9a"/>
+      <stop offset="50%" stop-color="#b8872d"/>
+      <stop offset="100%" stop-color="#6f4a16"/>
+    </linearGradient>
+
+    <filter id="sombra" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Fondo -->
+  <rect width="1080" height="1350" fill="url(#fondo)"/>
+
+  <!-- Decoración floral sutil -->
+  <g opacity="0.35">
+    <circle cx="180" cy="220" r="35" fill="#d9b56a"/>
+    <circle cx="235" cy="255" r="22" fill="#8fa978"/>
+    <circle cx="145" cy="285" r="28" fill="#8fa978"/>
+    <circle cx="900" cy="1120" r="42" fill="#d9b56a"/>
+    <circle cx="850" cy="1170" r="24" fill="#8fa978"/>
+    <circle cx="940" cy="1190" r="30" fill="#8fa978"/>
+  </g>
+
+  <!-- Botella -->
+  <g filter="url(#sombra)">
+    <!-- Cuello -->
+    <rect x="455" y="120" width="170" height="260" rx="28" fill="url(#vidrio)" stroke="url(#oro)" stroke-width="5"/>
+    <path d="M455 360 C455 305 625 305 625 360 L690 520 C710 570 715 625 715 690 L715 1120 C715 1185 665 1235 600 1235 L480 1235 C415 1235 365 1185 365 1120 L365 690 C365 625 370 570 390 520 Z"
+          fill="url(#vidrio)" stroke="url(#oro)" stroke-width="6"/>
+
+    <!-- Brillos -->
+    <path d="M430 470 C405 560 405 720 410 870" fill="none" stroke="#fff7df" stroke-width="12" stroke-linecap="round" opacity="0.45"/>
+    <path d="M650 470 C675 560 675 720 670 870" fill="none" stroke="#fff7df" stroke-width="10" stroke-linecap="round" opacity="0.35"/>
+
+    <!-- Etiqueta -->
+    <rect x="245" y="635" width="590" height="340" rx="32" fill="#fffaf0" stroke="url(#oro)" stroke-width="5"/>
+    <rect x="265" y="655" width="550" height="300" rx="24" fill="none" stroke="#d8b66b" stroke-width="2" stroke-dasharray="8 8"/>
+
+    <!-- Flores decorativas en la etiqueta -->
+    <g opacity="0.9">
+      <circle cx="300" cy="690" r="16" fill="#b9c99b"/>
+      <circle cx="270" cy="720" r="10" fill="#d9b56a"/>
+      <circle cx="330" cy="720" r="10" fill="#d9b56a"/>
+      <path d="M300 705 C300 755 275 790 250 820" fill="none" stroke="#7f9d68" stroke-width="5" stroke-linecap="round"/>
+
+      <circle cx="780" cy="690" r="16" fill="#b9c99b"/>
+      <circle cx="750" cy="720" r="10" fill="#d9b56a"/>
+      <circle cx="810" cy="720" r="10" fill="#d9b56a"/>
+      <path d="M780 705 C780 755 805 790 830 820" fill="none" stroke="#7f9d68" stroke-width="5" stroke-linecap="round"/>
+    </g>
+
+    <!-- Texto -->
+    <text x="540" y="720" text-anchor="middle"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="34"
+          fill="#8a6a2a"
+          letter-spacing="4">
+      MESA 1
+    </text>
+
+    <line x1="350" y1="755" x2="730" y2="755" stroke="#d8b66b" stroke-width="2"/>
+
+    <text x="540" y="795" text-anchor="middle"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="26"
+          fill="#6f4a16"
+          letter-spacing="2">
+      Invitados
+    </text>
+
+    <g font-family="Georgia, 'Times New Roman', serif" font-size="25" fill="#4a3a22">
+      <text x="405" y="850">Ana García</text>
+      <text x="675" y="850">Carlos Méndez</text>
+
+      <text x="405" y="890">Elena Torres</text>
+      <text x="675" y="890">Javier Ruiz</text>
+
+      <text x="405" y="930">Marta López</text>
+      <text x="675" y="930">Pablo Serrano</text>
+
+      <text x="405" y="970">Sofía Díaz</text>
+      <text x="675" y="970">Diego Romero</text>
+    </g>
+
+    <text x="540" y="1030" text-anchor="middle"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="20"
+          fill="#8a6a2a"
+          letter-spacing="2">
+      Gracias por acompañarnos
+    </text>
+  </g>
+</svg>
+</body>
+</html>

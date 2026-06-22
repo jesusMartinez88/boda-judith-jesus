@@ -1,4 +1,13 @@
-import { Component, OnInit, inject, signal, computed, ElementRef, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  ElementRef,
+  viewChild,
+} from '@angular/core';
 
 import { GuestService, Guest } from '../../../services/guest.service';
 import { SettingsService } from '../../../services/settings.service';
@@ -43,6 +52,13 @@ interface SeatDropData {
 
 type TableDropData = Guest[] | SeatDropData | number | null;
 type TableShape = TableConfig['shape'];
+type PrintStickerDesign = 'classic' | 'botanical' | 'modern' | 'romantic' | 'aquamarine' | 'ai';
+
+interface PrintStickerDesignOption {
+  id: PrintStickerDesign;
+  name: string;
+  description: string;
+}
 
 interface TablePositionUpdate {
   id: number;
@@ -62,7 +78,6 @@ function isTableShape(value: unknown): value is TableShape {
 
 @Component({
   selector: 'app-tables',
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     TablesLegendComponent,
@@ -74,6 +89,7 @@ function isTableShape(value: unknown): value is TableShape {
   ],
   templateUrl: './tables.component.html',
   styleUrl: './tables.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TablesComponent implements OnInit {
   private guestService = inject(GuestService);
@@ -119,6 +135,46 @@ export class TablesComponent implements OnInit {
   showFullTableModal = signal(false);
   fullTableName = signal('');
   fullTableCapacity = signal(0);
+
+  // Modal para elegir diseno de pegatina
+  selectedPrintTable = signal<TableWithGuests | null>(null);
+  selectedPrintDesign = signal<PrintStickerDesign>('classic');
+  readonly printStickerDesigns: PrintStickerDesignOption[] = [
+    {
+      id: 'classic',
+      name: 'Clásico',
+      description: 'Borde elegante y lista limpia',
+    },
+    {
+      id: 'botanical',
+      name: 'Botánico',
+      description: 'Detalles florales suaves',
+    },
+    {
+      id: 'modern',
+      name: 'Moderno',
+      description: 'Tipografía compacta y alto contraste',
+    },
+    {
+      id: 'romantic',
+      name: 'Romántico',
+      description: 'Marco delicado en tonos boda',
+    },
+    {
+      id: 'aquamarine',
+      name: 'Verde Agua',
+      description: 'Diseño elegante verde agua con copas de brindis',
+    },
+    {
+      id: 'ai',
+      name: 'Diseño IA',
+      description: 'Genera una ilustración personalizada mediante IA gratis',
+    },
+  ];
+
+  aiPrompt = signal<string>('');
+  aiImageUrl = signal<string>('');
+  isGeneratingAiImage = signal<boolean>(false);
 
   // Modal genérico para avisos/errores
   showGenericModal = signal(false);
@@ -437,6 +493,435 @@ export class TablesComponent implements OnInit {
     this.deleteGuest(guest);
   }
 
+  printTableSticker(table: TableWithGuests, event?: MouseEvent) {
+    event?.stopPropagation();
+    this.selectedPrintTable.set(table);
+    this.selectedPrintDesign.set('classic');
+    this.aiPrompt.set(this.generateDefaultAiPrompt(table));
+    this.aiImageUrl.set('');
+    this.isGeneratingAiImage.set(false);
+  }
+
+  generateDefaultAiPrompt(table: TableWithGuests): string {
+    const guestNames = table.guests.map((g) => g.name || 'Invitado').join(', ');
+    const tableName = table.name || `MESA ${table.id}`;
+    return `Elegant wedding seating chart card, Tiffany blue background with sophisticated gold borders. Clean central rectangle containing the text "MESA" and number "${tableName.replace(/Mesa\s+/i, '')}". Guests list: ${guestNames}. Cursive romantic calligraphy at the bottom says "Judith & Jesús" and "11 de Julio de 2026". Minimalist luxury sticker design, vector illustration, white paper texture, high contrast, clean text rendering, professional print template.`;
+  }
+
+  generateAiImage() {
+    const prompt = this.aiPrompt().trim();
+    if (!prompt) return;
+
+    this.isGeneratingAiImage.set(true);
+    const encodedPrompt = encodeURIComponent(prompt);
+    const randomSeed = Math.floor(Math.random() * 1000000);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=1200&nologo=true&seed=${randomSeed}`;
+
+    const img = new Image();
+    img.src = imageUrl;
+    img.onload = () => {
+      this.aiImageUrl.set(imageUrl);
+      this.isGeneratingAiImage.set(false);
+    };
+    img.onerror = () => {
+      this.isGeneratingAiImage.set(false);
+      this.triggerAlert('Error', 'No se pudo generar la imagen. Inténtalo de nuevo.');
+    };
+  }
+
+  closePrintDesignModal() {
+    this.selectedPrintTable.set(null);
+  }
+
+  selectPrintDesign(design: PrintStickerDesign) {
+    this.selectedPrintDesign.set(design);
+  }
+
+  getPrintPreviewGuests(table: TableWithGuests): Guest[] {
+    return [...table.guests]
+      .sort((a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0))
+      .slice(0, 4);
+  }
+
+  getSelectedPrintDesignName(): string {
+    return (
+      this.printStickerDesigns.find((design) => design.id === this.selectedPrintDesign())?.name ??
+      'Clásico'
+    );
+  }
+
+  confirmPrintTableSticker() {
+    const table = this.selectedPrintTable();
+    if (!table) return;
+
+    this.openTableStickerPrintWindow(table, this.selectedPrintDesign());
+  }
+
+  copyGuestsToClipboard() {
+    const table = this.selectedPrintTable();
+    if (!table) return;
+
+    const sortedGuests = [...table.guests].sort(
+      (a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0),
+    );
+
+    const text = sortedGuests
+      .map(
+        (g) =>
+          `${g.name || 'Invitado'}${g.seatNumber ? ` - Asiento ${g.seatNumber}` : ''}`,
+      )
+      .join('\n');
+
+    navigator.clipboard.writeText(text).then(
+      () => {
+        this.triggerAlert('Copiado', 'La lista de invitados se copió al portapapeles.');
+      },
+      (err) => {
+        console.error('Error al copiar:', err);
+        this.triggerAlert('Error', 'No se pudo copiar la lista.');
+      },
+    );
+  }
+
+  downloadGuestsCSV() {
+    const table = this.selectedPrintTable();
+    if (!table) return;
+
+    const sortedGuests = [...table.guests].sort(
+      (a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0),
+    );
+
+    // BOM para compatibilidad con Excel (acentos en español)
+    let csvContent = '\uFEFF';
+    csvContent += 'Invitado,Asiento\n';
+    sortedGuests.forEach((g) => {
+      const name = (g.name || 'Invitado').replace(/"/g, '""');
+      const seat = g.seatNumber ? `Asiento ${g.seatNumber}` : 'Sin asiento';
+      csvContent += `"${name}","${seat}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    const tableNameClean = (table.name || `Mesa_${table.id}`).toLowerCase().replace(/\s+/g, '_');
+    link.setAttribute('download', `invitados_${tableNameClean}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  private openTableStickerPrintWindow(table: TableWithGuests, design: PrintStickerDesign) {
+    const sortedGuests = [...table.guests].sort(
+      (a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0),
+    );
+    const tableName = table.name || `Mesa ${table.id}`;
+    const printableWindow = window.open('', '_blank', 'width=520,height=720');
+
+    if (!printableWindow) {
+      this.triggerAlert(
+        'Impresión bloqueada',
+        'El navegador ha bloqueado la ventana de impresión. Permite ventanas emergentes e inténtalo de nuevo.',
+      );
+      return;
+    }
+
+    this.closePrintDesignModal();
+
+    const guestRows = sortedGuests
+      .map((guest) => {
+        const seat = guest.seatNumber ? `Asiento ${guest.seatNumber}` : 'Sin asiento';
+        return `
+          <li>
+            <span class="guest-name">${this.escapeHtml(guest.name || 'Invitado')}</span>
+            <span class="seat-number">${this.escapeHtml(seat)}</span>
+          </li>
+        `;
+      })
+      .join('');
+    const designStyles = this.getPrintableStickerStyles(design);
+    const designLabel = this.getPrintableStickerLabel(design);
+
+    const content = `
+      <!doctype html>
+      <html lang="es">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Pegatina ${this.escapeHtml(tableName)} - ${this.escapeHtml(designLabel)}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+          <style>
+            @page {
+              size: 100mm 150mm;
+              margin: 0;
+            }
+
+            * {
+              box-sizing: border-box;
+            }
+
+            body {
+              margin: 0;
+              min-height: 100vh;
+              display: grid;
+              place-items: center;
+              background: #f8fafc;
+              color: #1e293b;
+              font-family: Georgia, 'Times New Roman', serif;
+            }
+
+            .sticker {
+              width: 100mm;
+              min-height: 150mm;
+              padding: 12mm 10mm;
+              display: flex;
+              flex-direction: column;
+              align-items: stretch;
+              gap: 8mm;
+              ${designStyles.sticker}
+            }
+
+            header {
+              text-align: center;
+              padding-bottom: 6mm;
+              ${designStyles.header}
+            }
+
+            .eyebrow {
+              display: block;
+              margin-bottom: 3mm;
+              font-family: Arial, sans-serif;
+              font-size: 10pt;
+              font-weight: 700;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+              ${designStyles.eyebrow}
+            }
+
+            h1 {
+              margin: 0;
+              font-size: 30pt;
+              line-height: 1.05;
+              ${designStyles.heading}
+            }
+
+            .count {
+              margin: 3mm 0 0;
+              color: #64748b;
+              font-family: Arial, sans-serif;
+              font-size: 11pt;
+            }
+
+            .guest-list-card {
+              width: 100%;
+            }
+
+            ul {
+              list-style: none;
+              margin: 0;
+              padding: 0;
+              display: flex;
+              flex-direction: column;
+              gap: 2.6mm;
+              font-family: Arial, sans-serif;
+            }
+
+            li {
+              display: flex;
+              justify-content: space-between;
+              gap: 4mm;
+              padding: 2.8mm 0;
+              break-inside: avoid;
+              ${designStyles.listItem}
+            }
+
+            .guest-name {
+              font-size: 12pt;
+              font-weight: 700;
+            }
+
+            .seat-number {
+              color: #64748b;
+              font-size: 10pt;
+              white-space: nowrap;
+            }
+
+            .empty {
+              margin: auto 0;
+              color: #64748b;
+              text-align: center;
+              font-family: Arial, sans-serif;
+              font-size: 12pt;
+            }
+
+            .sticker-footer {
+              display: none;
+            }
+
+            @media print {
+              body {
+                background: white;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <main class="sticker" aria-label="Pegatina de ${this.escapeHtml(tableName)}">
+            <header>
+              <span class="eyebrow">Judith & Jesús</span>
+              <h1>${this.escapeHtml(tableName)}</h1>
+              <p class="count">${sortedGuests.length} invitados</p>
+            </header>
+            <div class="guest-list-card">
+              ${
+                sortedGuests.length > 0
+                  ? `<ul>${guestRows}</ul>`
+                  : '<p class="empty">Esta mesa aún no tiene invitados sentados.</p>'
+              }
+            </div>
+            <footer class="sticker-footer">
+              <span class="footer-names">Judith & Jesús</span>
+              <span class="footer-date">11 DE JULIO DE 2026</span>
+            </footer>
+          </main>
+          <script>
+            window.addEventListener('load', () => {
+              window.setTimeout(() => window.print(), 200);
+            });
+          </script>
+        </body>
+      </html>
+    `;
+
+    printableWindow.document.open();
+    printableWindow.document.write(content);
+    printableWindow.document.close();
+  }
+
+  private getPrintableStickerLabel(design: PrintStickerDesign): string {
+    return this.printStickerDesigns.find((option) => option.id === design)?.name ?? 'Clásico';
+  }
+
+  private getPrintableStickerStyles(design: PrintStickerDesign): {
+    sticker: string;
+    header: string;
+    eyebrow: string;
+    heading: string;
+    listItem: string;
+  } {
+    switch (design) {
+      case 'aquamarine':
+        return {
+          sticker: `
+            background-color: #92d7db;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'><path d='M 6 36 V 114 H 12 C 12 133, 30 144, 50 144 C 70 144, 88 133, 88 114 H 94 V 36 H 88 C 88 17, 70 6, 50 6 C 30 6, 12 17, 12 36 H 6 Z' fill='%2392d7db'/><path d='M 8.5 37.5 V 112.5 H 14 C 14 130.5, 30 141.5, 50 141.5 C 70 141.5, 86 130.5, 86 112.5 H 91.5 V 37.5 H 86 C 86 19.5, 70 8.5, 50 8.5 C 30 8.5, 14 19.5, 14 37.5 H 8.5 Z' fill='none' stroke='%23ffffff' stroke-width='0.6'/><g transform='translate(74, 102) scale(0.18)' stroke='%23114b53' stroke-width='3' fill='none'><g transform='rotate(-12 50 100)'><ellipse cx='50' cy='180' rx='30' ry='8' fill='%23ffffff' stroke='%23114b53' stroke-width='4'/><line x1='50' y1='180' x2='50' y2='110' stroke='%23114b53' stroke-width='4'/><path d='M 25 50 Q 25 110 50 110 Q 75 110 75 50 Z' fill='%23ffffff' stroke='%23114b53' stroke-width='4'/><path d='M 28 75 Q 50 80 72 75' stroke='%23114b53' stroke-width='3'/><circle cx='45' cy='65' r='2.5' fill='%23114b53'/><circle cx='55' cy='60' r='2' fill='%23114b53'/><circle cx='40' cy='55' r='2.5' fill='%23114b53'/></g><g transform='translate(35, 10) rotate(10 50 100)'><ellipse cx='50' cy='180' rx='30' ry='8' fill='%23ffffff' stroke='%23114b53' stroke-width='4'/><line x1='50' y1='180' x2='50' y2='110' stroke='%23114b53' stroke-width='4'/><path d='M 25 50 Q 25 110 50 110 Q 75 110 75 50 Z' fill='%23ffffff' stroke='%23114b53' stroke-width='4'/><path d='M 28 75 Q 50 80 72 75' stroke='%23114b53' stroke-width='3'/><circle cx='45' cy='65' r='2.5' fill='%23114b53'/><circle cx='52' cy='58' r='2' fill='%23114b53'/><circle cx='38' cy='70' r='3' fill='%23114b53'/></g></g></svg>");
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            padding: 16mm 14mm 10mm 14mm;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0;
+            box-shadow: none;
+            border: none;
+          }
+          .sticker .guest-list-card {
+            background: #ffffff;
+            padding: 5mm 6mm;
+            border: 0.3mm solid #ffffff;
+            flex-grow: 1;
+            margin-bottom: 2mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          }
+          .sticker .guest-list-card ul {
+            gap: 1.8mm;
+          }
+          .sticker .guest-list-card .guest-name {
+            color: #114b53;
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+          }
+          .sticker .guest-list-card .seat-number {
+            color: #1b5d67;
+            font-family: Arial, sans-serif;
+            font-size: 9pt;
+          }
+          .sticker .count {
+            display: none;
+          }
+          .sticker .sticker-footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 1mm;
+          }
+          .sticker .footer-names {
+            font-family: 'Great Vibes', cursive;
+            font-size: 26pt;
+            color: #114b53;
+            line-height: 1;
+          }
+          .sticker .footer-date {
+            font-family: Arial, sans-serif;
+            font-size: 8pt;
+            letter-spacing: 0.15em;
+            color: #114b53;
+            margin-top: 1mm;
+            font-weight: bold;
+          }
+          .sticker {`,
+          header: 'border: none; margin-bottom: 2mm; padding-bottom: 2mm;',
+          eyebrow: 'display: none;',
+          heading: "font-family: 'Playfair Display', Georgia, serif; font-size: 32pt; color: #114b53; text-transform: uppercase; letter-spacing: 0.05em;",
+          listItem: 'border-bottom: 0.25mm solid #e0f2f1; padding: 2.2mm 0;',
+        };
+      case 'botanical':
+        return {
+          sticker:
+            'background: #fbfff8; border: 1.2mm solid #b7d8bc; box-shadow: inset 0 0 0 2mm #f0f8ee;',
+          header:
+            'border-bottom: 0.4mm solid #cfe6d0; position: relative;',
+          eyebrow: 'color: #2f7d4f;',
+          heading: 'color: #1f3f2d;',
+          listItem: 'border-bottom: 0.25mm solid #dceedd;',
+        };
+      case 'modern':
+        return {
+          sticker:
+            'background: #ffffff; border: 1.1mm solid #111827; box-shadow: inset 0 0 0 1mm #e5e7eb;',
+          header: 'border-bottom: 0.6mm solid #111827;',
+          eyebrow: 'color: #111827;',
+          heading: 'color: #111827; font-family: Arial, sans-serif; font-size: 28pt;',
+          listItem: 'border-bottom: 0.25mm solid #d1d5db;',
+        };
+      case 'romantic':
+        return {
+          sticker:
+            'background: #fff8fb; border: 1.2mm double #d88ead; box-shadow: inset 0 0 0 2mm #fff;',
+          header: 'border-bottom: 0.4mm solid #f0c9d9;',
+          eyebrow: 'color: #a21caf;',
+          heading: 'color: #831843;',
+          listItem: 'border-bottom: 0.25mm solid #f5d7e3;',
+        };
+      case 'classic':
+      default:
+        return {
+          sticker: 'background: #fffdf9; border: 1.2mm solid #e8c3d4;',
+          header: 'border-bottom: 0.4mm solid #f3d8e5;',
+          eyebrow: 'color: #be185d;',
+          heading: 'color: #1e293b;',
+          listItem: 'border-bottom: 0.25mm solid #f1e4eb;',
+        };
+    }
+  }
+
   async onTablePanelUnseat(guest: Guest, event: MouseEvent) {
     event.stopPropagation();
     const guestId = this.guestKey(guest);
@@ -742,6 +1227,20 @@ export class TablesComponent implements OnInit {
     this.genericModalTitle.set(title);
     this.genericModalMessage.set(message);
     this.showGenericModal.set(true);
+  }
+
+  private escapeHtml(value: string): string {
+    return value.replace(
+      /[&<>"']/g,
+      (char) =>
+        ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;',
+        })[char] ?? char,
+    );
   }
 
   closeGenericModal() {
