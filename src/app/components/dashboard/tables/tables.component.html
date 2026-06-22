@@ -553,6 +553,9 @@
                         <!-- Placeholder while dragging -->
                         <div *cdkDragPlaceholder class="guest-seat-placeholder"></div>
 
+                        @if (isCaptainAtTable(table, guest)) {
+                          <span class="seat-captain-crown" aria-hidden="true">👑</span>
+                        }
                         <div class="seat-marker" [class]="getMenuClass(guest.mealType)">
                           <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
                         </div>
@@ -621,23 +624,71 @@
             </div>
           </header>
 
+          <section class="captain-section" aria-label="Capitán de mesa">
+            <h4 class="captain-section-title">Capitán de mesa</h4>
+            @if (panelCaptain(); as captain) {
+              <div class="captain-current">
+                <span class="captain-badge" aria-hidden="true">👑</span>
+                <span class="captain-name">{{ captain.name }}</span>
+                <button
+                  type="button"
+                  class="btn-secondary btn-sm captain-remove-btn"
+                  (click)="removeCaptain()"
+                >
+                  Quitar capitán
+                </button>
+              </div>
+            } @else {
+              <p class="captain-empty">Sin capitán</p>
+            }
+          </section>
+
           <div class="table-panel-body">
             @if (panelTable.sortedGuests.length === 0) {
               <p class="table-panel-empty">Esta mesa aún no tiene invitados sentados.</p>
             } @else {
               <ul class="table-panel-guest-list">
                 @for (guest of panelTable.sortedGuests; track guestKey(guest)) {
-                  <li class="guest-item table-panel-guest" [class]="getMenuClass(guest.mealType)">
+                  <li
+                    class="guest-item table-panel-guest"
+                    [class]="getMenuClass(guest.mealType)"
+                    [class.is-captain]="isCaptainOnPanel(guest)"
+                  >
                     <div class="guest-avatar">
                       {{ (guest.name.charAt(0) || '?').toUpperCase() }}
                     </div>
                     <div class="guest-info">
-                      <span class="guest-name">{{ guest.name || 'Invitado' }}</span>
+                      <span class="guest-name">
+                        @if (isCaptainOnPanel(guest)) {
+                          <span class="captain-badge captain-badge--inline" aria-hidden="true"
+                            >👑</span
+                          >
+                        }
+                        {{ guest.name || 'Invitado' }}
+                      </span>
                       <span class="guest-meta">
                         Asiento {{ guest.seatNumber }} · {{ guest.mealType }}
                       </span>
                     </div>
                     <div class="guest-actions">
+                      @if (isCaptainOnPanel(guest)) {
+                        <span
+                          class="captain-badge captain-badge--assigned"
+                          title="Capitán de mesa"
+                          aria-label="Capitán de mesa"
+                          >👑</span
+                        >
+                      } @else {
+                        <button
+                          type="button"
+                          class="captain-btn"
+                          (click)="setCaptain(guest); $event.stopPropagation()"
+                          title="Asignar como capitán"
+                          [attr.aria-label]="'Asignar como capitán a ' + guest.name"
+                        >
+                          👑
+                        </button>
+                      }
                       <button
                         type="button"
                         class="unseat-btn"

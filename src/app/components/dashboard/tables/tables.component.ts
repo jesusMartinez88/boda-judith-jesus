@@ -33,6 +33,7 @@ interface TableWithGuests {
   shape: string;
   posX: number | undefined;
   posY: number | undefined;
+  captainId?: number | null;
   guests: Guest[];
 }
 
@@ -164,11 +165,11 @@ export class TablesComponent implements OnInit {
           shape: config.shape || 'round',
           posX: config.posX,
           posY: config.posY,
+          captainId: config.captainId ?? null,
           guests: guestList.filter((g) => {
             if (g.attending === 0) return false;
             const guestTableId = Number(g.tableId || 0);
             if (guestTableId !== tableId || guestTableId === 0) return false;
-            // siempre mostrar únicamente invitados que ya tienen un número de asiento
             return g.seatNumber !== null && g.seatNumber !== undefined;
           }),
         };
@@ -288,6 +289,86 @@ export class TablesComponent implements OnInit {
     }
     return free;
   });
+
+  /** Devuelve el Guest que actúa como capitán de la mesa abierta en el panel */
+  panelCaptain = computed((): Guest | null => {
+    const panel = this.selectedTablePanelData();
+    if (!panel || !panel.captainId) return null;
+    return panel.sortedGuests.find((g) => Number(g.id) === panel.captainId) ?? null;
+  });
+
+  /** True si el invitado es el capitán de la mesa abierta en el panel */
+  isCaptainOnPanel(guest: Guest): boolean {
+    const panel = this.selectedTablePanelData();
+    if (!panel?.captainId) return false;
+    return Number(guest.id) === panel.captainId;
+  }
+
+  /** True si la mesa tiene capitán (para mostrar corona en la visual) */
+  tableHasCaptain(tableId: number): boolean {
+    const table = this.tables().find((t) => t.id === tableId);
+    return !!table?.captainId;
+  }
+
+  /** True si el invitado es el capitán de la mesa indicada (visual del salón) */
+  isCaptainAtTable(table: TableWithGuests, guest: Guest): boolean {
+    if (!table.captainId || !guest.id) return false;
+    return Number(guest.id) === table.captainId;
+  }
+
+  async setCaptain(guest: Guest) {
+    const tableId = this.selectedTablePanelId();
+    const panel = this.selectedTablePanelData();
+    if (!tableId || !guest.id || !panel) return;
+
+    const isSeated = panel.sortedGuests.some((g) => Number(g.id) === Number(guest.id));
+    if (!isSeated) {
+      this.triggerAlert(
+        'Capitán no válido',
+        'Solo puede ser capitán un invitado ya sentado en esta mesa.',
+      );
+      return;
+    }
+
+    // Actualización optimista
+    this.tableService.tables.update((current) =>
+      current.map((t) => (t.id === tableId ? { ...t, captainId: Number(guest.id) } : t)),
+    );
+
+    try {
+      await firstValueFrom(this.tableService.updateTable(tableId, { captainId: Number(guest.id) }));
+    } catch (error) {
+      console.error('Error setting captain:', error);
+      // Revertir optimista
+      this.tableService.tables.update((current) =>
+        current.map((t) => (t.id === tableId ? { ...t, captainId: null } : t)),
+      );
+      this.triggerAlert('Error', 'No se pudo asignar el capitán. Inténtalo de nuevo.');
+    }
+  }
+
+  async removeCaptain() {
+    const tableId = this.selectedTablePanelId();
+    if (!tableId) return;
+
+    const previousCaptainId = this.selectedTablePanelData()?.captainId;
+
+    // Actualización optimista
+    this.tableService.tables.update((current) =>
+      current.map((t) => (t.id === tableId ? { ...t, captainId: null } : t)),
+    );
+
+    try {
+      await firstValueFrom(this.tableService.updateTable(tableId, { captainId: null }));
+    } catch (error) {
+      console.error('Error removing captain:', error);
+      // Revertir optimista
+      this.tableService.tables.update((current) =>
+        current.map((t) => (t.id === tableId ? { ...t, captainId: previousCaptainId ?? null } : t)),
+      );
+      this.triggerAlert('Error', 'No se pudo quitar el capitán. Inténtalo de nuevo.');
+    }
+  }
 
   assignableGuests = computed((): Guest[] => {
     const term = this.assignSearchTerm().toLowerCase().trim();

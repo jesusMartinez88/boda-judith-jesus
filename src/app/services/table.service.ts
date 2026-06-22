@@ -11,6 +11,7 @@ export interface TableConfig {
   shape: 'round' | 'square' | 'rectangular' | 'presidential';
   posX?: number;
   posY?: number;
+  captainId?: number | null;
 }
 
 @Injectable({
@@ -43,6 +44,7 @@ export class TableService {
       capacity: (obj['capacity'] as number) || undefined,
       posX: obj['posX'] !== undefined ? Number(obj['posX'] as unknown) : undefined,
       posY: obj['posY'] !== undefined ? Number(obj['posY'] as unknown) : undefined,
+      captainId: obj['captainId'] != null ? Number(obj['captainId']) : null,
     };
   }
 
