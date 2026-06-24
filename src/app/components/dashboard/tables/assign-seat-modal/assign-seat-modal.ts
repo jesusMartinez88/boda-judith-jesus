@@ -10,7 +10,7 @@ import { Guest } from '../../../../services/guest.service';
   styleUrl: './assign-seat-modal.css',
 })
 export class AssignSeatModalComponent {
-  @Input({ required: true }) panelTable: any;
+  @Input({ required: true }) panelTable: { id: number; name?: string } | null | undefined;
   @Input({ required: true }) assignableGuests: Guest[] = [];
   @Input({ required: true }) selectedTableFreeSeats: number[] = [];
   @Input({ required: true }) assignSearchControl!: FormControl<string>;
