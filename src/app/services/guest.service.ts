@@ -36,6 +36,10 @@ declare global {
   }
 }
 
+declare let process: {
+  env: Record<string, string | undefined>;
+};
+
 @Injectable({
   providedIn: 'root',
 })
