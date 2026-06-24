@@ -95,7 +95,7 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0
       '@types/leaflet':
-        specifier: ^1.9.21
+        specifier: ^1.7.9
         version: 1.9.21
       '@types/node':
         specifier: ^25.9.4
