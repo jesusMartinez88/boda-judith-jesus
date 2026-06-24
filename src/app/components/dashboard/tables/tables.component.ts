@@ -33,8 +33,9 @@ interface TableWithGuests {
   shape: string;
   posX: number | undefined;
   posY: number | undefined;
-  captainId?: number | null;
+  captainIds?: number[] | null;
   guests: Guest[];
+  rotation?: number;
 }
 
 interface SeatDropData {
@@ -170,7 +171,8 @@ export class TablesComponent implements OnInit {
           shape: config.shape || 'round',
           posX: config.posX,
           posY: config.posY,
-          captainId: config.captainId ?? null,
+          captainIds: config.captainIds ?? null,
+          rotation: config.rotation || 0,
           guests: guestList.filter((g) => {
             if (g.attending === 0) return false;
             const guestTableId = Number(g.tableId || 0);
@@ -295,30 +297,46 @@ export class TablesComponent implements OnInit {
     return free;
   });
 
-  /** Devuelve el Guest que actúa como capitán de la mesa abierta en el panel */
-  panelCaptain = computed((): Guest | null => {
+  /** Devuelve el número máximo de capitanes permitidos para una mesa */
+  getMaxCaptainsForTable(shape: string): number {
+    return shape === 'presidential' ? 2 : 1;
+  }
+
+  /** True si la mesa puede tener más capitanes */
+  canAddMoreCaptains(): boolean {
     const panel = this.selectedTablePanelData();
-    if (!panel || !panel.captainId) return null;
-    return panel.sortedGuests.find((g) => Number(g.id) === panel.captainId) ?? null;
+    if (!panel) return false;
+    const maxCaptains = this.getMaxCaptainsForTable(panel.shape);
+    const currentCount = panel.captainIds?.length ?? 0;
+    return currentCount < maxCaptains;
+  }
+
+  /** Devuelve los Guests que actúan como capitanes de la mesa abierta en el panel */
+  panelCaptains = computed((): Guest[] => {
+    const panel = this.selectedTablePanelData();
+    if (!panel) return [];
+    const allCaptainIds = panel.captainIds ?? [];
+    if (allCaptainIds.length === 0) return [];
+    return panel.sortedGuests.filter((g) => allCaptainIds.includes(Number(g.id)));
   });
 
-  /** True si el invitado es el capitán de la mesa abierta en el panel */
+  /** True si el invitado es capitán de la mesa abierta en el panel */
   isCaptainOnPanel(guest: Guest): boolean {
     const panel = this.selectedTablePanelData();
-    if (!panel?.captainId) return false;
-    return Number(guest.id) === panel.captainId;
+    if (!panel?.captainIds || panel.captainIds.length === 0) return false;
+    return panel.captainIds.includes(Number(guest.id));
   }
 
-  /** True si la mesa tiene capitán (para mostrar corona en la visual) */
+  /** True si la mesa tiene al menos un capitán (para mostrar corona en la visual) */
   tableHasCaptain(tableId: number): boolean {
     const table = this.tables().find((t) => t.id === tableId);
-    return !!table?.captainId;
+    return !!(table?.captainIds && table.captainIds.length > 0);
   }
 
-  /** True si el invitado es el capitán de la mesa indicada (visual del salón) */
+  /** True si el invitado es capitán de la mesa indicada (visual del salón) */
   isCaptainAtTable(table: TableWithGuests, guest: Guest): boolean {
-    if (!table.captainId || !guest.id) return false;
-    return Number(guest.id) === table.captainId;
+    if (!table.captainIds || table.captainIds.length === 0 || !guest.id) return false;
+    return table.captainIds.includes(Number(guest.id));
   }
 
   async setCaptain(guest: Guest) {
@@ -335,41 +353,77 @@ export class TablesComponent implements OnInit {
       return;
     }
 
+    const maxCaptains = this.getMaxCaptainsForTable(panel.shape);
+    const currentCaptains = panel.captainIds ?? [];
+
+    // Check if already a captain
+    if (currentCaptains.includes(Number(guest.id))) {
+      this.triggerAlert(
+        'Ya es capitán',
+        `${guest.name} ya es capitán de esta mesa.`,
+      );
+      return;
+    }
+
+    // Check if max captains reached
+    if (currentCaptains.length >= maxCaptains) {
+      if (maxCaptains === 1) {
+        this.triggerAlert(
+          'Capitán existente',
+          'Esta mesa ya tiene un capitán. Quítalo antes de asignar otro.',
+        );
+      } else {
+        this.triggerAlert(
+          'Máximo de capitanes',
+          `La mesa presidencial puede tener hasta ${maxCaptains} capitanes.`,
+        );
+      }
+      return;
+    }
+
+    // Add to captains list
+    const newCaptainIds = [...currentCaptains, Number(guest.id)];
+
     // Actualización optimista
     this.tableService.tables.update((current) =>
-      current.map((t) => (t.id === tableId ? { ...t, captainId: Number(guest.id) } : t)),
+      current.map((t) => (t.id === tableId ? { ...t, captainIds: newCaptainIds } : t)),
     );
 
     try {
-      await firstValueFrom(this.tableService.updateTable(tableId, { captainId: Number(guest.id) }));
+      await firstValueFrom(this.tableService.updateTable(tableId, { captainIds: newCaptainIds }));
     } catch (error) {
       console.error('Error setting captain:', error);
       // Revertir optimista
       this.tableService.tables.update((current) =>
-        current.map((t) => (t.id === tableId ? { ...t, captainId: null } : t)),
+        current.map((t) => (t.id === tableId ? { ...t, captainIds: currentCaptains } : t)),
       );
       this.triggerAlert('Error', 'No se pudo asignar el capitán. Inténtalo de nuevo.');
     }
   }
 
-  async removeCaptain() {
+  async removeCaptain(guest: Guest) {
     const tableId = this.selectedTablePanelId();
-    if (!tableId) return;
+    const panel = this.selectedTablePanelData();
+    if (!tableId || !guest.id || !panel) return;
 
-    const previousCaptainId = this.selectedTablePanelData()?.captainId;
+    const currentCaptains = panel.captainIds ?? [];
+    const guestIdNum = Number(guest.id);
+
+    // Remove the captain from the list
+    const newCaptainIds = currentCaptains.filter((id) => id !== guestIdNum);
 
     // Actualización optimista
     this.tableService.tables.update((current) =>
-      current.map((t) => (t.id === tableId ? { ...t, captainId: null } : t)),
+      current.map((t) => (t.id === tableId ? { ...t, captainIds: newCaptainIds } : t)),
     );
 
     try {
-      await firstValueFrom(this.tableService.updateTable(tableId, { captainId: null }));
+      await firstValueFrom(this.tableService.updateTable(tableId, { captainIds: newCaptainIds }));
     } catch (error) {
       console.error('Error removing captain:', error);
       // Revertir optimista
       this.tableService.tables.update((current) =>
-        current.map((t) => (t.id === tableId ? { ...t, captainId: previousCaptainId ?? null } : t)),
+        current.map((t) => (t.id === tableId ? { ...t, captainIds: currentCaptains } : t)),
       );
       this.triggerAlert('Error', 'No se pudo quitar el capitán. Inténtalo de nuevo.');
     }
@@ -930,23 +984,39 @@ export class TablesComponent implements OnInit {
     }
   }
 
+  async rotateTable(id: number, currentRotation: number) {
+    const normalized = ((Number(currentRotation) || 0) % 360 + 360) % 360;
+    const newRotation = normalized === 90 ? 0 : 90;
+
+    // Actualización optimista local
+    this.tableService.tables.update((current) =>
+      current.map((t) => (t.id === id ? { ...t, rotation: newRotation } : t)),
+    );
+
+    try {
+      await firstValueFrom(this.tableService.updateTable(id, { rotation: newRotation }));
+    } catch (error) {
+      console.error('Error updating table rotation:', error);
+      this.tableService.tables.update((current) =>
+        current.map((t) => (t.id === id ? { ...t, rotation: normalized } : t)),
+      );
+      this.triggerAlert('Error', 'No se pudo girar la mesa. Inténtalo de nuevo.');
+    }
+  }
+
   onTableDragEnded(event: CdkDragEnd, tableId: number) {
     if (!this.isEditLayoutMode()) {
       this.tableWasDragged = false;
       return;
     }
 
-    const element = event.source.getRootElement();
-    const parentElement = document.querySelector('.tables-grid');
-
-    if (!parentElement) return;
-
-    const parentRect = parentElement.getBoundingClientRect();
-    const elementRect = element.getBoundingClientRect();
-
-    // Calcular posición exacta relativa al contenedor padre (.tables-grid)
-    const posX = Math.round(elementRect.left - parentRect.left);
-    const posY = Math.round(elementRect.top - parentRect.top);
+    const element = event.source.getRootElement() as HTMLElement;
+    const table = this.tableService.tables().find((t) => t.id === tableId);
+    const dragPos = event.source.getFreeDragPosition();
+    const baseX = table?.posX ?? element.offsetLeft;
+    const baseY = table?.posY ?? element.offsetTop;
+    const posX = Math.round(baseX + dragPos.x);
+    const posY = Math.round(baseY + dragPos.y);
 
     // Actualización optimista local en el servicio
     this.tableService.tables.update((current) =>

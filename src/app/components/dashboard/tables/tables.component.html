@@ -418,6 +418,16 @@
                           : '👥'
                   }}
                 </button>
+                @if (table.shape === 'rectangular' || table.shape === 'presidential') {
+                  <button
+                    class="config-btn rotate"
+                    (click)="rotateTable(table.id, table.rotation || 0); $event.stopPropagation()"
+                    title="Girar mesa 90°"
+                    [style.display]="'flex'"
+                  >
+                    🔄
+                  </button>
+                }
                 <div class="capacity-field">
                   <input
                     type="number"
@@ -436,6 +446,10 @@
                 </button>
               </div>
 
+              <div
+                class="table-rotate-layer"
+                [class.rotated-90]="(table.rotation || 0) === 90"
+              >
               <div
                 class="table-surface"
                 cdkDropList
@@ -549,46 +563,7 @@
                       >
                         <!-- Preview while dragging -->
                         <div *cdkDragPreview class="guest-drag-preview">
-                          <svg class="kicking-person" viewBox="0 0 24 48">
-                            <!-- Cabeza -->
-                            <circle cx="12" cy="7" r="4.5" fill="#ec4899" />
-                            <!-- Cuerpo/Torso -->
-                            <path d="M8,13 Q12,12 16,13 L15,27 Q12,28 9,27 Z" fill="#ec4899" />
-                            <!-- Brazos -->
-                            <path
-                              class="arm left"
-                              d="M6,14 Q3,19 5,25"
-                              fill="none"
-                              stroke="#ec4899"
-                              stroke-width="3"
-                              stroke-linecap="round"
-                            />
-                            <path
-                              class="arm right"
-                              d="M18,14 Q21,19 19,25"
-                              fill="none"
-                              stroke="#ec4899"
-                              stroke-width="3"
-                              stroke-linecap="round"
-                            />
-                            <!-- Piernas -->
-                            <path
-                              class="leg left"
-                              d="M9,27 Q7,35 9,43"
-                              fill="none"
-                              stroke="#ec4899"
-                              stroke-width="3.5"
-                              stroke-linecap="round"
-                            />
-                            <path
-                              class="leg right"
-                              d="M15,27 Q17,35 15,43"
-                              fill="none"
-                              stroke="#ec4899"
-                              stroke-width="3.5"
-                              stroke-linecap="round"
-                            />
-                          </svg>
+                          <svg class="kicking-person" viewBox="0 0 24 48"><circle cx="12" cy="7" r="4.5" fill="#ec4899"/><path fill="#ec4899" d="M8 13q4-1 8 0l-1 14q-3 1-6 0Z"/><path fill="none" stroke="#ec4899" stroke-linecap="round" stroke-width="3" d="M6 14q-3 5-1 11" class="arm left"/><path fill="none" stroke="#ec4899" stroke-linecap="round" stroke-width="3" d="M18 14q3 5 1 11" class="arm right"/><path fill="none" stroke="#ec4899" stroke-linecap="round" stroke-width="3.5" d="M9 27q-2 8 0 16" class="leg left"/><path fill="none" stroke="#ec4899" stroke-linecap="round" stroke-width="3.5" d="M15 27q2 8 0 16" class="leg right"/></svg>
                         </div>
 
                         <!-- Placeholder while dragging -->
@@ -611,6 +586,7 @@
                     }
                   </div>
                 }
+              </div>
               </div>
             </div>
           }
@@ -668,18 +644,28 @@
           </header>
 
           <section class="captain-section" aria-label="Capitán de mesa">
-            <h4 class="captain-section-title">Capitán de mesa</h4>
-            @if (panelCaptain(); as captain) {
-              <div class="captain-current">
-                <span class="captain-badge" aria-hidden="true">©️</span>
-                <span class="captain-name">{{ captain.name }}</span>
-                <button
-                  type="button"
-                  class="btn-secondary btn-sm captain-remove-btn"
-                  (click)="removeCaptain()"
-                >
-                  Quitar capitán
-                </button>
+            <h4 class="captain-section-title">
+              @if (selectedTablePanelData()?.shape === 'presidential') {
+                Capitanes de mesa ({{ panelCaptains().length }}/2)
+              } @else {
+                Capitán de mesa
+              }
+            </h4>
+            @if (panelCaptains().length > 0) {
+              <div class="captains-list">
+                @for (captain of panelCaptains(); track guestKey(captain)) {
+                  <div class="captain-current">
+                    <span class="captain-badge" aria-hidden="true">©️</span>
+                    <span class="captain-name">{{ captain.name }}</span>
+                    <button
+                      type="button"
+                      class="btn-secondary btn-sm captain-remove-btn"
+                      (click)="removeCaptain(captain)"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                }
               </div>
             } @else {
               <p class="captain-empty">Sin capitán</p>
@@ -721,7 +707,7 @@
                           aria-label="Capitán de mesa"
                           >©️</span
                         >
-                      } @else {
+                      } @else if (canAddMoreCaptains()) {
                         <button
                           type="button"
                           class="captain-btn"

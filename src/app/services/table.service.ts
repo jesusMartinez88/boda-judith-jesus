@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { tap } from 'rxjs';
+import { tap, map } from 'rxjs';
 import { ApiResponse, TableEntity } from '../../types/api';
 
 export interface TableConfig {
@@ -11,7 +11,8 @@ export interface TableConfig {
   shape: 'round' | 'square' | 'rectangular' | 'presidential';
   posX?: number;
   posY?: number;
-  captainId?: number | null;
+  captainIds?: number[] | null;
+  rotation?: number;
 }
 
 @Injectable({
@@ -35,6 +36,18 @@ export class TableService {
       shape = 'presidential';
     }
 
+    // Handle captainIds (new format) or legacy captainId (single captain)
+    let captainIds: number[] | null = null;
+    if (obj['captainIds'] != null && Array.isArray(obj['captainIds'])) {
+      captainIds = (obj['captainIds'] as number[]).map((id) => Number(id)).filter((n) => !isNaN(n));
+    } else if (obj['captainId'] != null) {
+      // Legacy support: convert single captainId to array
+      const singleId = Number(obj['captainId']);
+      if (!isNaN(singleId)) {
+        captainIds = [singleId];
+      }
+    }
+
     return {
       ...item,
       id,
@@ -44,7 +57,8 @@ export class TableService {
       capacity: (obj['capacity'] as number) || undefined,
       posX: obj['posX'] !== undefined ? Number(obj['posX'] as unknown) : undefined,
       posY: obj['posY'] !== undefined ? Number(obj['posY'] as unknown) : undefined,
-      captainId: obj['captainId'] != null ? Number(obj['captainId']) : null,
+      captainIds,
+      rotation: obj['rotation'] !== undefined ? Number(obj['rotation']) : 0,
     };
   }
 
@@ -94,13 +108,32 @@ export class TableService {
   }
 
   updateTable(id: number, config: Partial<TableConfig>) {
-    return this.http.patch<TableEntity>(`${this.baseUrl}/api/tables/${id}`, config).pipe(
-      tap(() => {
-        this.tables.update((current) =>
-          current.map((t) => (t.id === id ? { ...t, ...config } : t)),
-        );
-      }),
-    );
+    return this.http
+      .patch<ApiResponse<TableEntity> | TableEntity>(`${this.baseUrl}/api/tables/${id}`, config)
+      .pipe(
+        map((response) => {
+          const wrapped = response as ApiResponse<TableEntity>;
+          if (typeof wrapped === 'object' && wrapped !== null && 'success' in wrapped) {
+            if (wrapped.success === false) {
+              throw new Error(wrapped.error || wrapped.message || 'Error updating table');
+            }
+            return wrapped.data ?? (response as TableEntity);
+          }
+          return response as TableEntity;
+        }),
+        tap((data) => {
+          const normalized = this.normalizeTable(data as TableEntity);
+          if (normalized) {
+            this.tables.update((current) =>
+              current.map((t) => (t.id === id ? { ...t, ...normalized } : t)),
+            );
+            return;
+          }
+          this.tables.update((current) =>
+            current.map((t) => (t.id === id ? { ...t, ...config } : t)),
+          );
+        }),
+      );
   }
 
   deleteTable(id: number) {

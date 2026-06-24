@@ -325,6 +325,12 @@
   color: #92400e;
 }
 
+.captains-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .captain-current {
   display: flex;
   align-items: center;
@@ -349,6 +355,8 @@
 
 .captain-remove-btn {
   margin-left: auto;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
 }
 
 .captain-badge {
@@ -1056,6 +1064,20 @@
 
 /* .table-container width for rectangular/presidential set dynamically via Angular binding */
 
+.table-rotate-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  transition: transform 0.25s ease;
+}
+
+.table-rotate-layer.rotated-90 {
+  transform: rotate(90deg);
+}
+
 .table-config-overlay {
   position: absolute;
   top: -14px;
@@ -1097,6 +1119,12 @@
 
 .config-btn.delete:hover {
   background: #ef4444;
+}
+
+.config-btn.rotate:hover {
+  background: #3b82f6;
+  color: white;
+  transform: scale(1.1) rotate(90deg);
 }
 
 .capacity-field input {

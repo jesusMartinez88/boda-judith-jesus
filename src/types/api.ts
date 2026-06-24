@@ -150,7 +150,8 @@ export interface TableEntity {
   shape: string;
   posX: number;
   posY: number;
-  captainId?: number | null;
+  captainIds?: number[] | null;
+  rotation?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -170,6 +171,8 @@ export interface TableUpdateRequest {
   posX?: number;
   posY?: number;
   captainId?: number | null;
+  captainIds?: number[] | null;
+  rotation?: number;
 }
 
 export interface TodoEntity {
