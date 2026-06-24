@@ -18,6 +18,8 @@ import { ExportPdfBtnComponent } from './export-pdf-btn/export-pdf-btn';
 import { GuestFormModalComponent } from '../../../shared/components/guest-form-modal/guest-form-modal.component';
 import { GuestDeleteModalComponent } from '../../../shared/components/guest-delete-modal/guest-delete-modal.component';
 
+import { AssignSeatModalComponent } from './assign-seat-modal/assign-seat-modal';
+
 export interface HallSearchResult {
   guest: Guest;
   location: 'seated' | 'queue';
@@ -73,6 +75,7 @@ function isTableShape(value: unknown): value is TableShape {
     ExportPdfBtnComponent,
     GuestFormModalComponent,
     GuestDeleteModalComponent,
+    AssignSeatModalComponent,
   ],
   templateUrl: './tables.component.html',
   styleUrl: './tables.component.css',

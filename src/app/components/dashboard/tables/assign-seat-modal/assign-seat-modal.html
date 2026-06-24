@@ -1,0 +1,97 @@
+      <div
+        class="assign-modal-backdrop"
+        (click)="closeModal.emit()"
+        (keydown.enter)="closeModal.emit()"
+        tabindex="0"
+        role="button"
+        aria-label="Cerrar modal"
+      >
+        <div
+          class="assign-modal"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="-1"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="assign-modal-title"
+        >
+          <header class="assign-modal-header">
+            <h3 id="assign-modal-title">
+              Añadir invitado a
+              {{ panelTable?.name || 'Mesa ' + panelTable?.id }}
+            </h3>
+            <button
+              type="button"
+              class="close-btn"
+              (click)="closeModal.emit()"
+              aria-label="Cerrar asignación"
+            >
+              ×
+            </button>
+          </header>
+
+          <div class="assign-modal-body">
+            <div class="assign-controls">
+              <div class="search-container">
+                <input
+                  type="search"
+                  [formControl]="assignSearchControl"
+                  placeholder="Buscar en cola de recepción..."
+                  class="search-input"
+                  aria-label="Buscar invitados en cola de recepción"
+                />
+                <span class="search-icon">🔍</span>
+              </div>
+
+              <div class="assign-seat-select">
+                <label for="assign-seat">Asiento libre</label>
+                <select
+                  id="assign-seat"
+                  [value]="selectedSeatToAssign"
+                  (change)="assignSeatChange.emit($any($event.target).value)"
+                >
+                  @for (seat of selectedTableFreeSeats; track seat) {
+                    <option [value]="seat">Asiento {{ seat }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="assign-guest-list" role="listbox" aria-label="Invitados en cola">
+              @if (assignableGuests.length === 0) {
+                <p class="assign-empty">No hay invitados disponibles en la cola.</p>
+              } @else {
+                @for (guest of assignableGuests; track guestKey(guest)) {
+                  <button
+                    type="button"
+                    class="assign-guest-item"
+                    [class.selected]="isGuestSelectedForAssign(guest)"
+                    (click)="selectGuest.emit(guest)"
+                  >
+                    <span class="assign-guest-name">{{ guest.name || 'Invitado' }}</span>
+                    <span class="assign-guest-meta">{{ guest.mealType }}</span>
+                  </button>
+                }
+              }
+            </div>
+          </div>
+
+          <footer class="assign-modal-actions">
+            <button type="button" class="btn-secondary-modal" (click)="closeModal.emit()">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn-primary"
+              (click)="confirmAssign.emit()"
+              [disabled]="
+                !selectedGuestToAssign ||
+                selectedTableFreeSeats.length === 0 ||
+                selectedSeatToAssign === null
+              "
+            >
+              Asignar asiento
+            </button>
+          </footer>
+        </div>
+      </div>
