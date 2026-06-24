@@ -8,14 +8,7 @@ import {
   output,
   linkedSignal,
 } from '@angular/core';
-import {
-  form,
-  FormField,
-  required,
-  email,
-  minLength,
-  submit,
-} from '@angular/forms/signals';
+import { form, FormField, required, email, minLength, submit } from '@angular/forms/signals';
 import { Guest, GuestService } from '../../../services/guest.service';
 
 @Component({
@@ -35,23 +28,26 @@ export class GuestFormModalComponent implements OnInit {
   isEditingGuest = signal(false);
   editingGuestId = signal<string | null>(null);
 
-  protected readonly guestModel = linkedSignal<Guest | null, {
-    name: string;
-    email: string;
-    phone: string;
-    attendance: boolean;
-    isAdult: string;
-    mealType: string;
-    allergies: string;
-    notes: string;
-    needsTransport: boolean;
-  }>({
+  protected readonly guestModel = linkedSignal<
+    Guest | null,
+    {
+      name: string;
+      email: string;
+      phone: string;
+      attendance: boolean;
+      isAdult: string;
+      mealType: string;
+      allergies: string;
+      notes: string;
+      needsTransport: boolean;
+    }
+  >({
     source: () => this.guest(),
     computation: (guest) => ({
       name: guest?.name || '',
       email: guest?.email || '',
       phone: guest?.phone || '',
-      attendance: guest ? (guest.attendance !== false && guest.attending !== 0) : true,
+      attendance: guest ? guest.attendance !== false && guest.attending !== 0 : true,
       isAdult: String(guest?.isAdult ?? 1),
       mealType: guest?.mealType || 'normal',
       allergies: guest?.allergies || '',

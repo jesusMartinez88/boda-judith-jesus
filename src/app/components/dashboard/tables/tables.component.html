@@ -249,7 +249,20 @@
       </div>
     </aside>
 
-    <div class="hall-scroll-container">
+    <div
+      class="hall-wrapper"
+      #hallWrapper
+      style="
+        position: relative;
+        width: 100%;
+        min-width: 0;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+      "
+    >
       <!-- Hall Controls -->
       <div class="hall-controls">
         <button
@@ -285,7 +298,13 @@
           [title]="isFullscreen() ? 'Salir de pantalla completa' : 'Pantalla completa'"
           [attr.aria-label]="isFullscreen() ? 'Salir de pantalla completa' : 'Pantalla completa'"
         >
-          <span>@if (isFullscreen()) { ✕ } @else { ⛶ }</span>
+          <span>
+            @if (isFullscreen()) {
+              ✕
+            } @else {
+              ⛶
+            }
+          </span>
         </button>
       </div>
 
@@ -343,258 +362,310 @@
       </div>
 
       <div
-        class="celebration-hall"
-        #hall
-        [class.edit-mode]="isEditLayoutMode()"
-        [style.min-height.px]="hallHeight()"
-        [style.min-width.px]="hallWidth()"
-        [style.transform]="'scale(' + zoomLevel() + ')'"
-        [style.transform-origin]="'top left'"
+        class="hall-scroll-container"
+        style="overflow: auto; flex: 1"
+        #scrollContainer
+        (mousedown)="onScrollMouseDown($event)"
+        (mousemove)="onScrollMouseMove($event)"
+        (mouseup)="onScrollMouseUp()"
+        (mouseleave)="onScrollMouseUp()"
       >
-        <!-- Decoración floral en esquinas -->
-        <span class="hall-corner hall-corner--tl">🌸🌿</span>
-        <span class="hall-corner hall-corner--tr">🌿🌸</span>
-        <span class="hall-corner hall-corner--bl">🌺🌿</span>
-        <span class="hall-corner hall-corner--br">🌿🌺</span>
-
-        <main
-          class="tables-grid"
+        <div
+          class="celebration-hall"
+          #hall
           [class.edit-mode]="isEditLayoutMode()"
           [style.min-height.px]="hallHeight()"
           [style.min-width.px]="hallWidth()"
+          [style.transform]="'scale(' + zoomLevel() + ')'"
+          [style.transform-origin]="'top left'"
         >
-          @for (table of tables(); track table.id) {
-            <div
-              class="table-container"
-              [attr.data-table-id]="table.id"
-              [class.highlighted]="highlightedTableId() === table.id"
-              [class.full]="table.guests.length >= table.capacity"
-              [class.round]="table.shape === 'round'"
-              [class.square]="table.shape === 'square'"
-              [class.rectangular]="table.shape === 'rectangular'"
-              [class.presidential]="table.shape === 'presidential'"
-              [class.dragging-table]="isEditLayoutMode()"
-              [class.positioned]="table.posX !== undefined && table.posY !== undefined"
-              cdkDrag
-              [cdkDragBoundary]="hall"
-              [cdkDragDisabled]="!isEditLayoutMode()"
-              (cdkDragStarted)="onTableDragStarted()"
-              (cdkDragEnded)="onTableDragEnded($event, table.id)"
-              [style.left.px]="table.posX !== undefined ? table.posX : null"
-              [style.top.px]="table.posY !== undefined ? table.posY : null"
-              [style.width.px]="
-                table.shape === 'rectangular' || table.shape === 'presidential'
-                  ? getRectTableWidth(table.capacity, table.shape) + 60
-                  : null
-              "
-              [style.height.px]="
-                table.shape === 'rectangular' ? 340 : table.shape === 'presidential' ? 240 : null
-              "
-              [style.--seat-spacing.px]="
-                table.shape === 'rectangular' || table.shape === 'presidential'
-                  ? getRectSeatSpacing(table.capacity, table.shape)
-                  : null
-              "
-            >
-              <!-- Controles de Mesa (Overlay) -->
-              <div
-                class="table-config-overlay"
-                (click)="$event.stopPropagation()"
-                (keydown.enter)="$event.stopPropagation()"
-                tabindex="-1"
-              >
-                <button
-                  class="config-btn shape"
-                  (click)="toggleTableShape(table.id, table.shape)"
-                  [title]="'Cambiar tipo: ' + table.shape"
-                >
-                  {{
-                    table.shape === 'round'
-                      ? '⭕'
-                      : table.shape === 'square'
-                        ? '🟦'
-                        : table.shape === 'presidential'
-                          ? '🤵'
-                          : '👥'
-                  }}
-                </button>
-                @if (table.shape === 'rectangular' || table.shape === 'presidential') {
-                  <button
-                    class="config-btn rotate"
-                    (click)="rotateTable(table.id, table.rotation || 0); $event.stopPropagation()"
-                    title="Girar mesa 90°"
-                    [style.display]="'flex'"
-                  >
-                    🔄
-                  </button>
-                }
-                <div class="capacity-field">
-                  <input
-                    type="number"
-                    [formControl]="getCapacityControl(table.id, table.capacity)"
-                    min="1"
-                    max="20"
-                    title="Capacidad de esta mesa"
-                  />
-                </div>
-                <button
-                  class="config-btn delete"
-                  (click)="deleteTable(table.id)"
-                  title="Eliminar mesa"
-                >
-                  🗑️
-                </button>
-              </div>
+          <!-- Decoración floral en esquinas -->
+          <span class="hall-corner hall-corner--tl">🌸🌿</span>
+          <span class="hall-corner hall-corner--tr">🌿🌸</span>
+          <span class="hall-corner hall-corner--bl">🌺🌿</span>
+          <span class="hall-corner hall-corner--br">🌿🌺</span>
 
+          <main
+            class="tables-grid"
+            [class.edit-mode]="isEditLayoutMode()"
+            [style.min-height.px]="hallHeight()"
+            [style.min-width.px]="hallWidth()"
+          >
+            @for (table of tables(); track table.id) {
               <div
-                class="table-rotate-layer"
-                [class.rotated-90]="(table.rotation || 0) === 90"
-              >
-              <div
-                class="table-surface"
-                cdkDropList
-                [cdkDropListData]="table.id"
-                [cdkDropListSortingDisabled]="true"
-                (cdkDropListDropped)="onDrop($event)"
-                (click)="onTableSurfaceClick($event, table)"
-                (keydown.enter)="onTableSurfaceClick($event, table)"
-                (keydown.space)="onTableSurfaceClick($event, table)"
-                tabindex="0"
-                role="button"
-                title="Clic para ver comensales de esta mesa"
+                class="table-container"
+                [attr.data-table-id]="table.id"
+                [class.highlighted]="highlightedTableId() === table.id"
+                [class.full]="table.guests.length >= table.capacity"
+                [class.round]="table.shape === 'round'"
+                [class.square]="table.shape === 'square'"
+                [class.rectangular]="table.shape === 'rectangular'"
+                [class.presidential]="table.shape === 'presidential'"
+                [class.dragging-table]="isEditLayoutMode()"
+                [class.positioned]="table.posX !== undefined && table.posY !== undefined"
+                cdkDrag
+                [cdkDragBoundary]="hall"
+                [cdkDragDisabled]="!isEditLayoutMode()"
+                (cdkDragStarted)="onTableDragStarted()"
+                (cdkDragEnded)="onTableDragEnded($event, table.id)"
+                [style.left.px]="table.posX !== undefined ? table.posX : null"
+                [style.top.px]="table.posY !== undefined ? table.posY : null"
                 [style.width.px]="
                   table.shape === 'rectangular' || table.shape === 'presidential'
-                    ? getRectTableWidth(table.capacity, table.shape)
+                    ? getRectTableWidth(table.capacity, table.shape) + 60
                     : null
                 "
-                [style.height.px]="table.shape === 'presidential' ? 80 : null"
+                [style.height.px]="
+                  table.shape === 'rectangular' ? 340 : table.shape === 'presidential' ? 240 : null
+                "
+                [style.--seat-spacing.px]="
+                  table.shape === 'rectangular' || table.shape === 'presidential'
+                    ? getRectSeatSpacing(table.capacity, table.shape)
+                    : null
+                "
               >
-                @if (table.shape === 'square') {
-                  <div class="square-border"></div>
-                }
-                @if (table.shape === 'rectangular' || table.shape === 'presidential') {
-                  <div class="rectangular-border"></div>
-                }
-
-                <div class="table-info">
-                  @if (editingTableId() === table.id) {
-                    <input
-                      type="text"
-                      class="edit-table-input"
-                      [formControl]="editingNameControl"
-                      (blur)="saveTableName(table.id)"
-                      (keyup.enter)="saveTableName(table.id)"
-                      (click)="$event.stopPropagation()"
-                    />
-                  } @else {
-                    <span
-                      class="table-num"
-                      (click)="startEditingTable(table.id, table.name); $event.stopPropagation()"
-                      (keydown.enter)="
-                        startEditingTable(table.id, table.name); $event.stopPropagation()
-                      "
-                      (keydown.space)="
-                        startEditingTable(table.id, table.name); $event.stopPropagation()
-                      "
-                      tabindex="0"
-                      role="button"
-                      title="Haz clic para renombrar"
+                <!-- Controles de Mesa (Overlay) -->
+                <div
+                  class="table-config-overlay"
+                  (click)="$event.stopPropagation()"
+                  (keydown.enter)="$event.stopPropagation()"
+                  tabindex="-1"
+                >
+                  <button
+                    class="config-btn shape"
+                    (click)="toggleTableShape(table.id, table.shape)"
+                    [title]="'Cambiar tipo: ' + table.shape"
+                  >
+                    {{
+                      table.shape === 'round'
+                        ? '⭕'
+                        : table.shape === 'square'
+                          ? '🟦'
+                          : table.shape === 'presidential'
+                            ? '🤵'
+                            : '👥'
+                    }}
+                  </button>
+                  @if (table.shape === 'rectangular' || table.shape === 'presidential') {
+                    <button
+                      class="config-btn rotate"
+                      (click)="rotateTable(table.id, table.rotation || 0); $event.stopPropagation()"
+                      title="Girar mesa 90°"
+                      [style.display]="'flex'"
                     >
-                      {{ table.name || 'Mesa ' + table.id }}
-                    </span>
+                      🔄
+                    </button>
                   }
-                  <div class="table-stats">
-                    <span class="count">{{ table.guests.length }}/{{ table.capacity }}</span>
+                  <div class="capacity-field">
+                    <input
+                      type="number"
+                      [formControl]="getCapacityControl(table.id, table.capacity)"
+                      min="1"
+                      max="20"
+                      title="Capacidad de esta mesa"
+                    />
                   </div>
+                  <button
+                    class="config-btn delete"
+                    (click)="deleteTable(table.id)"
+                    title="Eliminar mesa"
+                  >
+                    🗑️
+                  </button>
                 </div>
 
-                <!-- Anillo de progreso / Decoración -->
-                @if (table.shape === 'round') {
-                  <svg class="progress-ring" viewBox="0 0 100 100">
-                    <circle class="ring-bg" cx="50" cy="50" r="48"></circle>
-                    <circle
-                      class="ring-fill"
-                      cx="50"
-                      cy="50"
-                      r="48"
-                      [style.stroke-dashoffset]="301 - 301 * (table.guests.length / table.capacity)"
-                      stroke-dasharray="301"
-                    ></circle>
-                  </svg>
-                } @else {
+                <div class="table-rotate-layer" [class.rotated-90]="(table.rotation || 0) === 90">
                   <div
-                    class="square-border"
-                    [style.--progress]="(table.guests.length / table.capacity) * 100"
-                  ></div>
-                }
-              </div>
-
-              <div class="seats-layout">
-                @for (seatIdx of getSequence(table.capacity); track seatIdx) {
-                  @let seatNumber = seatIdx + 1;
-                  @let guest = getGuestAtSeat(table.id, seatNumber);
-                  <div
-                    class="guest-seat"
-                    [style.--seat-index]="seatIdx"
-                    [style.--total-seats]="table.capacity"
-                    [style.--is-bottom]="
-                      table.shape === 'rectangular' && seatIdx >= table.capacity / 2 ? 1 : 0
-                    "
-                    [style.--side-index]="
-                      table.shape === 'rectangular' ? seatIdx % (table.capacity / 2) : seatIdx
-                    "
-                    [style.left.px]="getSeatX(table.shape, table.capacity, seatIdx)"
-                    [style.top.px]="getSeatY(table.shape, table.capacity, seatIdx)"
-                    [class.bottom-seat]="isBottomSeat(seatIdx, table.capacity)"
+                    class="table-surface"
                     cdkDropList
-                    [cdkDropListData]="{ tableId: table.id, seatIndex: seatNumber }"
+                    [cdkDropListData]="table.id"
                     [cdkDropListSortingDisabled]="true"
                     (cdkDropListDropped)="onDrop($event)"
+                    (click)="onTableSurfaceClick($event, table)"
+                    (keydown.enter)="onTableSurfaceClick($event, table)"
+                    (keydown.space)="onTableSurfaceClick($event, table)"
+                    tabindex="0"
+                    role="button"
+                    title="Clic para ver comensales de esta mesa"
+                    [style.width.px]="
+                      table.shape === 'rectangular' || table.shape === 'presidential'
+                        ? getRectTableWidth(table.capacity, table.shape)
+                        : null
+                    "
+                    [style.height.px]="table.shape === 'presidential' ? 80 : null"
                   >
-                    @if (guest) {
-                      <div
-                        class="guest-seat-inner"
-                        cdkDrag
-                        [cdkDragData]="guest"
-                        cdkDragPreviewContainer="parent"
-                        [class.just-seated]="newlySeatedIds().has(guestKey(guest))"
-                        [title]="guest.name + ' (' + guest.mealType + ')'"
-                        (cdkDragEnded)="onGuestDragEnded($event)"
-                      >
-                        <!-- Preview while dragging -->
-                        <div *cdkDragPreview class="guest-drag-preview">
-                          <svg class="kicking-person" viewBox="0 0 24 48"><circle cx="12" cy="7" r="4.5" fill="#ec4899"/><path fill="#ec4899" d="M8 13q4-1 8 0l-1 14q-3 1-6 0Z"/><path fill="none" stroke="#ec4899" stroke-linecap="round" stroke-width="3" d="M6 14q-3 5-1 11" class="arm left"/><path fill="none" stroke="#ec4899" stroke-linecap="round" stroke-width="3" d="M18 14q3 5 1 11" class="arm right"/><path fill="none" stroke="#ec4899" stroke-linecap="round" stroke-width="3.5" d="M9 27q-2 8 0 16" class="leg left"/><path fill="none" stroke="#ec4899" stroke-linecap="round" stroke-width="3.5" d="M15 27q2 8 0 16" class="leg right"/></svg>
-                        </div>
+                    @if (table.shape === 'square') {
+                      <div class="square-border"></div>
+                    }
+                    @if (table.shape === 'rectangular' || table.shape === 'presidential') {
+                      <div class="rectangular-border"></div>
+                    }
 
-                        <!-- Placeholder while dragging -->
-                        <div *cdkDragPlaceholder class="guest-seat-placeholder"></div>
-
-                        @if (isCaptainAtTable(table, guest)) {
-                          <span class="seat-captain-crown" aria-hidden="true">©️</span>
-                        }
-                        @let isCaptainBackground = isCaptainAtTable(table, guest) && guest.mealType === 'normal';
-                        <div class="seat-marker" [class]="getMenuClass(guest.mealType)"
-                        [class.guest-item]="isCaptainBackground" [class.is-captain]="isCaptainBackground">
-                          <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
-                        </div>
-                        <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
+                    <div class="table-info">
+                      @if (editingTableId() === table.id) {
+                        <input
+                          type="text"
+                          class="edit-table-input"
+                          [formControl]="editingNameControl"
+                          (blur)="saveTableName(table.id)"
+                          (keyup.enter)="saveTableName(table.id)"
+                          (click)="$event.stopPropagation()"
+                        />
+                      } @else {
+                        <span
+                          class="table-num"
+                          (click)="
+                            startEditingTable(table.id, table.name); $event.stopPropagation()
+                          "
+                          (keydown.enter)="
+                            startEditingTable(table.id, table.name); $event.stopPropagation()
+                          "
+                          (keydown.space)="
+                            startEditingTable(table.id, table.name); $event.stopPropagation()
+                          "
+                          tabindex="0"
+                          role="button"
+                          title="Haz clic para renombrar"
+                        >
+                          {{ table.name || 'Mesa ' + table.id }}
+                        </span>
+                      }
+                      <div class="table-stats">
+                        <span class="count">{{ table.guests.length }}/{{ table.capacity }}</span>
                       </div>
+                    </div>
+
+                    <!-- Anillo de progreso / Decoración -->
+                    @if (table.shape === 'round') {
+                      <svg class="progress-ring" viewBox="0 0 100 100">
+                        <circle class="ring-bg" cx="50" cy="50" r="48"></circle>
+                        <circle
+                          class="ring-fill"
+                          cx="50"
+                          cy="50"
+                          r="48"
+                          [style.stroke-dashoffset]="
+                            301 - 301 * (table.guests.length / table.capacity)
+                          "
+                          stroke-dasharray="301"
+                        ></circle>
+                      </svg>
                     } @else {
-                      <div class="seat-marker empty">
-                        <span class="seat-icon">+</span>
+                      <div
+                        class="square-border"
+                        [style.--progress]="(table.guests.length / table.capacity) * 100"
+                      ></div>
+                    }
+                  </div>
+
+                  <div class="seats-layout">
+                    @for (seatIdx of getSequence(table.capacity); track seatIdx) {
+                      @let seatNumber = seatIdx + 1;
+                      @let guest = getGuestAtSeat(table.id, seatNumber);
+                      <div
+                        class="guest-seat"
+                        [style.--seat-index]="seatIdx"
+                        [style.--total-seats]="table.capacity"
+                        [style.--is-bottom]="
+                          table.shape === 'rectangular' && seatIdx >= table.capacity / 2 ? 1 : 0
+                        "
+                        [style.--side-index]="
+                          table.shape === 'rectangular' ? seatIdx % (table.capacity / 2) : seatIdx
+                        "
+                        [style.left.px]="getSeatX(table.shape, table.capacity, seatIdx)"
+                        [style.top.px]="getSeatY(table.shape, table.capacity, seatIdx)"
+                        [class.bottom-seat]="isBottomSeat(seatIdx, table.capacity)"
+                        cdkDropList
+                        [cdkDropListData]="{ tableId: table.id, seatIndex: seatNumber }"
+                        [cdkDropListSortingDisabled]="true"
+                        (cdkDropListDropped)="onDrop($event)"
+                      >
+                        @if (guest) {
+                          <div
+                            class="guest-seat-inner"
+                            cdkDrag
+                            [cdkDragData]="guest"
+                            cdkDragPreviewContainer="parent"
+                            [class.just-seated]="newlySeatedIds().has(guestKey(guest))"
+                            [title]="guest.name + ' (' + guest.mealType + ')'"
+                            (cdkDragEnded)="onGuestDragEnded($event)"
+                          >
+                            <!-- Preview while dragging -->
+                            <div *cdkDragPreview class="guest-drag-preview">
+                              <svg class="kicking-person" viewBox="0 0 24 48">
+                                <circle cx="12" cy="7" r="4.5" fill="#ec4899" />
+                                <path fill="#ec4899" d="M8 13q4-1 8 0l-1 14q-3 1-6 0Z" />
+                                <path
+                                  fill="none"
+                                  stroke="#ec4899"
+                                  stroke-linecap="round"
+                                  stroke-width="3"
+                                  d="M6 14q-3 5-1 11"
+                                  class="arm left"
+                                />
+                                <path
+                                  fill="none"
+                                  stroke="#ec4899"
+                                  stroke-linecap="round"
+                                  stroke-width="3"
+                                  d="M18 14q3 5 1 11"
+                                  class="arm right"
+                                />
+                                <path
+                                  fill="none"
+                                  stroke="#ec4899"
+                                  stroke-linecap="round"
+                                  stroke-width="3.5"
+                                  d="M9 27q-2 8 0 16"
+                                  class="leg left"
+                                />
+                                <path
+                                  fill="none"
+                                  stroke="#ec4899"
+                                  stroke-linecap="round"
+                                  stroke-width="3.5"
+                                  d="M15 27q2 8 0 16"
+                                  class="leg right"
+                                />
+                              </svg>
+                            </div>
+
+                            <!-- Placeholder while dragging -->
+                            <div *cdkDragPlaceholder class="guest-seat-placeholder"></div>
+
+                            @if (isCaptainAtTable(table, guest)) {
+                              <span class="seat-captain-crown" aria-hidden="true">©️</span>
+                            }
+                            @let isCaptainBackground =
+                              isCaptainAtTable(table, guest) && guest.mealType === 'normal';
+                            <div
+                              class="seat-marker"
+                              [class]="getMenuClass(guest.mealType)"
+                              [class.guest-item]="isCaptainBackground"
+                              [class.is-captain]="isCaptainBackground"
+                            >
+                              <span class="seat-icon">{{ guest.name.charAt(0) }}</span>
+                            </div>
+                            <span class="seat-name">{{ guest.name.split(' ')[0] }}</span>
+                          </div>
+                        } @else {
+                          <div class="seat-marker empty">
+                            <span class="seat-icon">+</span>
+                          </div>
+                        }
                       </div>
                     }
                   </div>
-                }
+                </div>
               </div>
-              </div>
-            </div>
-          }
-        </main>
+            }
+          </main>
+        </div>
+        <!-- .celebration-hall -->
       </div>
-      <!-- .celebration-hall -->
+      <!-- .hall-scroll-container -->
     </div>
-    <!-- .hall-scroll-container -->
+    <!-- .hall-wrapper -->
 
     <!-- Panel de comensales de mesa -->
     @if (selectedTablePanelData(); as panelTable) {

@@ -91,6 +91,15 @@ export class TablesComponent implements OnInit {
   draggedGuest: Guest | null = null;
 
   readonly hallElement = viewChild.required<ElementRef>('hall');
+  readonly scrollContainer = viewChild<ElementRef>('scrollContainer');
+  readonly hallWrapper = viewChild<ElementRef>('hallWrapper');
+
+  // Drag-to-scroll properties
+  private isScrolling = false;
+  private startX = 0;
+  private startY = 0;
+  private scrollLeft = 0;
+  private scrollTop = 0;
 
   // Drag animation state
   draggingGuestId = signal<string | undefined>(undefined);
@@ -358,10 +367,7 @@ export class TablesComponent implements OnInit {
 
     // Check if already a captain
     if (currentCaptains.includes(Number(guest.id))) {
-      this.triggerAlert(
-        'Ya es capitán',
-        `${guest.name} ya es capitán de esta mesa.`,
-      );
+      this.triggerAlert('Ya es capitán', `${guest.name} ya es capitán de esta mesa.`);
       return;
     }
 
@@ -693,6 +699,53 @@ export class TablesComponent implements OnInit {
 
   // --- HTML5 Drag & Drop Handlers ---
 
+  onScrollMouseDown(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+
+    // Ignorar si se hace clic en una mesa, invitado o botones
+    if (
+      target.closest('.table-container') ||
+      target.closest('.guest-item') ||
+      target.closest('button') ||
+      target.closest('input')
+    ) {
+      return;
+    }
+
+    this.isScrolling = true;
+    const el = this.scrollContainer()?.nativeElement;
+    if (el) {
+      el.style.cursor = 'grabbing';
+      this.startX = event.pageX - el.offsetLeft;
+      this.startY = event.pageY - el.offsetTop;
+      this.scrollLeft = el.scrollLeft;
+      this.scrollTop = el.scrollTop;
+    }
+  }
+
+  onScrollMouseMove(event: MouseEvent) {
+    if (!this.isScrolling) return;
+
+    event.preventDefault(); // Prevenir selección de texto
+    const el = this.scrollContainer()?.nativeElement;
+    if (el) {
+      const x = event.pageX - el.offsetLeft;
+      const y = event.pageY - el.offsetTop;
+      const walkX = (x - this.startX) * 1.5; // Velocidad de scroll
+      const walkY = (y - this.startY) * 1.5;
+      el.scrollLeft = this.scrollLeft - walkX;
+      el.scrollTop = this.scrollTop - walkY;
+    }
+  }
+
+  onScrollMouseUp() {
+    this.isScrolling = false;
+    const el = this.scrollContainer()?.nativeElement;
+    if (el) {
+      el.style.cursor = '';
+    }
+  }
+
   /** Previene la animación de retorno al soltar un invitado */
   onGuestDragEnded(event: CdkDragEnd) {
     // Simplemente resetear sin animación
@@ -985,7 +1038,7 @@ export class TablesComponent implements OnInit {
   }
 
   async rotateTable(id: number, currentRotation: number) {
-    const normalized = ((Number(currentRotation) || 0) % 360 + 360) % 360;
+    const normalized = (((Number(currentRotation) || 0) % 360) + 360) % 360;
     const newRotation = normalized === 90 ? 0 : 90;
 
     // Actualización optimista local
@@ -1287,7 +1340,8 @@ export class TablesComponent implements OnInit {
 
   // Fullscreen functionality
   toggleFullscreen() {
-    const hallEl = this.hallElement().nativeElement;
+    const hallEl = this.hallWrapper()?.nativeElement;
+    if (!hallEl) return;
 
     if (!document.fullscreenElement) {
       hallEl

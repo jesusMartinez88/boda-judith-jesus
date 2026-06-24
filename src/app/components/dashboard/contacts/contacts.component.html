@@ -87,22 +87,14 @@
               type="tel"
               [formField]="contactForm.phone"
               placeholder="Ej: 600112233"
-              [class.invalid]="
-                contactForm.phone().touched() && contactForm.phone().errors().length
-              "
+              [class.invalid]="contactForm.phone().touched() && contactForm.phone().errors().length"
             />
           </div>
           @if (contactForm.phone().touched() && contactForm.phone().errors().length) {
             <span class="error-msg">Debe empezar por 6 o 7 y tener 9 dígitos</span>
           }
         </div>
-        <button
-          type="submit"
-          class="btn-save"
-          [disabled]="contactForm().invalid()"
-        >
-          Guardar
-        </button>
+        <button type="submit" class="btn-save" [disabled]="contactForm().invalid()">Guardar</button>
       </form>
     </div>
   }

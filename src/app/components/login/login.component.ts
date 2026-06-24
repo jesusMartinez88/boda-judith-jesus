@@ -49,27 +49,32 @@ export class LoginComponent {
     this.generateCaptcha();
 
     // effect() corre fuera de zona — no necesita NgZone ni ChangeDetectorRef
-    effect(() => {
-      if (this.isLoading()) {
-        this.loadingStartTime = Date.now();
-        this.intervalId = setInterval(() => {
-          const elapsed = Date.now() - this.loadingStartTime;
-          if (elapsed >= 45000) {
-            this.loadingMessage.set('Ya casi estamos, gracias por esperar...');
-          } else if (elapsed >= 30000) {
-            this.loadingMessage.set('El servidor está despertando, solo un momento más...');
-          } else if (elapsed >= 15000) {
-            this.loadingMessage.set('Gracias por tu paciencia, casi listo...');
-          } else if (elapsed >= 5000) {
-            this.loadingMessage.set('El servidor se está iniciando, esto puede tardar un minuto...');
-          }
-        }, 1000);
-      } else {
-        clearInterval(this.intervalId);
-        this.intervalId = undefined;
-        this.loadingMessage.set('');
-      }
-    }, { allowSignalWrites: true });
+    effect(
+      () => {
+        if (this.isLoading()) {
+          this.loadingStartTime = Date.now();
+          this.intervalId = setInterval(() => {
+            const elapsed = Date.now() - this.loadingStartTime;
+            if (elapsed >= 45000) {
+              this.loadingMessage.set('Ya casi estamos, gracias por esperar...');
+            } else if (elapsed >= 30000) {
+              this.loadingMessage.set('El servidor está despertando, solo un momento más...');
+            } else if (elapsed >= 15000) {
+              this.loadingMessage.set('Gracias por tu paciencia, casi listo...');
+            } else if (elapsed >= 5000) {
+              this.loadingMessage.set(
+                'El servidor se está iniciando, esto puede tardar un minuto...',
+              );
+            }
+          }, 1000);
+        } else {
+          clearInterval(this.intervalId);
+          this.intervalId = undefined;
+          this.loadingMessage.set('');
+        }
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   generateCaptcha() {

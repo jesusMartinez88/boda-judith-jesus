@@ -1,14 +1,14 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 import { ToastComponent } from '../../../shared/toast/toast.component';
 import { DatePipe } from '@angular/common';
-import {
-  form,
-  FormField,
-  required,
-  minLength,
-  pattern,
-  submit,
-} from '@angular/forms/signals';
+import { form, FormField, required, minLength, pattern, submit } from '@angular/forms/signals';
 import { ContactService, Contact } from '../../../services/contact.service';
 import { AiGenerateService } from '../../../services/ai-generate.service';
 import {

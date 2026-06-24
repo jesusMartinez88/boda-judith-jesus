@@ -5,20 +5,20 @@ registries:
     url: https://npm.pkg.github.com
     token: ${{ secrets.DEPENDABOT_PACKAGES_TOKEN }}
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     registries:
       - github-packages
-    target-branch: "main"
+    target-branch: 'main'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     # Aquí definimos grupos separados bajo el mismo ecosistema
     groups:
       production-updates:
-        dependency-type: "production"
-        update-types: ["minor", "patch"]
+        dependency-type: 'production'
+        update-types: ['minor', 'patch']
 
       development-updates:
-        dependency-type: "development"
+        dependency-type: 'development'
         # Esto agrupa todo lo de desarrollo
-        applies-to: "version-updates"
+        applies-to: 'version-updates'
