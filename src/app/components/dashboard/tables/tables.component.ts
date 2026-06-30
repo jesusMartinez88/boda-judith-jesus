@@ -14,6 +14,7 @@ import { DragDropModule, CdkDragDrop, CdkDragEnd } from '@angular/cdk/drag-drop'
 import { firstValueFrom, Subscription } from 'rxjs';
 import { TablesLegendComponent } from './tables-legend/tables-legend.component';
 import { TablesHeaderComponent } from './tables-header/tables-header.component';
+import { TablesPrintViewComponent } from './tables-print-view/tables-print-view.component';
 import { ExportPdfBtnComponent } from './export-pdf-btn/export-pdf-btn';
 import { GuestFormModalComponent } from '../../../shared/components/guest-form-modal/guest-form-modal.component';
 import { GuestDeleteModalComponent } from '../../../shared/components/guest-delete-modal/guest-delete-modal.component';
@@ -28,7 +29,7 @@ export interface HallSearchResult {
   seatNumber: number | null;
 }
 
-interface TableWithGuests {
+export interface TableWithGuests {
   id: number;
   name: string | undefined;
   capacity: number;
@@ -76,6 +77,7 @@ function isTableShape(value: unknown): value is TableShape {
     GuestFormModalComponent,
     GuestDeleteModalComponent,
     AssignSeatModalComponent,
+    TablesPrintViewComponent,
   ],
   templateUrl: './tables.component.html',
   styleUrl: './tables.component.css',
@@ -337,6 +339,11 @@ export class TablesComponent implements OnInit {
     const panel = this.selectedTablePanelData();
     if (!panel?.captainIds || panel.captainIds.length === 0) return false;
     return panel.captainIds.includes(Number(guest.id));
+  }
+
+  isCaptain(table: TableWithGuests, guest: Guest): boolean {
+    if (!table.captainIds || !guest.id) return false;
+    return table.captainIds.includes(Number(guest.id));
   }
 
   /** True si la mesa tiene al menos un capitán (para mostrar corona en la visual) */

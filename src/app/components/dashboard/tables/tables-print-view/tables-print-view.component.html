@@ -1,0 +1,37 @@
+<!-- Layout para Imprimir Listado de Invitados por Mesa -->
+<div class="print-only">
+  <div class="print-header">
+    <h1>Listado de Invitados por Mesa</h1>
+  </div>
+  
+  <div class="print-tables-grid">
+    @for (table of tables(); track table.id) {
+      <div class="print-table">
+        <h2>
+          <span>{{ table.name }}</span>
+          <span>({{ table.guests.length }} / {{ table.capacity }})</span>
+        </h2>
+        <ul>
+          @for (guest of table.guests; track guest.id) {
+            <li>
+              <span class="print-guest-name">
+                @if (isCaptain(table, guest)) {
+                  <span class="captain-crown">👑</span> 
+                }
+                {{ guest.name }}
+              </span>
+              <span class="print-guest-meta">
+                @if (guest.allergies) {
+                  <span>⚠️ {{ guest.allergies }}</span>
+                }
+                @if (guest.needsTransport) {
+                  <span>🚌</span>
+                }
+              </span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </div>
+</div>

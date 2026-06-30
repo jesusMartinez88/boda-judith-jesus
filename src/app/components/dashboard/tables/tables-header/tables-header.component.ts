@@ -20,4 +20,8 @@ export class TablesHeaderComponent {
   onToggleEditMode() {
     this.toggleEditMode.emit();
   }
+
+  onPrintList() {
+    window.print();
+  }
 }
