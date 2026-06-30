@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { SettingsService } from './settings.service';
-import { ApiResponse, GuestEntity } from '../../types/api';
+import { TableService } from './table.service';
+import { ApiResponse, GuestEntity, TableEntity } from '../../types/api';
 import confetti from 'canvas-confetti';
 
 export interface Guest {
@@ -52,6 +53,7 @@ export class GuestService {
 
   private http = inject(HttpClient);
   private settingsService = inject(SettingsService);
+  private tableService = inject(TableService);
 
   // Método público para cargar invitados
   async loadGuests(): Promise<Guest[]> {
@@ -293,9 +295,13 @@ export class GuestService {
       current.map((g) => (g.id === guestId ? { ...g, ...guestData } : g)),
     );
 
-    return firstValueFrom(
+    const res = await firstValueFrom(
       this.http.patch<ApiResponse<GuestEntity>>(`${this.apiUrl}/${guestId}`, guestData),
     );
+    if (res.updatedTables) {
+      this.tableService.updateTablesFromMap(res.updatedTables);
+    }
+    return res;
   }
 
   async updateGuestTable(
@@ -322,12 +328,16 @@ export class GuestService {
 
     // Enviamos solo los campos especificados por el usuario (camelCase)
     // tableId y seatNumber
-    return firstValueFrom(
+    const res = await firstValueFrom(
       this.http.patch<ApiResponse<GuestEntity>>(`${this.apiUrl}/${guestId}`, {
         tableId: normalizedTableId,
         seatNumber: normalizedSeatNumber,
       }),
     );
+    if (res.updatedTables) {
+      this.tableService.updateTablesFromMap(res.updatedTables);
+    }
+    return res;
   }
 
   async deleteGuest(

@@ -148,6 +148,26 @@ export class TableService {
       );
   }
 
+  updateTablesFromMap(updatedTables: Record<string, TableEntity> | undefined) {
+    if (!updatedTables) return;
+    this.tables.update((current) => {
+      const newTables = [...current];
+      for (const key of Object.keys(updatedTables)) {
+        const tableEntity = updatedTables[key];
+        const normalized = this.normalizeTable(tableEntity);
+        if (normalized) {
+          const index = newTables.findIndex((t) => t.id === normalized.id);
+          if (index !== -1) {
+            newTables[index] = { ...newTables[index], ...normalized };
+          } else {
+            newTables.push(normalized);
+          }
+        }
+      }
+      return newTables;
+    });
+  }
+
   requestDeleteCode(): Promise<ApiResponse<{ code?: string }>> {
     // triggers an email with a code for confirmation
     return this.http

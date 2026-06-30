@@ -8,6 +8,7 @@ export interface ApiResponse<T> {
   details?: string | undefined;
   count?: number | undefined;
   code?: string | undefined;
+  updatedTables?: Record<string, TableEntity> | undefined;
 }
 
 export type BooleanFlag = boolean | 0 | 1;
