@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { SettingsService } from './settings.service';
 import { TableService } from './table.service';
-import { ApiResponse, GuestEntity, TableEntity } from '../../types/api';
+import { ApiResponse, GuestEntity } from '../../types/api';
 import confetti from 'canvas-confetti';
 
 export interface Guest {
