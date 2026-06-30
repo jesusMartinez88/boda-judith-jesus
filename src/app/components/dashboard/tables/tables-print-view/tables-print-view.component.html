@@ -3,7 +3,7 @@
   <div class="print-header">
     <h1>Listado de Invitados por Mesa</h1>
   </div>
-  
+
   <div class="print-tables-grid">
     @for (table of tables(); track table.id) {
       <div class="print-table">
@@ -16,7 +16,7 @@
             <li>
               <span class="print-guest-name">
                 @if (isCaptain(table, guest)) {
-                  <span class="captain-crown">👑</span> 
+                  <span class="captain-crown">©️</span>
                 }
                 {{ guest.name }}
               </span>
