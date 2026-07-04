@@ -313,7 +313,7 @@
   body * {
     visibility: hidden;
   }
-  
+
   app-root {
     display: block !important;
   }
@@ -383,7 +383,7 @@
     display: flex;
     justify-content: space-between;
   }
-  
+
   .print-guest-meta {
     font-size: 12px;
     color: #666;
@@ -1116,6 +1116,222 @@
 .capacity-field input::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+.config-btn.highchairs {
+  background: #fbbf24;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0 4px;
+  width: auto;
+  min-width: 32px;
+}
+
+.config-btn.highchairs:hover {
+  background: #f59e0b;
+  transform: scale(1.05);
+}
+
+.highchairs-edit-input {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 2px solid #fbbf24;
+  background: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #f59e0b;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.highchairs-edit-input::-webkit-inner-spin-button,
+.highchairs-edit-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.highchair-indicator {
+  display: inline-block;
+  background: #fef08a;
+  color: #a16207;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+/* ===== HIGHCHAIRS EDITOR MODAL ===== */
+.highchairs-editor-modal {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  z-index: 50;
+  animation: slideInScale 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.highchairs-editor-content {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 2px solid #fbbf24;
+  padding: 1rem;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.highchairs-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.highchairs-editor-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.close-editor-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.close-editor-btn:hover {
+  color: #ef4444;
+}
+
+.highchairs-editor-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+}
+
+.spinner-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 2px solid #fbbf24;
+  background: white;
+  color: #f59e0b;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-btn:hover:not(:disabled) {
+  background: #fbbf24;
+  color: white;
+  transform: scale(1.08);
+}
+
+.spinner-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.highchairs-value-display {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.highchairs-value-input {
+  width: 56px;
+  height: 40px;
+  border: 2px solid #fbbf24;
+  border-radius: 8px;
+  background: #fffbeb;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f59e0b;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.highchairs-value-input::-webkit-inner-spin-button,
+.highchairs-value-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.highchairs-value-input:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.highchairs-editor-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #fef3c7;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn.cancel {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.action-btn.cancel:hover {
+  background: #e5e7eb;
+}
+
+.action-btn.confirm {
+  background: #fbbf24;
+  color: white;
+}
+
+.action-btn.confirm:hover {
+  background: #f59e0b;
+  transform: translateY(-1px);
 }
 
 .capacity-field input:focus {
@@ -2143,13 +2359,13 @@
   body * {
     visibility: hidden;
   }
-  
+
   app-root, .tables-view {
     display: block !important;
   }
 
-  app-tables-header, 
-  .tables-layout, 
+  app-tables-header,
+  .tables-layout,
   app-tables-legend,
   .hall-controls,
   .hall-search-bar {
