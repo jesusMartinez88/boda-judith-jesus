@@ -1,5 +1,6 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input, inject } from '@angular/core';
 import { Guest } from '../../../../services/guest.service';
+import { SettingsService } from '../../../../services/settings.service';
 import { TableWithGuests } from '../tables.component';
 
 @Component({
@@ -10,6 +11,16 @@ import { TableWithGuests } from '../tables.component';
 })
 export class TablesPrintViewComponent {
   readonly tables = input.required<TableWithGuests[]>();
+  private settingsService = inject(SettingsService);
+  enableHighchairs = computed(() => this.settingsService.settings().enable_highchairs ?? false);
+
+  sortedTables = computed(() => {
+    return [...this.tables()].sort((a, b) => {
+      const nameA = a.name || '';
+      const nameB = b.name || '';
+      return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+    });
+  });
 
   isCaptain(table: TableWithGuests, guest: Guest): boolean {
     if (!table.captainIds || !guest.id) return false;

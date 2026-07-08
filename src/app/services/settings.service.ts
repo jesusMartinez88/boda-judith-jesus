@@ -8,6 +8,7 @@ export interface AppSettings {
   max_guests_per_table: number;
   total_estimated_guests?: number;
   auto_assign_tables?: boolean;
+  enable_highchairs?: boolean;
 }
 
 @Injectable({
@@ -21,6 +22,7 @@ export class SettingsService {
     max_guests_per_table: 10,
     total_estimated_guests: 0,
     auto_assign_tables: false,
+    enable_highchairs: false,
   });
 
   loadSettings() {
@@ -44,6 +46,12 @@ export class SettingsService {
                 item.value === true ||
                 item.value === '1' ||
                 item.value === 1;
+            } else if (key === 'enable_highchairs') {
+              newSettings.enable_highchairs =
+                item.value === 'true' ||
+                item.value === true ||
+                item.value === '1' ||
+                item.value === 1;
             }
           });
         } else if (data && typeof data === 'object') {
@@ -57,6 +65,10 @@ export class SettingsService {
           if (obj['auto_assign_tables'] !== undefined) {
             const v = obj['auto_assign_tables'];
             newSettings.auto_assign_tables = v === true || v === 'true' || v === 1 || v === '1';
+          }
+          if (obj['enable_highchairs'] !== undefined) {
+            const v = obj['enable_highchairs'];
+            newSettings.enable_highchairs = v === true || v === 'true' || v === 1 || v === '1';
           }
         }
 
@@ -81,5 +93,10 @@ export class SettingsService {
     return this.http
       .put(`${this.baseUrl}/api/settings/auto_assign_tables`, { value: enabled })
       .pipe(tap(() => this.settings.update((s) => ({ ...s, auto_assign_tables: enabled }))));
+  }
+  updateEnableHighchairs(enabled: boolean) {
+    return this.http
+      .put(`${this.baseUrl}/api/settings/enable_highchairs`, { value: enabled })
+      .pipe(tap(() => this.settings.update((s) => ({ ...s, enable_highchairs: enabled }))));
   }
 }

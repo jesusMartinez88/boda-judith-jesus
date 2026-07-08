@@ -40,6 +40,19 @@
     </label>
   </div>
 
+  <div class="setting-item toggle-item">
+    <label for="enableHighchairs">🍼 Habilitar tronas en mesas</label>
+    <label class="toggle-switch">
+      <input
+        type="checkbox"
+        id="enableHighchairs"
+        [ngModel]="enableHighchairs()"
+        (ngModelChange)="toggleEnableHighchairs($event)"
+      />
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
   <hr class="danger-divider" />
 
   <div class="danger-zone">
