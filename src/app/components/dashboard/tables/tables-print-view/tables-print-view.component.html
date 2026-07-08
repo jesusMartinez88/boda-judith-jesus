@@ -5,11 +5,14 @@
   </div>
 
   <div class="print-tables-grid">
-    @for (table of tables(); track table.id) {
+    @for (table of sortedTables(); track table.id) {
       <div class="print-table">
         <h2>
           <span>{{ table.name }}</span>
           <span>({{ table.guests.length }} / {{ table.capacity }})</span>
+          @if (enableHighchairs() && table.highchairs && table.highchairs > 0) {
+            <span class="highchair-badge">🍼 x{{ table.highchairs }}</span>
+          }
         </h2>
         <ul>
           @for (guest of table.guests; track guest.id) {

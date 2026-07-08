@@ -2,7 +2,12 @@
   <div class="title-group">
     <h2>Gestión de Mesas</h2>
     <p>Organiza a los invitados y personaliza tus mesas</p>
-    <span class="tables-count">{{ totalTables() }} mesas creadas</span>
+    <span class="tables-count">
+      {{ totalTables() }} mesas creadas
+      @if (enableHighchairs() && totalHighchairs() > 0) {
+        | 🍼 {{ totalHighchairs() }} tronas
+      }
+    </span>
   </div>
 
   <div class="header-actions">

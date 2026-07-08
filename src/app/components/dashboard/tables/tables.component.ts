@@ -10,6 +10,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { TablesLegendComponent } from './tables-legend/tables-legend.component';
@@ -39,6 +40,7 @@ export interface TableWithGuests {
   captainIds?: number[] | null;
   guests: Guest[];
   rotation?: number;
+  highchairs?: number;
 }
 
 interface SeatDropData {
@@ -70,6 +72,7 @@ function isTableShape(value: unknown): value is TableShape {
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    FormsModule,
     TablesLegendComponent,
     TablesHeaderComponent,
     DragDropModule,
@@ -80,7 +83,7 @@ function isTableShape(value: unknown): value is TableShape {
     TablesPrintViewComponent,
   ],
   templateUrl: './tables.component.html',
-  styleUrl: './tables.component.css',
+  styleUrls: ['./tables-shared.css', './tables.component.css'],
 })
 export class TablesComponent implements OnInit {
   private guestService = inject(GuestService);
@@ -90,6 +93,7 @@ export class TablesComponent implements OnInit {
 
   guests = this.guestService.guests;
   maxGuests = computed(() => this.settingsService.settings().max_guests_per_table);
+  enableHighchairs = computed(() => this.settingsService.settings().enable_highchairs ?? false);
   //autoAssign = computed(() => this.settingsService.settings().auto_assign_tables ?? false);
 
   isLoading = signal(true);
@@ -121,6 +125,7 @@ export class TablesComponent implements OnInit {
     name: ['', [Validators.required, Validators.minLength(2)]],
     capacity: [10, [Validators.required, Validators.min(1), Validators.max(25)]],
     shape: ['round', [Validators.required]],
+    highchairs: [0, [Validators.min(0), Validators.max(10)]],
   });
 
   // Modal para confirmar borrado de mesa
@@ -144,6 +149,10 @@ export class TablesComponent implements OnInit {
   // Edición inline de nombres de mesa
   editingTableId = signal<number | null>(null);
   editingNameControl = new FormControl<string>('', { nonNullable: true });
+
+  // Edición de tronas
+  editingHighchairsTableId = signal<number | null>(null);
+  editingHighchairsValue = signal<number>(0);
 
   searchTerm = signal<string>('');
   searchControl = new FormControl<string>('', { nonNullable: true });
@@ -187,6 +196,7 @@ export class TablesComponent implements OnInit {
           posY: config.posY,
           captainIds: config.captainIds ?? null,
           rotation: config.rotation || 0,
+          highchairs: config.highchairs || 0,
           guests: guestList.filter((g) => {
             if (g.attending === 0) return false;
             const guestTableId = Number(g.tableId || 0);
@@ -196,6 +206,10 @@ export class TablesComponent implements OnInit {
         };
       })
       .sort((a, b) => a.id - b.id);
+  });
+
+  totalHighchairs = computed(() => {
+    return this.tables().reduce((total, t) => total + (t.highchairs || 0), 0);
   });
 
   unassignedGuests = computed(() => {
@@ -1207,6 +1221,62 @@ export class TablesComponent implements OnInit {
     } catch (error) {
       console.error('Error updating table name:', error);
     }
+  }
+
+  async saveHighchairs(id: number) {
+    const newHighchairs = Math.max(0, Math.min(10, Number(this.editingHighchairsValue()) || 0));
+
+    // Actualización optimista local
+    this.tableService.tables.update((current) =>
+      current.map((t) => (t.id === id ? { ...t, highchairs: newHighchairs } : t)),
+    );
+
+    try {
+      await firstValueFrom(this.tableService.updateTable(id, { highchairs: newHighchairs }));
+    } catch (error) {
+      console.error('Error updating table highchairs:', error);
+    }
+
+    this.editingHighchairsTableId.set(null);
+    this.editingHighchairsValue.set(0);
+  }
+
+  async updateHighchairsDirectly(id: number, newValue: number) {
+    const newHighchairs = Math.max(0, Math.min(10, newValue));
+
+    // Actualización optimista local
+    this.tableService.tables.update((current) =>
+      current.map((t) => (t.id === id ? { ...t, highchairs: newHighchairs } : t)),
+    );
+
+    try {
+      await firstValueFrom(this.tableService.updateTable(id, { highchairs: newHighchairs }));
+    } catch (error) {
+      console.error('Error updating table highchairs:', error);
+    }
+  }
+
+  startEditingHighchairs(tableId: number, currentValue: number) {
+    this.editingHighchairsTableId.set(tableId);
+    this.editingHighchairsValue.set(currentValue || 0);
+  }
+
+  cancelEditingHighchairs() {
+    this.editingHighchairsTableId.set(null);
+    this.editingHighchairsValue.set(0);
+  }
+
+  increaseHighchairs() {
+    this.editingHighchairsValue.update((v) => Math.min(10, v + 1));
+  }
+
+  decreaseHighchairs() {
+    this.editingHighchairsValue.update((v) => Math.max(0, v - 1));
+  }
+
+  onHighchairsInputChange(value: string): void {
+    const num = Math.max(0, Math.min(10, Number(value) || 0));
+    this.editingHighchairsValue.set(num);
   }
 
   deleteTable(id: number) {

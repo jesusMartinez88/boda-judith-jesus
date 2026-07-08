@@ -23,6 +23,7 @@ export class SettingsComponent implements OnInit {
     () => this.settingsService.settings().total_estimated_guests || 0,
   );
   autoAssignTables = computed(() => this.settingsService.settings().auto_assign_tables ?? false);
+  enableHighchairs = computed(() => this.settingsService.settings().enable_highchairs ?? false);
 
   // Delete all guests modal + captcha + email code
   showDeleteAllModal = signal(false);
@@ -56,6 +57,10 @@ export class SettingsComponent implements OnInit {
 
   toggleAutoAssignTables(enabled: boolean) {
     this.settingsService.updateAutoAssignTables(enabled).subscribe();
+  }
+
+  toggleEnableHighchairs(enabled: boolean) {
+    this.settingsService.updateEnableHighchairs(enabled).subscribe();
   }
 
   // --- Delete All Guests ---

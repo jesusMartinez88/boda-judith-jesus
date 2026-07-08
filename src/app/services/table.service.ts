@@ -13,6 +13,7 @@ export interface TableConfig {
   posY?: number;
   captainIds?: number[] | null;
   rotation?: number;
+  highchairs?: number;
 }
 
 @Injectable({
@@ -59,6 +60,7 @@ export class TableService {
       posY: obj['posY'] !== undefined ? Number(obj['posY'] as unknown) : undefined,
       captainIds,
       rotation: obj['rotation'] !== undefined ? Number(obj['rotation']) : 0,
+      highchairs: (obj['highchairs'] as number) || 0,
     };
   }
 

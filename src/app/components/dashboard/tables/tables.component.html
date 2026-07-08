@@ -2,6 +2,8 @@
   <app-tables-header
     [isEditMode]="isEditLayoutMode()"
     [totalTables]="tables().length"
+    [totalHighchairs]="totalHighchairs()"
+    [enableHighchairs]="enableHighchairs()"
     (toggleEditMode)="toggleEditLayout()"
     (addTable)="openCreateTableModal()"
   >
@@ -92,6 +94,20 @@
                 </button>
               </div>
             </div>
+
+            @if (enableHighchairs()) {
+              <div class="form-group">
+                <label for="highchairsInput">Cantidad de Tronas 🍼</label>
+                <input
+                  id="highchairsInput"
+                  type="number"
+                  formControlName="highchairs"
+                  name="highchairs"
+                  min="0"
+                  max="10"
+                />
+              </div>
+            }
           </div>
 
           <div class="modal-actions">
@@ -465,6 +481,18 @@
                       title="Capacidad de esta mesa"
                     />
                   </div>
+                  @if (enableHighchairs()) {
+                    <button
+                      class="config-btn highchairs"
+                      title="Editar tronas"
+                      (click)="$event.stopPropagation(); startEditingHighchairs(table.id, table.highchairs || 0)"
+                    >
+                      🍼
+                      @if (table.highchairs && table.highchairs > 0) {
+                        <span>{{ table.highchairs }}</span>
+                      }
+                    </button>
+                  }
                   <button
                     class="config-btn delete"
                     (click)="deleteTable(table.id)"
@@ -473,6 +501,70 @@
                     🗑️
                   </button>
                 </div>
+
+                <!-- Editor Modal de Tronas -->
+                @if (enableHighchairs() && editingHighchairsTableId() === table.id) {
+                  <div class="highchairs-editor-modal">
+                    <div class="highchairs-editor-content">
+                      <div class="highchairs-editor-header">
+                        <h4>🍼 Tronas</h4>
+                        <button
+                          class="close-editor-btn"
+                          (click)="cancelEditingHighchairs()"
+                          title="Cerrar"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div class="highchairs-editor-body">
+                        <button
+                          class="spinner-btn decrease"
+                          (click)="decreaseHighchairs()"
+                          [disabled]="editingHighchairsValue() <= 0"
+                          title="Disminuir"
+                        >
+                          −
+                        </button>
+
+                        <div class="highchairs-value-display">
+                          <input
+                            type="number"
+                            class="highchairs-value-input"
+                            [value]="editingHighchairsValue()"
+                            (change)="onHighchairsInputChange($any($event.target).value)"
+                            min="0"
+                            max="10"
+                          />
+                        </div>
+
+                        <button
+                          class="spinner-btn increase"
+                          (click)="increaseHighchairs()"
+                          [disabled]="editingHighchairsValue() >= 10"
+                          title="Aumentar"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <div class="highchairs-editor-actions">
+                        <button
+                          class="action-btn cancel"
+                          (click)="cancelEditingHighchairs()"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          class="action-btn confirm"
+                          (click)="saveHighchairs(table.id)"
+                        >
+                          Guardar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
 
                 <div class="table-rotate-layer" [class.rotated-90]="(table.rotation || 0) === 90">
                   <div
@@ -532,6 +624,9 @@
                       }
                       <div class="table-stats">
                         <span class="count">{{ table.guests.length }}/{{ table.capacity }}</span>
+                        @if (enableHighchairs() && table.highchairs && table.highchairs > 0) {
+                          <span class="highchair-indicator" title="Tronas disponibles">🍼 {{ table.highchairs }}</span>
+                        }
                       </div>
                     </div>
 
@@ -742,6 +837,33 @@
               <p class="captain-empty">Sin capitán</p>
             }
           </section>
+
+          @if (enableHighchairs()) {
+            <section class="captain-section" aria-label="Configuración de tronas" style="border-top: none;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <h4 class="captain-section-title" style="margin: 0;">🍼 Tronas (Máx 10)</h4>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <button
+                    type="button"
+                    class="btn-secondary btn-sm"
+                    style="padding: 0 0.5rem; line-height: 1;"
+                    (click)="updateHighchairsDirectly(panelTable.id, (panelTable.highchairs || 0) - 1)"
+                    [disabled]="(panelTable.highchairs || 0) <= 0"
+                  >−</button>
+                  <span style="font-weight: 700; color: #1e293b; min-width: 1.5rem; text-align: center;">
+                    {{ panelTable.highchairs || 0 }}
+                  </span>
+                  <button
+                    type="button"
+                    class="btn-secondary btn-sm"
+                    style="padding: 0 0.5rem; line-height: 1;"
+                    (click)="updateHighchairsDirectly(panelTable.id, (panelTable.highchairs || 0) + 1)"
+                    [disabled]="(panelTable.highchairs || 0) >= 10"
+                  >+</button>
+                </div>
+              </div>
+            </section>
+          }
 
           <div class="table-panel-body">
             @if (panelTable.sortedGuests.length === 0) {
