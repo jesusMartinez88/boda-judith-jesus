@@ -83,7 +83,7 @@ function isTableShape(value: unknown): value is TableShape {
     TablesPrintViewComponent,
   ],
   templateUrl: './tables.component.html',
-  styleUrl: './tables.component.css',
+  styleUrls: ['./tables-shared.css', './tables.component.css'],
 })
 export class TablesComponent implements OnInit {
   private guestService = inject(GuestService);
@@ -206,6 +206,10 @@ export class TablesComponent implements OnInit {
         };
       })
       .sort((a, b) => a.id - b.id);
+  });
+
+  totalHighchairs = computed(() => {
+    return this.tables().reduce((total, t) => total + (t.highchairs || 0), 0);
   });
 
   unassignedGuests = computed(() => {
@@ -1235,6 +1239,21 @@ export class TablesComponent implements OnInit {
 
     this.editingHighchairsTableId.set(null);
     this.editingHighchairsValue.set(0);
+  }
+
+  async updateHighchairsDirectly(id: number, newValue: number) {
+    const newHighchairs = Math.max(0, Math.min(10, newValue));
+
+    // Actualización optimista local
+    this.tableService.tables.update((current) =>
+      current.map((t) => (t.id === id ? { ...t, highchairs: newHighchairs } : t)),
+    );
+
+    try {
+      await firstValueFrom(this.tableService.updateTable(id, { highchairs: newHighchairs }));
+    } catch (error) {
+      console.error('Error updating table highchairs:', error);
+    }
   }
 
   startEditingHighchairs(tableId: number, currentValue: number) {

@@ -1,12 +1,4 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  inject,
-  signal,
-  computed,
-  HostListener,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 
@@ -25,6 +17,8 @@ import { ContactsComponent } from './contacts/contacts.component';
 import { MusicComponent } from './music/music.component';
 import { GuestFormModalComponent } from '../../shared/components/guest-form-modal/guest-form-modal.component';
 import { GuestDeleteModalComponent } from '../../shared/components/guest-delete-modal/guest-delete-modal.component';
+import { ExitConfirmService } from '../../services/exit-confirm.service';
+import { ExitConfirmModalComponent } from '../../shared/components/exit-confirm-modal/exit-confirm-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -40,6 +34,7 @@ import { GuestDeleteModalComponent } from '../../shared/components/guest-delete-
     MusicComponent,
     GuestFormModalComponent,
     GuestDeleteModalComponent,
+    ExitConfirmModalComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
@@ -52,6 +47,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   versionService = inject(VersionService);
   private router = inject(Router);
   private location = inject(Location);
+  exitConfirmService = inject(ExitConfirmService);
 
   stats = signal<WeddingStats | null>(null);
   allergiesCount = signal<number | null>(null);
@@ -193,7 +189,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   >('stats');
   isMenuOpen = signal(false);
   isSidebarCollapsed = signal(false);
-  showExitConfirm = signal(false);
 
   ngOnInit() {
     this.loadStats();
@@ -274,40 +269,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('window:popstate', ['$event'])
-  onPopState(ev: PopStateEvent) {
-    // If the popstate event's state is our guard, the user pressed back
-    // from the app shell — show exit confirmation and re-insert the
-    // top-of-stack empty state to keep the user on the dashboard.
-    if (ev && (ev.state as { dashboardGuard?: boolean })?.dashboardGuard === true) {
-      try {
-        history.pushState({}, '', window.location.href);
-      } catch {
-        /* ignore */
-      }
-      this.showExitConfirm.set(true);
-      return;
+  private onPopState(ev: PopStateEvent) {
+    // If the back button was pressed and it was our guard state, intercept it
+    // and show the exit confirmation instead of navigating away
+    if (ev.state && (ev.state as { dashboardGuard?: boolean }).dashboardGuard === true) {
+      ev.preventDefault();
+      // Re-push the guard state so back button can be used again if user cancels
+      history.pushState({ dashboardGuard: true }, '', window.location.href);
+      this.exitConfirmService.openExitConfirm();
     }
-
-    // Otherwise, ignore (internal navigations will proceed normally).
-  }
-
-  confirmExit() {
-    this.showExitConfirm.set(false);
-    // perform logout and navigate to login
-    this.authService.logout();
-    // navigate to login (replace history) then allow one back to proceed
-    this.router.navigate(['/login'], { replaceUrl: true }).then(() => {
-      try {
-        history.back();
-      } catch {
-        /* ignore */
-      }
-    });
-  }
-
-  cancelExit() {
-    this.showExitConfirm.set(false);
   }
 
   toggleMenu() {
@@ -419,7 +389,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   logout() {
     this.closeMenu();
-    this.showExitConfirm.set(true);
+    this.exitConfirmService.openExitConfirm();
   }
 
   openDeclinedGuestsModal() {
