@@ -1166,6 +1166,7 @@
   transform: rotate(-90deg);
   pointer-events: none;
   overflow: visible;
+  background: transparent;
 }
 
 .ring-bg {
