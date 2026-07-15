@@ -235,6 +235,56 @@
   margin: 0.3rem 0 0;
 }
 
+/* WhatsApp section */
+.whatsapp-section {
+  margin-top: 1.2rem;
+  padding: 1.2rem 1.4rem;
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%);
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+  max-width: 520px;
+}
+
+.whatsapp-section h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.1rem;
+  color: #065f46;
+  font-family: 'Playfair Display', serif;
+}
+
+.section-hint {
+  margin: 0 0 1rem;
+  color: #047857;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.section-hint a {
+  color: #be185d;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.section-hint code {
+  background: #ffffff;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.whatsapp-section .setting-item {
+  max-width: 100%;
+}
+
+.whatsapp-section .setting-item input[type='tel'],
+.whatsapp-section .setting-item input[type='text'] {
+  width: 100%;
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  font-weight: 500;
+}
+
 .error-message {
   color: #dc2626;
   font-size: 0.85rem;

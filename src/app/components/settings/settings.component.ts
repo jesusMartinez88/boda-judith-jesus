@@ -24,6 +24,9 @@ export class SettingsComponent implements OnInit {
   );
   autoAssignTables = computed(() => this.settingsService.settings().auto_assign_tables ?? false);
   enableHighchairs = computed(() => this.settingsService.settings().enable_highchairs ?? false);
+  enableWhatsApp = computed(() => this.settingsService.settings().enable_whatsapp ?? false);
+  whatsAppApikey = computed(() => this.settingsService.settings().whatsapp_apikey ?? '');
+  whatsAppPhone = computed(() => this.settingsService.settings().whatsapp_phone ?? '');
 
   // Delete all guests modal + captcha + email code
   showDeleteAllModal = signal(false);
@@ -61,6 +64,18 @@ export class SettingsComponent implements OnInit {
 
   toggleEnableHighchairs(enabled: boolean) {
     this.settingsService.updateEnableHighchairs(enabled).subscribe();
+  }
+
+  toggleEnableWhatsApp(enabled: boolean) {
+    this.settingsService.updateEnableWhatsApp(enabled).subscribe();
+  }
+
+  updateWhatsAppApikey(value: string) {
+    this.settingsService.updateWhatsAppApikey(value).subscribe();
+  }
+
+  updateWhatsAppPhone(value: string) {
+    this.settingsService.updateWhatsAppPhone(value).subscribe();
   }
 
   // --- Delete All Guests ---

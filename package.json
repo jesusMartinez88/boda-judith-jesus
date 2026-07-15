@@ -1,6 +1,6 @@
 {
   "name": "boda-judith-jesus",
-  "version": "1.12.2",
+  "version": "1.13.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --configuration production",
@@ -31,7 +31,7 @@
     ]
   },
   "private": true,
-  "packageManager": "pnpm@11.10.0",
+  "packageManager": "pnpm@11.13.0",
   "engines": {
     "node": "24.16.0"
   },

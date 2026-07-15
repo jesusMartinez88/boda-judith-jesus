@@ -9,6 +9,9 @@ export interface AppSettings {
   total_estimated_guests?: number;
   auto_assign_tables?: boolean;
   enable_highchairs?: boolean;
+  enable_whatsapp?: boolean;
+  whatsapp_apikey?: string;
+  whatsapp_phone?: string;
 }
 
 @Injectable({
@@ -23,6 +26,9 @@ export class SettingsService {
     total_estimated_guests: 0,
     auto_assign_tables: false,
     enable_highchairs: false,
+    enable_whatsapp: false,
+    whatsapp_apikey: '',
+    whatsapp_phone: '',
   });
 
   loadSettings() {
@@ -52,6 +58,16 @@ export class SettingsService {
                 item.value === true ||
                 item.value === '1' ||
                 item.value === 1;
+            } else if (key === 'enable_whatsapp') {
+              newSettings.enable_whatsapp =
+                item.value === 'true' ||
+                item.value === true ||
+                item.value === '1' ||
+                item.value === 1;
+            } else if (key === 'whatsapp_apikey') {
+              newSettings.whatsapp_apikey = String(item.value ?? '');
+            } else if (key === 'whatsapp_phone') {
+              newSettings.whatsapp_phone = String(item.value ?? '');
             }
           });
         } else if (data && typeof data === 'object') {
@@ -69,6 +85,16 @@ export class SettingsService {
           if (obj['enable_highchairs'] !== undefined) {
             const v = obj['enable_highchairs'];
             newSettings.enable_highchairs = v === true || v === 'true' || v === 1 || v === '1';
+          }
+          if (obj['enable_whatsapp'] !== undefined) {
+            const v = obj['enable_whatsapp'];
+            newSettings.enable_whatsapp = v === true || v === 'true' || v === 1 || v === '1';
+          }
+          if (obj['whatsapp_apikey'] !== undefined) {
+            newSettings.whatsapp_apikey = String(obj['whatsapp_apikey'] ?? '');
+          }
+          if (obj['whatsapp_phone'] !== undefined) {
+            newSettings.whatsapp_phone = String(obj['whatsapp_phone'] ?? '');
           }
         }
 
@@ -98,5 +124,23 @@ export class SettingsService {
     return this.http
       .put(`${this.baseUrl}/api/settings/enable_highchairs`, { value: enabled })
       .pipe(tap(() => this.settings.update((s) => ({ ...s, enable_highchairs: enabled }))));
+  }
+
+  updateEnableWhatsApp(enabled: boolean) {
+    return this.http
+      .put(`${this.baseUrl}/api/settings/enable_whatsapp`, { value: enabled })
+      .pipe(tap(() => this.settings.update((s) => ({ ...s, enable_whatsapp: enabled }))));
+  }
+
+  updateWhatsAppApikey(apikey: string) {
+    return this.http
+      .put(`${this.baseUrl}/api/settings/whatsapp_apikey`, { value: apikey })
+      .pipe(tap(() => this.settings.update((s) => ({ ...s, whatsapp_apikey: apikey }))));
+  }
+
+  updateWhatsAppPhone(phone: string) {
+    return this.http
+      .put(`${this.baseUrl}/api/settings/whatsapp_phone`, { value: phone })
+      .pipe(tap(() => this.settings.update((s) => ({ ...s, whatsapp_phone: phone }))));
   }
 }
