@@ -266,16 +266,30 @@ export interface AuthLoginRequest {
   password: string;
 }
 
-export interface AuthUser {
+export interface AuthRegisterRequest {
   username: string;
+  email: string;
+  password: string;
+}
+
+export interface AuthUser {
+  id: number;
+  username: string;
+  email: string | null;
   role: string;
+  slug: string;
 }
 
 export interface AuthLoginResponse {
   success: boolean;
-  token?: string;
-  user?: AuthUser;
-  error?: string;
+  token: string;
+  user: AuthUser;
+}
+
+export interface AuthRegisterResponse {
+  success: boolean;
+  token: string;
+  user: AuthUser;
 }
 
 export interface AiGenerateRequest {

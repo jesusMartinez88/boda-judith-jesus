@@ -1,9 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
-import { Location } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 
 import { StatsService, WeddingStats } from '../../services/stats.service';
-import { AuthService } from '../../services/auth.service';
 import { TablesComponent } from './tables/tables.component';
 import { SettingsComponent } from '../settings/settings.component';
 import { FinancesComponent } from './finances/finances.component';
@@ -42,13 +40,12 @@ import { ExitConfirmModalComponent } from '../../shared/components/exit-confirm-
 export class DashboardComponent implements OnInit, OnDestroy {
   private statsService = inject(StatsService);
   private guestService = inject(GuestService);
-  private authService = inject(AuthService);
   private settingsService = inject(SettingsService);
   versionService = inject(VersionService);
-  private router = inject(Router);
-  private location = inject(Location);
+  private route = inject(ActivatedRoute);
   exitConfirmService = inject(ExitConfirmService);
 
+  tenant = signal<string>('');
   stats = signal<WeddingStats | null>(null);
   allergiesCount = signal<number | null>(null);
 
@@ -191,6 +188,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isSidebarCollapsed = signal(false);
 
   ngOnInit() {
+    this.tenant.set(this.route.snapshot.paramMap.get('tenant') || '');
     this.loadStats();
     this.settingsService.loadSettings().subscribe();
 

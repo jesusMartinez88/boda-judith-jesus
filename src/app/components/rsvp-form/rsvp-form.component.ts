@@ -1,4 +1,5 @@
 import { Component, signal, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -44,6 +45,7 @@ export class RsvpFormComponent {
   private aiGenerate = inject(AiGenerateService);
   private formBuilder = inject(FormBuilder);
   private guestService = inject(GuestService);
+  private route = inject(ActivatedRoute);
 
   aiAvailable = this.chromeAi.isAvailable;
   aiLoading = this.chromeAi.isLoading;
@@ -104,7 +106,9 @@ export class RsvpFormComponent {
       } else {
         guestData.attending = Number(guestData.adults || 0) + Number(guestData.children || 0);
       }
-      await this.guestService.registerGuest(guestData);
+      
+      const tenantSlug = this.route.snapshot.paramMap.get('tenant') || this.route.parent?.snapshot.paramMap.get('tenant') || undefined;
+      await this.guestService.registerGuest(guestData, tenantSlug);
 
       this.submitSuccess.set(true);
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, inject } from '@angular/core';
+import { Component, afterNextRender, HostListener, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { PwaPromptComponent } from './components/pwa-prompt/pwa-prompt.component';
 import { ExitConfirmModalComponent } from './shared/components/exit-confirm-modal/exit-confirm-modal.component';
@@ -16,16 +16,21 @@ import { ExitConfirmService } from './services/exit-confirm.service';
     }
   `,
 })
-export class App implements OnInit {
+export class App {
   exitConfirmService = inject(ExitConfirmService);
 
-  ngOnInit() {
-    // Push initial state to handle browser back button
-    try {
-      history.pushState({ dashboardGuard: true }, '', window.location.href);
-    } catch {
-      /* ignore */
-    }
+  constructor() {
+    // `afterNextRender` solo se ejecuta en el navegador, justo después de
+    // que la primera renderización se hidrate. Esto evita tocar
+    // `window`/`history` durante el render del servidor (SSR).
+    afterNextRender(() => {
+      // Push initial state to handle browser back button
+      try {
+        history.pushState({ dashboardGuard: true }, '', window.location.href);
+      } catch {
+        /* ignore */
+      }
+    });
   }
 
   @HostListener('window:popstate', ['$event'])

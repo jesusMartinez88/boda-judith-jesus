@@ -1,0 +1,17 @@
+/* Server-side TypeScript configuration for Angular SSR.
+ * Includes the Express server entry, the Angular server bootstrap, and
+ * the server-specific application config.
+ * Reuses the same compiler options as the browser tsconfig.app.json.
+ */
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/server",
+    "types": ["node"]
+  },
+  "include": [
+    "server.ts",
+    "src/main.server.ts",
+    "src/app/app.config.server.ts"
+  ]
+}

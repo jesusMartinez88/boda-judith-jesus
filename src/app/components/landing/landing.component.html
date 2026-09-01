@@ -1,0 +1,590 @@
+<!-- Header Sticky de Navegación -->
+<header class="landing-header">
+  <div class="header-container">
+    <a routerLink="/" class="brand-logo" aria-label="Inicio NuestraBoda">
+      <span class="brand-icon">💍</span>
+      <span class="brand-name">Nuestra<span class="brand-highlight">Boda</span></span>
+    </a>
+
+    <!-- Navegación Desktop -->
+    <nav class="desktop-nav" aria-label="Navegación principal">
+      <a href="#caracteristicas" class="nav-link">Funcionalidades</a>
+      <a href="#demo" class="nav-link">Vista Previa</a>
+      <a href="#comparativa" class="nav-link">¿Por qué digital?</a>
+      <a href="#testimonios" class="nav-link">Opiniones</a>
+      <a href="#precios" class="nav-link">Precios</a>
+      <a href="#faq" class="nav-link">Preguntas</a>
+    </nav>
+
+    <!-- Acciones Desktop -->
+    <div class="header-actions">
+      <a routerLink="/login" class="btn-text">Iniciar Sesión</a>
+      <a routerLink="/register" class="btn-header-cta">Crear Invitación</a>
+      <button
+        type="button"
+        class="mobile-menu-toggle"
+        (click)="toggleMobileMenu()"
+        [attr.aria-expanded]="isMobileMenuOpen()"
+        aria-label="Abrir menú de navegación"
+      >
+        @if (isMobileMenuOpen()) {
+          <span class="menu-icon">✕</span>
+        } @else {
+          <span class="menu-icon">☰</span>
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Menú Móvil Desplegable -->
+  @if (isMobileMenuOpen()) {
+    <div class="mobile-drawer" role="dialog" aria-modal="true">
+      <nav class="mobile-nav">
+        <a href="#caracteristicas" class="mobile-nav-link" (click)="closeMobileMenu()">Funcionalidades</a>
+        <a href="#demo" class="mobile-nav-link" (click)="closeMobileMenu()">Vista Previa</a>
+        <a href="#comparativa" class="mobile-nav-link" (click)="closeMobileMenu()">¿Por qué digital?</a>
+        <a href="#testimonios" class="mobile-nav-link" (click)="closeMobileMenu()">Opiniones</a>
+        <a href="#precios" class="mobile-nav-link" (click)="closeMobileMenu()">Precios</a>
+        <a href="#faq" class="mobile-nav-link" (click)="closeMobileMenu()">Preguntas Frecuentes</a>
+        <div class="mobile-actions">
+          <a routerLink="/login" class="mobile-btn-secondary" (click)="closeMobileMenu()">Iniciar Sesión</a>
+          <a routerLink="/register" class="mobile-btn-primary" (click)="closeMobileMenu()">Crear mi Invitación</a>
+        </div>
+      </nav>
+    </div>
+  }
+</header>
+
+<main class="landing-main">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-container">
+      <div class="hero-badge-wrapper">
+        <span class="trust-badge">
+          <span class="stars">★★★★★</span>
+          <span class="badge-text">Más de 500 parejas felices confían en nosotros</span>
+        </span>
+      </div>
+
+      <h1 class="hero-headline">
+        La invitación de boda digital que tus invitados <span class="highlight-text">van a recordar</span>
+      </h1>
+
+      <p class="hero-subhead">
+        Olvidate de llamar uno por uno y de las planillas de Excel imposibles. Una web moderna, elegante y 100% interactiva con confirmación RSVP en tiempo real, organizador visual de mesas y playlist compartida.
+      </p>
+
+      <div class="hero-cta-group">
+        <a routerLink="/register" class="hero-btn-primary">
+          <span>Crear mi web de boda</span>
+          <span class="btn-subtext">59€ pago único · Sin suscripciones</span>
+        </a>
+        <a href="#demo" class="hero-btn-secondary">
+          <span class="play-icon">▶</span>
+          <span>Ver demo interactiva</span>
+        </a>
+      </div>
+
+      <!-- Micro Trust Pillars -->
+      <div class="hero-trust-bar">
+        <div class="trust-item">
+          <span class="trust-icon">⚡</span>
+          <span>Lista en menos de 5 minutos</span>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+          <span class="trust-icon">📱</span>
+          <span>Sin descargas para tus invitados</span>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+          <span class="trust-icon">💬</span>
+          <span>Se envía directo por WhatsApp</span>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+          <span class="trust-icon">🛡️</span>
+          <span>Garantía de satisfacción</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Showcase / Interactive Live Preview Section -->
+  <section id="demo" class="showcase-section">
+    <div class="section-header">
+      <span class="section-tag">Experiencia en Vivo</span>
+      <h2 class="section-title">Diseñado para emocionar a tus invitados y hacerte la vida fácil</h2>
+      <p class="section-subtitle">
+        Descubrí la diferencia entre enviar un PDF estático y ofrecer una experiencia interactiva completa.
+      </p>
+    </div>
+
+    <!-- Toggle Selector -->
+    <div class="preview-tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        [class.active]="activePreviewTab() === 'guest'"
+        [attr.aria-selected]="activePreviewTab() === 'guest'"
+        class="tab-btn"
+        (click)="setPreviewTab('guest')"
+      >
+        <span class="tab-icon">📱</span>
+        <span>Lo que ven tus Invitados</span>
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.active]="activePreviewTab() === 'couple'"
+        [attr.aria-selected]="activePreviewTab() === 'couple'"
+        class="tab-btn"
+        (click)="setPreviewTab('couple')"
+      >
+        <span class="tab-icon">📊</span>
+        <span>Tu Panel de Control (Novios)</span>
+      </button>
+    </div>
+
+    <!-- Interactive Mockup Display -->
+    <div class="mockup-stage">
+      @if (activePreviewTab() === 'guest') {
+        <div class="mockup-card guest-view">
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="demo-invitation-hero">
+                <span class="demo-date-pill">Sábado, 20 de Septiembre 2025</span>
+                <h3 class="demo-names">Judith & Jesús</h3>
+                <p class="demo-location">¡Nos casamos! Y queremos celebrarlo con vos</p>
+              </div>
+
+              <div class="demo-countdown-box">
+                <div class="countdown-unit">
+                  <span class="num">124</span>
+                  <span class="lbl">DÍAS</span>
+                </div>
+                <div class="countdown-unit">
+                  <span class="num">18</span>
+                  <span class="lbl">HORAS</span>
+                </div>
+                <div class="countdown-unit">
+                  <span class="num">45</span>
+                  <span class="lbl">MIN</span>
+                </div>
+              </div>
+
+              <div class="demo-feature-row">
+                <div class="demo-mini-card">
+                  <span class="mini-icon">⛪</span>
+                  <span class="mini-title">Ceremonia</span>
+                  <span class="mini-desc">17:30h · Basílica</span>
+                  <span class="mini-action">Ver en Maps →</span>
+                </div>
+                <div class="demo-mini-card">
+                  <span class="mini-icon">🥂</span>
+                  <span class="mini-title">Banquete & Fiesta</span>
+                  <span class="mini-desc">19:30h · Finca Real</span>
+                  <span class="mini-action">Ver en Waze →</span>
+                </div>
+              </div>
+
+              <div class="demo-rsvp-preview">
+                <span class="rsvp-status-badge">✨ Confirmación en 1 clic</span>
+                <p class="rsvp-prompt">¿Nos acompañas en este día tan especial?</p>
+                <div class="demo-rsvp-actions">
+                  <button type="button" class="demo-btn-confirm">¡Sí, allí estaré! 🎉</button>
+                  <button type="button" class="demo-btn-decline">No puedo ir</button>
+                </div>
+                <div class="demo-tags">
+                  <span class="tag-pill">🌱 Menú Vegano</span>
+                  <span class="tag-pill">🚌 Necesito Autobús</span>
+                  <span class="tag-pill">🎵 Pedir Canción</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mockup-details">
+            <h3 class="details-title">Una invitación viva que tus invitados siempre llevan encima</h3>
+            <ul class="details-list">
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>Navegación GPS automática:</strong> Llegan a la ceremonia y al salón sin perderse.
+                </div>
+              </li>
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>Agenda con 1 toque:</strong> Agregan el evento a Google Calendar o Apple iCal.
+                </div>
+              </li>
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>Confirmación detallada:</strong> Indican alergias, intolerancias alimentarias y si necesitan plaza de autobús.
+                </div>
+              </li>
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>Playlist interactiva:</strong> Proponen sus temas preferidos para que el DJ no falle.
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      } @else {
+        <div class="mockup-card couple-view">
+          <div class="dashboard-frame">
+            <div class="dash-topbar">
+              <div class="dash-title">
+                <span class="dot green"></span>
+                <span>Panel de Judith & Jesús · Estado en Vivo</span>
+              </div>
+              <span class="dash-badge">Actualizado ahora</span>
+            </div>
+
+            <div class="dash-kpi-grid">
+              <div class="kpi-card">
+                <span class="kpi-label">Invitados Confirmados</span>
+                <span class="kpi-value">148 <small>/ 165</small></span>
+                <span class="kpi-sub green">90% respondido</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Menús Especiales</span>
+                <span class="kpi-value">12</span>
+                <span class="kpi-sub">8 Celíacos · 4 Veganos</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Plazas en Autobús</span>
+                <span class="kpi-value">64</span>
+                <span class="kpi-sub">2 Autobuses necesarios</span>
+              </div>
+            </div>
+
+            <div class="dash-tables-preview">
+              <div class="dash-tables-header">
+                <strong>Distribución Visual de Mesas (Drag & Drop)</strong>
+                <span class="export-tag">📄 Exportar PDF para Catering</span>
+              </div>
+              <div class="mini-tables-layout">
+                <div class="mini-table-circle">
+                  <span>Mesa Presidencial</span>
+                  <small>6/6 Asientos</small>
+                </div>
+                <div class="mini-table-circle">
+                  <span>Mesa Amigos</span>
+                  <small>10/10 Asientos</small>
+                </div>
+                <div class="mini-table-circle">
+                  <span>Mesa Familia</span>
+                  <small>8/8 Asientos</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mockup-details">
+            <h3 class="details-title">Control absoluto de tu boda sin estrés ni planillas desactualizadas</h3>
+            <ul class="details-list">
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>Organizador visual de mesas:</strong> Arrastrá a cada persona a su asiento sin volverte loco.
+                </div>
+              </li>
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>Filtro de alergias instantáneo:</strong> Pasale al salón la lista exacta de menús especiales con un clic.
+                </div>
+              </li>
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>Control de presupuesto y pagos:</strong> Registrá señas, gastos y saldos de cada proveedor.
+                </div>
+              </li>
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>Exportación en PDF profesional:</strong> Imprimí o enviá los planos de mesas al restaurante en segundos.
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Comparativa: Tradicional vs Nuestra Boda -->
+  <section id="comparativa" class="comparison-section">
+    <div class="section-header">
+      <span class="section-tag">Decisión Inteligente</span>
+      <h2 class="section-title">¿Por qué las parejas eligen una web interactiva?</h2>
+      <p class="section-subtitle">
+        Más elegante, infinitamente más práctica y con un ahorro real de tiempo y dinero.
+      </p>
+    </div>
+
+    <div class="comparison-table-wrapper">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Característica</th>
+            <th class="col-traditional">Invitación en Papel Tradicional</th>
+            <th class="col-highlight">Nuestra Web de Boda 💍</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of comparisonPoints; track item.feature) {
+            <tr>
+              <td class="cell-feature"><strong>{{ item.feature }}</strong></td>
+              <td class="cell-traditional">
+                <span class="cross-icon">✕</span> {{ item.traditional }}
+              </td>
+              <td class="cell-app">
+                <span class="check-icon-table">✓</span> {{ item.ourApp }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Pilares de Funcionalidades -->
+  <section id="caracteristicas" class="features-section">
+    <div class="section-header">
+      <span class="section-tag">Todo lo que necesitás</span>
+      <h2 class="section-title">Herramientas creadas específicamente para el gran día</h2>
+      <p class="section-subtitle">
+        Cada detalle fue pensado para que la organización sea un placer y no un dolor de cabeza.
+      </p>
+    </div>
+
+    <div class="features-grid-premium">
+      @for (feature of features; track feature.title) {
+        <article class="feature-card-premium">
+          @if (feature.badge) {
+            <span class="feature-badge">{{ feature.badge }}</span>
+          }
+          <div class="feature-icon-box">
+            <span class="feature-icon">{{ feature.icon }}</span>
+          </div>
+          <h3 class="feature-card-title">{{ feature.title }}</h3>
+          <p class="feature-card-desc">{{ feature.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- Cómo funciona en 3 pasos -->
+  <section class="steps-section">
+    <div class="section-header">
+      <span class="section-tag">Simple y Rápido</span>
+      <h2 class="section-title">Tu invitación lista en 3 simples pasos</h2>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3 class="step-title">Personalizá tu Web</h3>
+        <p class="step-desc">
+          Elegí vuestras fotos, escribí vuestro mensaje, configurá los horarios y ubicaciones del evento.
+        </p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3 class="step-title">Compartí por WhatsApp</h3>
+        <p class="step-desc">
+          Enviá el enlace único o el código QR a tus familiares y amigos con un solo clic.
+        </p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3 class="step-title">Relajate y Gestioná</h3>
+        <p class="step-desc">
+          Mirá cómo se llenan las confirmaciones, asigná las mesas y enviá los reportes al catering.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonios Reales (Social Proof) -->
+  <section id="testimonios" class="testimonials-section">
+    <div class="section-header">
+      <span class="section-tag">Historias Reales</span>
+      <h2 class="section-title">Lo que dicen las parejas que ya se casaron</h2>
+      <p class="section-subtitle">
+        Experiencias auténticas de novios que confiaron en nosotros para su gran día.
+      </p>
+    </div>
+
+    <div class="testimonials-grid">
+      @for (item of testimonials; track item.couple) {
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">“{{ item.quote }}”</p>
+          <div class="testimonial-author">
+            <img [src]="item.avatar" [alt]="item.couple" class="author-avatar" loading="lazy" />
+            <div class="author-info">
+              <h4 class="author-name">{{ item.couple }}</h4>
+              <p class="author-location">{{ item.location }}</p>
+              <span class="author-tag">{{ item.tag }} · {{ item.date }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Sección de Precios -->
+  <section id="precios" class="pricing-section">
+    <div class="pricing-container">
+      <div class="pricing-box">
+        <span class="pricing-highlight-badge">⭐ Oferta Especial · Todo Incluido</span>
+        <h2 class="pricing-title">Plan Pareja Completo</h2>
+        <p class="pricing-tagline">Todo lo que necesitás para tu boda sin límites ni sorpresas.</p>
+
+        <div class="pricing-price-wrap">
+          <span class="price-val">59€</span>
+          <span class="price-type">Pago único · Acceso para siempre</span>
+        </div>
+
+        <div class="pricing-guarantee-pill">
+          <span>🛡️ Garantía de satisfacción de 14 días</span>
+        </div>
+
+        <ul class="pricing-checklist">
+          <li><span class="check-green">✓</span> <strong>Invitados ilimitados</strong> (sin recargos por volumen)</li>
+          <li><span class="check-green">✓</span> <strong>Web de boda personalizada</strong> con fotos e historia</li>
+          <li><span class="check-green">✓</span> <strong>Confirmación RSVP inteligente</strong> con alergias y bus</li>
+          <li><span class="check-green">✓</span> <strong>Organizador visual de mesas</strong> con exportación a PDF</li>
+          <li><span class="check-green">✓</span> <strong>Control de presupuesto</strong> y finanzas de boda</li>
+          <li><span class="check-green">✓</span> <strong>Playlist musical colaborativa</strong></li>
+          <li><span class="check-green">✓</span> <strong>Ubicaciones con GPS</strong> para Google Maps y Waze</li>
+          <li><span class="check-green">✓</span> <strong>Soporte prioritario</strong> por WhatsApp y correo</li>
+        </ul>
+
+        <a routerLink="/register" class="pricing-cta-btn">
+          Comenzar mi web de boda ahora
+        </a>
+
+        <p class="pricing-footer-note">
+          🔒 Pago 100% cifrado y seguro · Activación inmediata tras el registro
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Preguntas Frecuentes (FAQ Accordion) -->
+  <section id="faq" class="faq-section">
+    <div class="section-header">
+      <span class="section-tag">Resolvé tus dudas</span>
+      <h2 class="section-title">Preguntas Frecuentes</h2>
+      <p class="section-subtitle">
+        Todo lo que necesitás saber antes de empezar.
+      </p>
+    </div>
+
+    <div class="faq-container">
+      @for (faq of faqs; track faq.question; let i = $index) {
+        <div class="faq-item" [class.open]="openFaqIndex() === i">
+          <button
+            type="button"
+            class="faq-question-btn"
+            (click)="toggleFaq(i)"
+            [attr.aria-expanded]="openFaqIndex() === i"
+          >
+            <span class="faq-q-text">{{ faq.question }}</span>
+            <span class="faq-chevron" [class.rotated]="openFaqIndex() === i">⌄</span>
+          </button>
+
+          @if (openFaqIndex() === i) {
+            <div class="faq-answer">
+              <p>{{ faq.answer }}</p>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Banner CTA Final Emocional -->
+  <section class="final-cta-section">
+    <div class="final-cta-card">
+      <span class="final-badge">El gran día empieza acá</span>
+      <h2 class="final-title">Creá la invitación que tus invitados van a guardar en el corazón</h2>
+      <p class="final-subtitle">
+        Unite a cientos de parejas que ya simplificaron la organización de su boda. Empezá en 5 minutos.
+      </p>
+      <div class="final-actions">
+        <a routerLink="/register" class="final-btn-primary">
+          Empezar Ahora por 59€
+        </a>
+        <a routerLink="/login" class="final-btn-secondary">
+          Ya tengo cuenta · Iniciar Sesión
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Footer Profesional -->
+<footer class="landing-footer">
+  <div class="footer-container">
+    <div class="footer-col-brand">
+      <div class="brand-logo footer-logo">
+        <span class="brand-icon">💍</span>
+        <span class="brand-name">Nuestra<span class="brand-highlight">Boda</span></span>
+      </div>
+      <p class="footer-desc">
+        La plataforma premium de invitaciones digitales y gestión integral para parejas de boda.
+      </p>
+      <div class="footer-badges">
+        <span class="secure-tag">🔒 Pago Seguro SSL</span>
+        <span class="secure-tag">🇪🇸 Servidores en la UE</span>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h4 class="footer-heading">Plataforma</h4>
+      <ul class="footer-links">
+        <li><a href="#caracteristicas">Funcionalidades</a></li>
+        <li><a href="#demo">Vista Previa</a></li>
+        <li><a href="#comparativa">Comparativa</a></li>
+        <li><a href="#precios">Precios</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4 class="footer-heading">Acceso</h4>
+      <ul class="footer-links">
+        <li><a routerLink="/login">Iniciar Sesión</a></li>
+        <li><a routerLink="/register">Registrar Pareja</a></li>
+        <li><a href="#faq">Preguntas Frecuentes</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4 class="footer-heading">Confianza</h4>
+      <p class="footer-help-text">
+        ¿Tenés preguntas antes de contratar? Escribinos y te ayudamos encantados a preparar tu boda.
+      </p>
+      <a routerLink="/register" class="footer-contact-link">
+        Crear mi invitación →
+      </a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2025-2026 NuestraBoda. Todos los derechos reservados. Diseñado con amor para novios y novias.</p>
+  </div>
+</footer>
+

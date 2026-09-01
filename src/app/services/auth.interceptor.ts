@@ -1,14 +1,20 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from './auth.service';
+import { isFirstPartyApiUrl } from './auth-security';
 import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
-  const token = localStorage.getItem('auth_token');
+  const platformId = inject(PLATFORM_ID);
 
-  // 1. Si la petición va hacia la API de Google/YouTube, déjala pasar limpia
-  if (req.url.includes('googleapis.com')) {
+  // En SSR no hay localStorage → no hay token que añadir.
+  const isBrowser = isPlatformBrowser(platformId);
+  const token = isBrowser ? localStorage.getItem('auth_token') : null;
+
+  // Solo la API propia puede recibir credenciales.
+  if (!isFirstPartyApiUrl(req.url)) {
     return next(req);
   }
 
@@ -23,8 +29,29 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 || error.status === 403) {
-        console.warn('Token expired or unauthorized. Logging out...');
+      // Solo deslogueamos si:
+      // - Estamos en el navegador,
+      // - Tenemos token,
+      // - El backend dice explícitamente que el token no es válido.
+      if (!isBrowser) {
+        return throwError(() => error);
+      }
+      const hasToken = !!localStorage.getItem('auth_token');
+      const isLoginEndpoint = req.url.includes('/api/auth/login');
+      const isRegisterEndpoint = req.url.includes('/api/auth/register');
+      const message = (error.error && (error.error.message || error.error.error)) || '';
+      const tokenError =
+        error.status === 401 &&
+        hasToken &&
+        !isLoginEndpoint &&
+        !isRegisterEndpoint &&
+        (message.toLowerCase().includes('token') ||
+          message.toLowerCase().includes('expired') ||
+          message.toLowerCase().includes('invalid') ||
+          message.toLowerCase().includes('authorization'));
+
+      if (tokenError) {
+        console.warn('Token invalid or expired. Logging out...');
         authService.logout();
       }
       return throwError(() => error);

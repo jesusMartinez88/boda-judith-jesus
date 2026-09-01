@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -13,9 +14,14 @@ export class PwaService {
   showInstallPrompt = signal(false);
   showUpdatePrompt = signal(false);
   private isUserLoggedIn = false;
+  private platformId = inject(PLATFORM_ID);
 
   constructor() {
-    this.initPWA();
+    // PWA solo tiene sentido en el navegador. En SSR no hay window/navigator
+    // ni service workers, así que saltamos toda la inicialización.
+    if (isPlatformBrowser(this.platformId)) {
+      this.initPWA();
+    }
   }
 
   private initPWA() {
