@@ -1,4 +1,4 @@
-minimumReleaseAgeExclude: []
+minimumReleaseAgeExclude: [ '@typescript-eslint/eslint-plugin@8.69.0', '@typescript-eslint/parser@8.69.0', '@typescript-eslint/project-service@8.69.0', '@typescript-eslint/scope-manager@8.69.0', '@typescript-eslint/tsconfig-utils@8.69.0', '@typescript-eslint/type-utils@8.69.0', '@typescript-eslint/types@8.69.0', '@typescript-eslint/typescript-estree@8.69.0', '@typescript-eslint/utils@8.69.0', '@typescript-eslint/visitor-keys@8.69.0', typescript-eslint@8.69.0, undici@8.10.1 ]
 
 minimumReleaseAge: 4320
 ignoredBuiltDependencies: []
@@ -12,7 +12,7 @@ allowBuilds:
   esbuild: true
 
 overrides:
-  undici: '>=7.24.5'
+  undici: 8.10.1
   picomatch: '>=4.0.4'
   piscina: '>=5.1.5'
   esbuild: '>=0.28.1'
