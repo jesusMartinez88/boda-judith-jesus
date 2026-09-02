@@ -28,7 +28,7 @@
     <div class="user-info-mobile">
       <div class="user-avatar">👤</div>
       <div class="user-details">
-        <span class="user-name">Admin</span>
+        <span class="user-name">{{ tenant() }}</span>
         <span class="user-greeting">Bienvenido</span>
       </div>
     </div>
@@ -210,7 +210,7 @@
       <header class="content-header">
         <h1>Panel de Estadísticas</h1>
         <div class="user-info user-info-desktop">
-          <span>Bienvenido, Admin 👋</span>
+          <span>Bienvenido, {{ tenant() }} 👋</span>
         </div>
       </header>
 

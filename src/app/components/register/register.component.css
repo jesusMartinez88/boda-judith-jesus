@@ -1,0 +1,488 @@
+/* Contenedor principal con fondo degradado romántico */
+.register-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 25%, #fbcfe8 50%, #fce7f3 75%, #fdf2f8 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Decoración de fondo - círculos flotantes */
+.register-container::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  right: -5%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 20s ease-in-out infinite;
+}
+
+.register-container::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  left: -5%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(190, 24, 93, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 25s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-30px) scale(1.05);
+  }
+}
+
+/* Tarjeta principal con glassmorphism */
+.register-card {
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(253, 242, 248, 0.92) 100%);
+  backdrop-filter: blur(20px);
+  border-radius: 2.5rem;
+  box-shadow: 
+    0 25px 70px rgba(190, 24, 93, 0.2),
+    0 0 0 1px rgba(236, 72, 153, 0.1) inset,
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  padding: 3rem 2.5rem;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  animation: cardEntrance 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.register-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ec4899, #be185d, #831843, #be185d, #ec4899);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 0%;
+  }
+}
+
+/* Encabezados */
+.register-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.register-title {
+  font-size: clamp(2rem, 5vw, 2.25rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 50%, #831843 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+  position: relative;
+  display: inline-block;
+}
+
+.register-title::after {
+  content: '💍';
+  position: absolute;
+  top: -0.75rem;
+  right: -2rem;
+  font-size: 1.75rem;
+  animation: ringRotate 4s ease-in-out infinite;
+}
+
+@keyframes ringRotate {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-15deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(0deg) scale(1);
+  }
+  75% {
+    transform: rotate(15deg) scale(1.1);
+  }
+}
+
+.register-subtitle {
+  color: #831843;
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* Formulario */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #831843;
+  letter-spacing: 0.01em;
+}
+
+.form-input {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 2px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(190, 24, 93, 0.2)) border-box;
+  border-radius: 1rem;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 500;
+  color: #1f2937;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.form-input:hover {
+  background: linear-gradient(#fdf2f8, #fdf2f8) padding-box,
+              linear-gradient(135deg, #ec4899, #be185d) border-box;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.12);
+  transform: translateY(-1px);
+}
+
+.form-input:focus {
+  outline: none;
+  background: linear-gradient(#fdf2f8, #fdf2f8) padding-box,
+              linear-gradient(135deg, #ec4899, #be185d) border-box;
+  box-shadow: 
+    0 8px 24px rgba(236, 72, 153, 0.2),
+    0 0 0 4px rgba(236, 72, 153, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Input compuesto (con prefijo) */
+.input-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.input-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  background: linear-gradient(145deg, #fdf2f8, #fce7f3);
+  color: #be185d;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border: 2px solid rgba(236, 72, 153, 0.2);
+  border-right: none;
+  border-radius: 1rem 0 0 1rem;
+  white-space: nowrap;
+}
+
+.input-group .form-input {
+  border-radius: 0 1rem 1rem 0;
+  flex: 1;
+}
+
+.input-group:hover .input-prefix {
+  background: linear-gradient(145deg, #fce7f3, #fbcfe8);
+  border-color: rgba(236, 72, 153, 0.4);
+}
+
+.input-group:focus-within .input-prefix {
+  background: linear-gradient(145deg, #fce7f3, #fbcfe8);
+  border-color: #ec4899;
+}
+
+/* Botones */
+.btn-primary {
+  width: 100%;
+  padding: 1.25rem 2rem;
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 50%, #831843 100%);
+  color: white;
+  border: none;
+  border-radius: 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 1rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 10px 30px rgba(236, 72, 153, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 
+    0 15px 40px rgba(236, 72, 153, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.btn-primary:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+/* Botones de pago */
+.payment-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.875rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(145deg, #ffffff, #fafafa);
+  border: 2px solid rgba(236, 72, 153, 0.2);
+  border-radius: 1.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  color: #1f2937;
+}
+
+.payment-option:hover {
+  border-color: #ec4899;
+  background: linear-gradient(145deg, #fdf2f8, #fce7f3);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.2);
+}
+
+.payment-option.paypal {
+  background: linear-gradient(145deg, #ffc439, #f4bb33);
+  border-color: #f4bb33;
+  color: #1f2937;
+}
+
+.payment-option.paypal:hover {
+  background: linear-gradient(145deg, #f4bb33, #e6ae26);
+  border-color: #e6ae26;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(244, 187, 51, 0.4);
+}
+
+.payment-option svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Botón secundario */
+.btn-secondary {
+  width: 100%;
+  padding: 0.875rem;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.btn-secondary:hover {
+  color: #be185d;
+  transform: translateY(-1px);
+}
+
+/* Panel de éxito */
+.success-panel {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.success-icon {
+  width: 5rem;
+  height: 5rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2rem;
+  box-shadow: 
+    0 15px 35px rgba(16, 185, 129, 0.35),
+    0 0 0 8px rgba(16, 185, 129, 0.1);
+  animation: successPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes successPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.success-icon svg {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: white;
+  stroke-width: 3;
+}
+
+.success-title {
+  font-size: 2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #10b981, #059669);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.75rem;
+}
+
+.success-description {
+  color: #6b7280;
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-bottom: 2rem;
+}
+
+/* Espaciado de secciones */
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Mensaje de error accesible (aria-live=alert ya viene del role="alert") */
+.form-error {
+  background: linear-gradient(145deg, #fff1f2, #ffe4e6);
+  border: 1px solid rgba(190, 18, 60, 0.25);
+  color: #9f1239;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.875rem 1.125rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(190, 18, 60, 0.08);
+  text-align: center;
+}
+
+/* Estado deshabilitado / procesando */
+.payment-option:disabled,
+.btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+  filter: grayscale(0.2);
+}
+
+.payment-option:disabled::before {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .register-container {
+    padding: 2rem 1rem;
+  }
+
+  .register-card {
+    padding: 2.5rem 1.75rem;
+    border-radius: 2rem;
+  }
+
+  .register-title {
+    font-size: 1.75rem;
+  }
+
+  .register-title::after {
+    font-size: 1.5rem;
+    right: -1.5rem;
+  }
+
+  .btn-primary {
+    padding: 1rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .payment-option {
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .input-prefix {
+    font-size: 0.75rem;
+    padding: 0 0.75rem;
+  }
+}

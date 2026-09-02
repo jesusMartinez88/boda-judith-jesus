@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import AOS from 'aos';
 import { HeroComponent } from '../hero/hero.component';
 import { GalleryComponent } from '../gallery/gallery.component';
@@ -11,7 +12,7 @@ import { ContactComponent } from '../contact/contact.component';
 import { CalendarComponent } from '../calendar/calendar.component';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-invitation',
   standalone: true,
   imports: [
     HeroComponent,
@@ -24,11 +25,16 @@ import { CalendarComponent } from '../calendar/calendar.component';
     ContactComponent,
     CalendarComponent,
   ],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
+  templateUrl: './invitation.component.html',
+  styleUrl: './invitation.component.css',
 })
-export class HomeComponent implements OnInit {
+export class InvitationComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  tenant = signal<string>('');
+
   ngOnInit() {
+    this.tenant.set(this.route.snapshot.paramMap.get('tenant') || '');
+    
     AOS.init({
       duration: 1000,
       once: true,

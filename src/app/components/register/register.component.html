@@ -1,0 +1,132 @@
+<div class="register-container">
+  <div class="register-card">
+
+    @if (step() === 1) {
+      <div class="register-header">
+        <h2 class="register-title">Crea tu boda</h2>
+        <p class="register-subtitle">Completa tus datos para comenzar</p>
+      </div>
+
+      <form (ngSubmit)="goToPayment()" class="register-form" novalidate>
+        <div class="form-field">
+          <label class="form-label" for="reg-names">Tu nombre y el de tu pareja</label>
+          <input
+            id="reg-names"
+            type="text"
+            [(ngModel)]="formData.names"
+            name="names"
+            required
+            placeholder="Ej: Paco y Lola"
+            class="form-input">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="reg-username">Nombre de usuario (URL)</label>
+          <div class="input-group">
+            <span class="input-prefix">misitio.com/</span>
+            <input
+              id="reg-username"
+              type="text"
+              [(ngModel)]="formData.username"
+              name="username"
+              required
+              placeholder="paco-y-lola"
+              class="form-input">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="reg-email">Email</label>
+          <input
+            id="reg-email"
+            type="email"
+            [(ngModel)]="formData.email"
+            name="email"
+            required
+            placeholder="tu@email.com"
+            class="form-input">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="reg-password">Contraseña</label>
+          <input
+            id="reg-password"
+            type="password"
+            [(ngModel)]="formData.password"
+            name="password"
+            required
+            placeholder="Mínimo 8 caracteres"
+            class="form-input">
+        </div>
+
+        @if (errorMessage(); as msg) {
+          <div class="form-error" role="alert">{{ msg }}</div>
+        }
+
+        <button type="submit" class="btn-primary">
+          Continuar al pago
+        </button>
+      </form>
+    }
+
+    @if (step() === 2) {
+      <div class="register-header">
+        <h2 class="register-title">Pago seguro</h2>
+        <p class="register-subtitle">Elige tu método de pago para el Plan Único de 59€</p>
+      </div>
+
+      <div class="payment-options">
+        <button
+          type="button"
+          (click)="simulatePayment()"
+          class="payment-option"
+          [disabled]="processing()"
+          [attr.aria-busy]="processing()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+          </svg>
+          <span>{{ processing() ? 'Procesando…' : 'Pagar con Tarjeta' }}</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="simulatePayment()"
+          class="payment-option paypal"
+          [disabled]="processing()"
+          [attr.aria-busy]="processing()">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z"/>
+          </svg>
+          <span>{{ processing() ? 'Procesando…' : 'Pagar con PayPal' }}</span>
+        </button>
+
+        @if (errorMessage(); as msg) {
+          <div class="form-error" role="alert">{{ msg }}</div>
+          <button type="button" (click)="goBackToForm()" class="btn-secondary">
+            Volver y corregir los datos
+          </button>
+        } @else if (!processing()) {
+          <button type="button" (click)="goBackToForm()" class="btn-secondary">
+            Volver atrás
+          </button>
+        }
+      </div>
+    }
+
+    @if (step() === 3) {
+      <div class="success-panel">
+        <div class="success-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h2 class="success-title">¡Pago exitoso!</h2>
+        <p class="success-description">Tu boda ha sido creada correctamente.</p>
+
+        <button type="button" (click)="goToDashboard()" class="btn-primary">
+          Ir a mi Panel de Control
+        </button>
+      </div>
+    }
+  </div>
+</div>

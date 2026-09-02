@@ -141,7 +141,7 @@ export class GuestService {
   }
 
   // Registra un invitado y recarga el recurso de lista
-  async registerGuest(guest: Guest): Promise<ApiResponse<GuestEntity> | GuestEntity | null> {
+  async registerGuest(guest: Guest, tenantSlug?: string): Promise<ApiResponse<GuestEntity> | GuestEntity | null> {
     try {
       // Actualización optimista
       // Si sólo se ha indicado si es adulto/niño (flujo interno), derivamos adults/children
@@ -174,8 +174,9 @@ export class GuestService {
       }
       this.guests.update((current: Guest[]) => [...current, guest]);
 
+      const url = tenantSlug ? `${this.apiUrl}/public/${tenantSlug}` : this.apiUrl;
       const response = await firstValueFrom(
-        this.http.post<ApiResponse<GuestEntity>>(this.apiUrl, guest),
+        this.http.post<ApiResponse<GuestEntity>>(url, guest),
       );
 
       // La respuesta tiene formato { success: true, data: { id: 75, ... }, message: "..." }

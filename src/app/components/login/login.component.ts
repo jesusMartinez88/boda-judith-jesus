@@ -1,4 +1,5 @@
-import { Component, inject, signal, effect } from '@angular/core';
+import { Component, inject, signal, effect, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { form, FormField, submit, required, minLength } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -17,6 +18,7 @@ export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private pwaService = inject(PwaService);
+  private platformId = inject(PLATFORM_ID);
 
   // Model signal - never use null/undefined as initial values
   protected readonly loginModel = signal({
@@ -47,6 +49,12 @@ export class LoginComponent {
 
   constructor() {
     this.generateCaptcha();
+
+    // El `setInterval` solo se registra en el navegador. En SSR, registrar
+    // un interval deja un timer colgando en el server que nunca se limpia.
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
 
     // effect() corre fuera de zona — no necesita NgZone ni ChangeDetectorRef
     effect(
@@ -118,7 +126,7 @@ export class LoginComponent {
         this.pwaService.onUserLoggedIn();
         // Usar replaceUrl para que la página de login no quede en el historial
         // y al pulsar "atrás" no vuelva al login
-        this.router.navigate(['/dashboard'], { replaceUrl: true });
+        this.router.navigate([`/${formValue.username}/dashboard`], { replaceUrl: true });
       } catch {
         this.errorMessage.set('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
         this.generateCaptcha();

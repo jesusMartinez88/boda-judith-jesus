@@ -1,6 +1,7 @@
 import {
   Component,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
   ChangeDetectorRef,
   inject,
@@ -14,7 +15,7 @@ import {
   templateUrl: './toast.component.html',
   styleUrls: ['./toast.component.css'],
 })
-export class ToastComponent implements OnChanges {
+export class ToastComponent implements OnChanges, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
   readonly show = input(false);
@@ -42,5 +43,12 @@ export class ToastComponent implements OnChanges {
       this.timeoutId = null;
     }
     this.closed.emit();
+  }
+
+  ngOnDestroy() {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
   }
 }

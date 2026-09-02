@@ -19,6 +19,11 @@
           "builder": "@ngx-env/builder:application",
           "options": {
             "browser": "src/main.ts",
+            "server": "src/main.server.ts",
+            "ssr": {
+              "entry": "server.ts"
+            },
+            "outputMode": "server",
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
