@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /*/dashboard
+
+Sitemap: https://bodas-online.onrender.com/sitemap.xml

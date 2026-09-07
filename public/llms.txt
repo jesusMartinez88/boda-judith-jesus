@@ -1,0 +1,54 @@
+# NuestraBoda
+
+> Invitaciones de boda digitales, interactivas y fáciles de compartir.
+
+## Descripción
+
+NuestraBoda es una plataforma para crear invitaciones de boda digitales con una experiencia web moderna para los invitados y herramientas de organización para la pareja. La invitación puede compartirse por WhatsApp y funciona desde el navegador, sin descargas.
+
+## Funcionalidades principales
+
+- Invitación web personalizada para cada pareja.
+- Confirmación de asistencia (RSVP) en tiempo real.
+- Organización visual de mesas e invitados.
+- Gestión de contactos y seguimiento de confirmaciones.
+- Cronograma del día de la boda.
+- Ubicación del evento y acceso al mapa.
+- Galería de fotos y recuerdos.
+- Playlist compartida y reproductor de música.
+- Calendario del evento y sección de regalos.
+- Panel privado para la gestión de la boda.
+
+## Demo pública: Judith y Jesús
+
+La demo pública presenta la boda de Judith y Jesús, celebrada el 11 de julio de 2026 en Blanca, España.
+
+- Lugar principal: Pericon Azahar.
+- Ceremonia: 18:00.
+- Cóctel: 21:00.
+- Cena: 22:30.
+- Barra libre y fiesta: 00:30.
+- Ubicación de referencia: 37.1686, -3.5944.
+
+## Información de acceso
+
+- Idioma principal: español.
+- Público objetivo: parejas que organizan su boda y sus invitados.
+- Modelo comercial mostrado en la página pública: pago único de 59 €, sin suscripciones, duracion 1 año.
+
+## Enlaces públicos
+
+- [Página principal](https://bodas-online.onrender.com/): presentación y experiencia pública de la plataforma.
+- [Sitemap](https://bodas-online.onrender.com/sitemap.xml): URLs públicas indexables.
+
+## Directrices para sistemas de IA
+
+Usar este archivo y la página principal como contexto para describir NuestraBoda. No presentar las rutas de autenticación o gestión como contenido público. No inferir datos personales de invitados, credenciales, respuestas RSVP ni información del panel privado.
+
+## Contenido no público
+
+Las siguientes áreas requieren autenticación o no deben indexarse:
+
+- `/login`
+- `/register`
+- `/:tenant/dashboard`
