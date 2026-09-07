@@ -1,1 +1,78 @@
-/* Styles specific to Home if any, otherwise global app.css handles it */
+.invitation-footer {
+  position: relative;
+  margin-top: 2.5rem;
+  padding: 2rem 1.5rem 1.25rem;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(236, 72, 153, 0.2), transparent 34%),
+    linear-gradient(145deg, #251522 0%, #17121d 58%, #10131c 100%);
+  border-top: 4px solid #ec4899;
+  box-shadow: 0 -16px 40px rgba(31, 16, 28, 0.14);
+}
+
+.invitation-footer::before {
+  content: '✦';
+  display: block;
+  margin-bottom: 0.6rem;
+  color: #f9a8d4;
+  font-size: 1.25rem;
+  letter-spacing: 0.4rem;
+}
+
+.invitation-footer .footer-content {
+  max-width: 720px;
+  padding: 0;
+}
+
+.invitation-footer .footer-credit {
+  margin: 0 !important;
+  color: #fce7f3;
+  font-size: 1rem !important;
+  font-style: normal;
+  line-height: 1.7 !important;
+  opacity: 1 !important;
+}
+
+.invitation-footer .footer-link {
+  display: inline-block;
+  margin-left: 0.25rem;
+  color: #f9a8d4;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.invitation-footer .footer-link:hover,
+.invitation-footer .footer-link:focus-visible {
+  color: #ffffff;
+}
+
+.footer-divider {
+  width: min(100%, 22rem);
+  height: 1px;
+  margin: 0.9rem auto 0.75rem;
+  background: linear-gradient(90deg, transparent, rgba(249, 168, 212, 0.55), transparent);
+}
+
+.invitation-footer .footer-copyright {
+  color: #d8cbd6;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+
+.invitation-footer .footer-copyright span {
+  padding: 0 0.35rem;
+  color: #f9a8d4;
+}
+
+@media (max-width: 640px) {
+  .invitation-footer {
+    margin-top: 2rem;
+    padding: 1.75rem 1.25rem 1.1rem;
+  }
+
+  .invitation-footer .footer-link {
+    margin-top: 0.15rem;
+  }
+}

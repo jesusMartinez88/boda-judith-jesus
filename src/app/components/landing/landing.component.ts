@@ -189,6 +189,19 @@ export class LandingComponent {
     this.isMobileMenuOpen.update((v) => !v);
   }
 
+  scrollToSection(event: Event, sectionId: string): void {
+    event.preventDefault();
+
+    const section = document.getElementById(sectionId);
+    if (!section) {
+      return;
+    }
+
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.history.replaceState(null, '', `#${sectionId}`);
+    this.closeMobileMenu();
+  }
+
   closeMobileMenu(): void {
     this.isMobileMenuOpen.set(false);
   }
