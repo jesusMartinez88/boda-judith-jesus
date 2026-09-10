@@ -39,16 +39,16 @@ app.use(
 
 // Cualquier request que no sea un asset estático pasa al motor de Angular SSR.
 // El motor decide si la ruta es SSR, CSR o SSG según la config de serverRoutes.
-app.use(
-  createNodeRequestHandler((req, res, next) => {
-    angularApp
-      .handle(req)
-      .then((response) =>
-        response ? writeResponseToNodeResponse(response, res) : next(),
-      )
-      .catch(next);
-  }),
-);
+const reqHandler = createNodeRequestHandler((req, res, next) => {
+  angularApp
+    .handle(req)
+    .then((response) =>
+      response ? writeResponseToNodeResponse(response, res) : next(),
+    )
+    .catch(next);
+});
+
+app.use(reqHandler);
 
 if (isMainModule(import.meta.url)) {
   const port = process.env['PORT'] || 4000;
@@ -57,4 +57,5 @@ if (isMainModule(import.meta.url)) {
   });
 }
 
+export { reqHandler };
 export default app;

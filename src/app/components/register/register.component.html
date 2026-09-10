@@ -31,7 +31,32 @@
               name="username"
               required
               placeholder="paco-y-lola"
-              class="form-input">
+              class="form-input"
+              autocomplete="off"
+              [class.is-checking]="usernameStatus() === 'checking'"
+              [class.is-available]="usernameStatus() === 'available'"
+              [class.is-taken]="usernameStatus() === 'unavailable' || usernameStatus() === 'server_error'"
+              [attr.aria-invalid]="usernameStatus() === 'unavailable' || usernameStatus() === 'server_error'"
+              [attr.aria-describedby]="'username-feedback'">
+          </div>
+          <div
+            id="username-feedback"
+            class="username-feedback"
+            [class.username-feedback--checking]="usernameStatus() === 'checking'"
+            [class.username-feedback--available]="usernameStatus() === 'available'"
+            [class.username-feedback--error]="usernameStatus() === 'unavailable' || usernameStatus() === 'server_error'"
+            aria-live="polite"
+          >
+            @if (usernameMessage(); as msg) {
+              <span class="username-feedback__icon" aria-hidden="true">
+                @switch (usernameStatus()) {
+                  @case ('checking') { ⏳ }
+                  @case ('available') { ✓ }
+                  @default { ✕ }
+                }
+              </span>
+              <span>{{ msg }}</span>
+            }
           </div>
         </div>
 
@@ -56,6 +81,7 @@
             name="password"
             required
             placeholder="Mínimo 8 caracteres"
+            autocomplete="new-password"
             class="form-input">
         </div>
 
@@ -63,8 +89,17 @@
           <div class="form-error" role="alert">{{ msg }}</div>
         }
 
-        <button type="submit" class="btn-primary">
-          Continuar al pago
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="usernameStatus() === 'checking'"
+          [attr.aria-busy]="usernameStatus() === 'checking'"
+        >
+          @if (usernameStatus() === 'checking') {
+            Comprobando…
+          } @else {
+            Continuar al pago
+          }
         </button>
       </form>
     }

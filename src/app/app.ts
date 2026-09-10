@@ -25,6 +25,8 @@ export class App {
     // `window`/`history` durante el render del servidor (SSR).
     afterNextRender(() => {
       // Push initial state to handle browser back button
+        if (!this.isGuardedRoute(window.location.pathname)) return;
+
       try {
         history.pushState({ dashboardGuard: true }, '', window.location.href);
       } catch {
@@ -36,7 +38,11 @@ export class App {
   @HostListener('window:popstate', ['$event'])
   onPopState(ev: PopStateEvent) {
     // Check if this is a back button press from our guarded route
-    if (ev && (ev.state as { dashboardGuard?: boolean })?.dashboardGuard === true) {
+    if (
+      this.isGuardedRoute(window.location.pathname) &&
+      ev &&
+      (ev.state as { dashboardGuard?: boolean })?.dashboardGuard === true
+    ) {
       try {
         history.pushState({ dashboardGuard: true }, '', window.location.href);
       } catch {
@@ -45,5 +51,9 @@ export class App {
       this.exitConfirmService.openExitConfirm();
       return;
     }
+  }
+
+  private isGuardedRoute(pathname: string): boolean {
+    return pathname === '/admin/users' || /^\/[^/]+\/dashboard\/?$/.test(pathname);
   }
 }

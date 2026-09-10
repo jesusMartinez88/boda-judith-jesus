@@ -85,6 +85,17 @@
   color: var(--admin-info);
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.logout-btn {
+  white-space: nowrap;
+}
+
 .admin-toolbar {
   display: flex;
   gap: 0.75rem;

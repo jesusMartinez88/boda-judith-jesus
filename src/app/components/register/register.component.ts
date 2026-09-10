@@ -1,8 +1,20 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+
+type UsernameStatus =
+  | 'idle'
+  | 'checking'
+  | 'available'
+  | 'unavailable'
+  | 'server_error';
 
 @Component({
   selector: 'app-register',
@@ -17,6 +29,9 @@ export class RegisterComponent {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly createdSlug = signal<string | null>(null);
 
+  protected readonly usernameStatus = signal<UsernameStatus>('idle');
+  protected readonly usernameMessage = signal<string | null>(null);
+
   protected formData = {
     names: '',
     username: '',
@@ -27,10 +42,22 @@ export class RegisterComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
 
+  /**
+   * Se llama al pulsar "Continuar al pago". Antes de avanzar al paso 2,
+   * valida el username contra el backend. La respuesta del backend es
+   * genérica (no distingue taken / reserved / invalid_format), así que
+   * tampoco lo hacemos aquí: un único mensaje para "no disponible".
+   */
   goToPayment() {
     this.errorMessage.set(null);
+    this.usernameMessage.set(null);
 
-    if (!this.formData.names || !this.formData.username || !this.formData.email || !this.formData.password) {
+    if (
+      !this.formData.names ||
+      !this.formData.username ||
+      !this.formData.email ||
+      !this.formData.password
+    ) {
       this.errorMessage.set('Rellena todos los campos para continuar.');
       return;
     }
@@ -38,8 +65,40 @@ export class RegisterComponent {
       this.errorMessage.set('La contraseña debe tener al menos 8 caracteres.');
       return;
     }
+    if (this.formData.username.trim().length < 3) {
+      this.errorMessage.set('El nombre de usuario debe tener al menos 3 caracteres.');
+      return;
+    }
 
-    this.step.set(2);
+    this.usernameStatus.set('checking');
+    this.usernameMessage.set('Comprobando disponibilidad…');
+
+    this.authService
+      .checkUsername(this.formData.username)
+      .subscribe({
+        next: (response) => {
+          if (response?.available) {
+            this.usernameStatus.set('available');
+            this.usernameMessage.set('¡Nombre disponible!');
+            this.step.set(2);
+            return;
+          }
+          // El backend nunca debería devolver success:false sin haber
+          // marcado un error real, pero por si acaso: tratamos cualquier
+          // "no disponible" con un mensaje genérico.
+          this.usernameStatus.set('unavailable');
+          this.usernameMessage.set(
+            'Este nombre de usuario no está disponible. Prueba con otro.',
+          );
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('[register] checkUsername error:', err);
+          this.usernameStatus.set('server_error');
+          this.usernameMessage.set(
+            'No pudimos comprobar la disponibilidad. Inténtalo de nuevo.',
+          );
+        },
+      });
   }
 
   simulatePayment() {
@@ -50,9 +109,6 @@ export class RegisterComponent {
     this.processing.set(true);
     this.errorMessage.set(null);
 
-    // Aquí iría la integración real (Stripe, Paypal).
-    // Para la demo, simulamos 1 segundo de procesamiento y, tras el "pago",
-    // registramos al usuario en el backend.
     setTimeout(() => {
       this.authService
         .register({
@@ -86,6 +142,10 @@ export class RegisterComponent {
 
   goBackToForm() {
     this.errorMessage.set(null);
+    // Limpiamos el feedback del username para que no aparezca "¡Nombre
+    // disponible!" en cuanto el usuario vuelve al paso 1.
+    this.usernameStatus.set('idle');
+    this.usernameMessage.set(null);
     this.step.set(1);
   }
 }

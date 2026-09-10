@@ -4,16 +4,27 @@
       <h1>👑 Panel de administración</h1>
       <p class="subtitle">Usuarios registrados en la plataforma</p>
     </div>
-    <div class="admin-stats" role="status" aria-live="polite">
-      <span class="stat-pill">
-        <strong>{{ totalCount() }}</strong> usuarios
-      </span>
-      <span class="stat-pill stat-pill--success">
-        <strong>{{ paidCount() }}</strong> pagados
-      </span>
-      <span class="stat-pill stat-pill--info">
-        <strong>{{ invitationCount() }}</strong> con invitación
-      </span>
+    <div class="header-actions">
+      <div class="admin-stats" role="status" aria-live="polite">
+        <span class="stat-pill">
+          <strong>{{ totalCount() }}</strong> usuarios
+        </span>
+        <span class="stat-pill stat-pill--success">
+          <strong>{{ paidCount() }}</strong> pagados
+        </span>
+        <span class="stat-pill stat-pill--info">
+          <strong>{{ invitationCount() }}</strong> con invitación
+        </span>
+      </div>
+      <button
+        type="button"
+        class="btn btn--ghost logout-btn"
+        (click)="logout()"
+        aria-label="Cerrar sesión"
+        title="Cerrar sesión"
+      >
+        🚪 Cerrar sesión
+      </button>
     </div>
   </header>
 
@@ -345,4 +356,8 @@
       </footer>
     </div>
   </div>
+}
+
+@if (exitConfirmService.showExitConfirm()) {
+  <app-exit-confirm-modal />
 }

@@ -2,13 +2,14 @@ import { Injectable, signal, inject, PLATFORM_ID, computed } from '@angular/core
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
-import { catchError, tap } from 'rxjs';
+import { catchError, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   AuthLoginRequest,
   AuthLoginResponse,
   AuthRegisterRequest,
   AuthRegisterResponse,
+  CheckUsernameResponse,
 } from '../../types/api';
 
 const AUTH_TOKEN_KEY = 'auth_token';
@@ -104,6 +105,31 @@ export class AuthService {
         catchError((err) => {
           console.error('[auth] register error:', err);
           throw err;
+        }),
+      );
+  }
+
+  /**
+   * Comprueba si un username está disponible para registro.
+   * El backend devuelve una respuesta genérica `{ success, available }`
+   * (no distingue taken / reserved / invalid_format) para evitar
+   * user enumeration. Si la petición falla de red, devolvemos
+   * `available: false` para que la UI no asuma disponibilidad por error.
+   */
+  checkUsername(username: string) {
+    const trimmed = username.trim();
+    return this.http
+      .get<CheckUsernameResponse>(`${this.baseUrl}/api/auth/check-username`, {
+        params: { username: trimmed },
+      })
+      .pipe(
+        catchError((err) => {
+          console.error('[auth] checkUsername error:', err);
+          const fallback: CheckUsernameResponse = {
+            success: false,
+            available: false,
+          };
+          return of(fallback);
         }),
       );
   }

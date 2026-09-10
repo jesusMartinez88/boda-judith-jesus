@@ -286,6 +286,12 @@ export interface AuthLoginResponse {
   user: AuthUser;
 }
 
+export interface CheckUsernameResponse {
+  success: boolean;
+  available: boolean;
+  message?: string;
+}
+
 export interface AdminUser {
   id: number;
   username: string;

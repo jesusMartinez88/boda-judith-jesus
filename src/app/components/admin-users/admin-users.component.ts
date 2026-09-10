@@ -16,6 +16,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AdminService } from '../../services/admin.service';
 import { AdminUser, AdminUserPatch } from '../../../types/api';
+import { ExitConfirmService } from '../../services/exit-confirm.service';
+import { ExitConfirmModalComponent } from '../../shared/components/exit-confirm-modal/exit-confirm-modal.component';
 
 interface EditFormState {
   email: string;
@@ -27,7 +29,7 @@ interface EditFormState {
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ExitConfirmModalComponent],
   templateUrl: './admin-users.component.html',
   styleUrl: './admin-users.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +37,7 @@ interface EditFormState {
 export class AdminUsersComponent implements OnInit {
   private adminService = inject(AdminService);
   private platformId = inject(PLATFORM_ID);
+  protected exitConfirmService = inject(ExitConfirmService);
 
   // DOM refs para el focus trap del modal
   private firstFieldRef = viewChild<ElementRef<HTMLElement>>('firstField');
@@ -253,6 +256,15 @@ export class AdminUsersComponent implements OnInit {
     if (!this.canOpenInvitation(user)) return;
     if (!isPlatformBrowser(this.platformId)) return;
     window.open(`/${user.slug}`, '_blank', 'noopener,noreferrer');
+  }
+
+  /**
+   * Abre el modal de confirmación de salida (mismo patrón que el dashboard).
+   * El `ExitConfirmModalComponent` se encarga de llamar a `AuthService.logout()`
+   * si el usuario confirma.
+   */
+  logout() {
+    this.exitConfirmService.openExitConfirm();
   }
 
   canOpenInvitation(user: AdminUser): boolean {
