@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { authGuard } from './services/auth.guard';
+import { authGuard, adminGuard } from './services/auth.guard';
 
 export const routes: Routes = [
   {
@@ -16,14 +16,39 @@ export const routes: Routes = [
     loadComponent: () => import('./components/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    path: 'judith-jesus',
+    loadComponent: () =>
+      import('./components/invitations/judith-jesus/judith-jesus.component').then(
+        (m) => m.JudithJesusComponent,
+      ),
+  },
+  {
+    path: 'helena-juan',
+    loadComponent: () =>
+      import('./components/invitations/helena-juan/helena-juan.component').then(
+        (m) => m.HelenaJuanComponent,
+      ),
+  },
+  {
     path: ':tenant/dashboard',
     loadComponent: () =>
       import('./components/dashboard/dashboard.component').then((m) => m.DashboardComponent),
     canActivate: [authGuard],
   },
   {
-    path: 'admin',
-    loadComponent: () => import('./components/invitation/invitation.component').then((m) => m.InvitationComponent),
+    path: ':tenant',
+    loadComponent: () =>
+      import('./components/invitation-not-found/invitation-not-found.component').then(
+        (m) => m.InvitationNotFoundComponent,
+      ),
+  },
+  {
+    path: 'admin/users',
+    loadComponent: () =>
+      import('./components/admin-users/admin-users.component').then(
+        (m) => m.AdminUsersComponent,
+      ),
+    canActivate: [authGuard, adminGuard],
   },
   { path: '**', redirectTo: '' },
 ];

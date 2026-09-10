@@ -1,0 +1,57 @@
+.invitation-status {
+  display: grid;
+  min-height: min(70vh, 42rem);
+  place-items: center;
+  padding: 3rem 1.5rem;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(236, 72, 153, 0.14), transparent 42%),
+    #fff8fb;
+}
+
+.invitation-status-card {
+  width: min(100%, 36rem);
+  padding: clamp(2rem, 7vw, 4rem) clamp(1.5rem, 7vw, 4rem);
+  border: 1px solid #f2c9dc;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1.5rem 3rem rgba(87, 29, 61, 0.1);
+  text-align: center;
+}
+
+.invitation-status-eyebrow {
+  margin: 0 0 1rem;
+  color: #a63168;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.invitation-status h1 {
+  margin: 0;
+  color: #351b2c;
+  font-size: clamp(2rem, 7vw, 3.25rem);
+  line-height: 1.1;
+}
+
+.invitation-status-card > p:not(.invitation-status-eyebrow) {
+  margin: 1.25rem auto 2rem;
+  max-width: 28rem;
+  color: #604457;
+  line-height: 1.7;
+}
+
+.invitation-status-link {
+  display: inline-block;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.25rem;
+  background: #a63168;
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.invitation-status-link:hover,
+.invitation-status-link:focus-visible {
+  background: #7f2450;
+}

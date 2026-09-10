@@ -1,0 +1,348 @@
+<section class="admin-users">
+  <header class="admin-header">
+    <div>
+      <h1>👑 Panel de administración</h1>
+      <p class="subtitle">Usuarios registrados en la plataforma</p>
+    </div>
+    <div class="admin-stats" role="status" aria-live="polite">
+      <span class="stat-pill">
+        <strong>{{ totalCount() }}</strong> usuarios
+      </span>
+      <span class="stat-pill stat-pill--success">
+        <strong>{{ paidCount() }}</strong> pagados
+      </span>
+      <span class="stat-pill stat-pill--info">
+        <strong>{{ invitationCount() }}</strong> con invitación
+      </span>
+    </div>
+  </header>
+
+  <div class="admin-toolbar">
+    <label class="search-field">
+      <span class="visually-hidden">Buscar usuarios</span>
+      <input
+        type="search"
+        placeholder="Buscar por nombre, email o slug…"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearchChange($event)"
+        autocomplete="off"
+      />
+    </label>
+    <button
+      type="button"
+      class="btn btn--ghost"
+      (click)="loadUsers()"
+      [disabled]="isLoading()"
+      aria-label="Recargar lista de usuarios"
+    >
+      🔄 Recargar
+    </button>
+  </div>
+
+  @if (actionError(); as message) {
+    <div class="alert alert--error" role="alert">
+      <span>{{ message }}</span>
+      <button
+        type="button"
+        class="alert-close"
+        (click)="actionError.set(null)"
+        aria-label="Cerrar aviso"
+      >
+        ✕
+      </button>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="state-card" role="status" aria-live="polite">
+      <p>Cargando usuarios…</p>
+    </div>
+  } @else if (loadError(); as message) {
+    <div class="state-card state-card--error" role="alert">
+      <p>{{ message }}</p>
+      <button type="button" class="btn btn--primary" (click)="loadUsers()">
+        Reintentar
+      </button>
+    </div>
+  } @else if (filteredUsers().length === 0) {
+    <div class="state-card">
+      <p>
+        @if (searchQuery()) {
+          No hay usuarios que coincidan con «{{ searchQuery() }}».
+        } @else {
+          Aún no hay usuarios registrados.
+        }
+      </p>
+    </div>
+  } @else {
+    <div class="table-wrapper" role="region" aria-label="Lista de usuarios">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th scope="col">Usuario</th>
+            <th scope="col">Email</th>
+            <th scope="col">Slug</th>
+            <th scope="col">Plan</th>
+            <th scope="col">Pagado</th>
+            <th scope="col">Invitación</th>
+            <th scope="col">Actividad</th>
+            <th scope="col">Último login</th>
+            <th scope="col" class="actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of filteredUsers(); track user.id) {
+            <tr [class.row--protected]="user.isProtected">
+              <td>
+                <div class="user-cell">
+                  <span class="user-name">
+                    {{ user.username }}
+                    @if (user.role === 'admin') {
+                      <span class="badge badge--admin" title="Administrador">👑 admin</span>
+                    }
+                  </span>
+                  <span class="user-id">#{{ user.id }}</span>
+                </div>
+              </td>
+              <td>
+                @if (user.email) {
+                  <a [href]="'mailto:' + user.email">{{ user.email }}</a>
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td><code>{{ user.slug }}</code></td>
+              <td>
+                <span class="badge" [class.badge--premium]="user.plan === 'premium'">
+                  {{ user.plan === 'premium' ? 'Premium' : 'Free' }}
+                </span>
+              </td>
+              <td>
+                @if (user.paid) {
+                  <span class="badge badge--success" title="Pagado el {{ formatDate(user.paidAt) }}">
+                    ✓ Pagado
+                  </span>
+                } @else {
+                  <span class="badge badge--muted">Pendiente</span>
+                }
+              </td>
+              <td>
+                @if (user.hasInvitation) {
+                  <span class="badge badge--info" title="Tiene contenido creado">
+                    ✓ Lista
+                  </span>
+                } @else {
+                  <span class="badge badge--muted">Sin crear</span>
+                }
+                <div class="muted small">
+                  {{ user.guestCount }} invitados · {{ user.contactCount }} contactos
+                </div>
+              </td>
+              <td class="muted small">
+                {{ user.tableCount }} mesas · {{ user.financeCount }} gastos
+              </td>
+              <td class="muted">{{ formatDate(user.lastLoginAt) }}</td>
+              <td class="actions-col">
+                <div class="row-actions">
+                  <button
+                    type="button"
+                    class="btn btn--small btn--ghost"
+                    (click)="openInvitation(user)"
+                    [disabled]="!canOpenInvitation(user)"
+                    [attr.aria-disabled]="!canOpenInvitation(user)"
+                    [title]="invitationButtonTitle(user)"
+                  >
+                    Ver invitación
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn--small btn--primary"
+                    (click)="openEditDialog(user)"
+                    [disabled]="user.isProtected"
+                    [attr.aria-disabled]="user.isProtected"
+                    [title]="user.isProtected ? 'El admin principal no se puede editar' : 'Editar usuario'"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn--small btn--danger"
+                    (click)="openDeleteConfirm(user)"
+                    [disabled]="user.isProtected"
+                    [attr.aria-disabled]="user.isProtected"
+                    [title]="user.isProtected ? 'El admin principal no se puede eliminar' : 'Eliminar usuario'"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (editingUser(); as user) {
+  <div
+    class="modal-overlay"
+    role="presentation"
+    tabindex="-1"
+    (keydown.escape)="closeEditDialog()"
+  >
+    <div
+      #editDialog
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'edit-title-' + user.id"
+    >
+      <header class="modal-header">
+        <h2 [id]="'edit-title-' + user.id">Editar {{ user.username }}</h2>
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeEditDialog()"
+          [disabled]="isSaving()"
+          aria-label="Cerrar"
+        >
+          ✕
+        </button>
+      </header>
+
+      <form class="modal-body" (ngSubmit)="saveEdit()">
+        @if (actionError(); as message) {
+          <div class="alert alert--error" role="alert">{{ message }}</div>
+        }
+
+        <div class="form-group">
+          <label [for]="'email-' + user.id">Email</label>
+          <input
+            #firstField
+            [id]="'email-' + user.id"
+            type="email"
+            [ngModel]="editForm().email"
+            (ngModelChange)="updateEditField('email', $event)"
+            name="email"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label [for]="'plan-' + user.id">Plan</label>
+          <select
+            [id]="'plan-' + user.id"
+            [ngModel]="editForm().plan"
+            (ngModelChange)="updateEditField('plan', $event)"
+            name="plan"
+          >
+            <option value="free">Free</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+
+        <div class="form-group form-group--toggle">
+          <label [for]="'paid-' + user.id">Pagado</label>
+          <label class="toggle-switch">
+            <input
+              [id]="'paid-' + user.id"
+              type="checkbox"
+              [ngModel]="editForm().paid"
+              (ngModelChange)="updateEditField('paid', $event)"
+              name="paid"
+            />
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">
+              {{ editForm().paid ? 'Marcado como pagado' : 'Pendiente de pago' }}
+            </span>
+          </label>
+        </div>
+
+        <div class="form-group form-group--toggle">
+          <label [for]="'invitation-' + user.id">Invitación completada</label>
+          <label class="toggle-switch">
+            <input
+              [id]="'invitation-' + user.id"
+              type="checkbox"
+              [ngModel]="editForm().invitationCompleted"
+              (ngModelChange)="updateEditField('invitationCompleted', $event)"
+              name="invitationCompleted"
+            />
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">
+              {{ editForm().invitationCompleted ? 'Marcada como lista' : 'Aún no completada' }}
+            </span>
+          </label>
+        </div>
+
+        <footer class="modal-footer">
+          <button
+            type="button"
+            class="btn btn--ghost"
+            (click)="closeEditDialog()"
+            [disabled]="isSaving()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn--primary"
+            [disabled]="isSaving()"
+          >
+            {{ isSaving() ? 'Guardando…' : 'Guardar cambios' }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+}
+
+@if (confirmingDelete(); as user) {
+  <div
+    class="modal-overlay"
+    role="presentation"
+    tabindex="-1"
+    (keydown.escape)="closeDeleteConfirm()"
+  >
+    <div
+      class="modal modal--small"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="delete-title"
+    >
+      <header class="modal-header">
+        <h2 id="delete-title">Eliminar usuario</h2>
+      </header>
+      <div class="modal-body">
+        @if (actionError(); as message) {
+          <div class="alert alert--error" role="alert">{{ message }}</div>
+        }
+        <p>
+          ¿Seguro que quieres eliminar a
+          <strong>{{ user.username }}</strong>?
+          Se borrarán también sus invitados, mesas, contactos y finanzas. Esta
+          acción no se puede deshacer.
+        </p>
+      </div>
+      <footer class="modal-footer">
+        <button
+          type="button"
+          class="btn btn--ghost"
+          (click)="closeDeleteConfirm()"
+          [disabled]="isDeleting()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn--danger"
+          (click)="confirmDelete()"
+          [disabled]="isDeleting()"
+        >
+          {{ isDeleting() ? 'Eliminando…' : 'Sí, eliminar' }}
+        </button>
+      </footer>
+    </div>
+  </div>
+}

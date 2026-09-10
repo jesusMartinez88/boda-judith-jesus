@@ -286,6 +286,34 @@ export interface AuthLoginResponse {
   user: AuthUser;
 }
 
+export interface AdminUser {
+  id: number;
+  username: string;
+  email: string | null;
+  role: string;
+  slug: string;
+  plan: string | null;
+  paidAt: string | null;
+  paid: boolean;
+  invitationCompletedAt: string | null;
+  hasInvitation: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+  guestCount: number;
+  contactCount: number;
+  tableCount: number;
+  financeCount: number;
+  todoCount: number;
+  isProtected: boolean;
+}
+
+export type AdminUserPatch = Partial<{
+  email: string | null;
+  plan: 'free' | 'premium' | null;
+  paidAt: string | null;
+  invitationCompletedAt: string | null;
+}>;
+
 export interface AuthRegisterResponse {
   success: boolean;
   token: string;

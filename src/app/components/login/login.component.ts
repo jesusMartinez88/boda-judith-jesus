@@ -124,9 +124,21 @@ export class LoginComponent {
 
         // Notificar al servicio PWA que el usuario se ha logueado
         this.pwaService.onUserLoggedIn();
+
+        // Decidir destino según rol: admin va al panel, el resto a su dashboard.
+        // AuthService.persistToken() ya actualizó currentUserSignal antes de
+        // que el subscribe.next se disparase (tap corre antes que next).
+        const user = this.authService.currentUser();
+        const isAdmin = user?.role === 'admin';
+        const slug = user?.slug || formValue.username;
+
+        const target = isAdmin
+          ? ['/admin/users']
+          : [`/${slug}/dashboard`];
+
         // Usar replaceUrl para que la página de login no quede en el historial
         // y al pulsar "atrás" no vuelva al login
-        this.router.navigate([`/${formValue.username}/dashboard`], { replaceUrl: true });
+        this.router.navigate(target, { replaceUrl: true });
       } catch {
         this.errorMessage.set('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
         this.generateCaptcha();

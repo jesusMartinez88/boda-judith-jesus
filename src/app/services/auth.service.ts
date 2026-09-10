@@ -1,4 +1,4 @@
-import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, signal, inject, PLATFORM_ID, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
@@ -11,6 +11,53 @@ import {
   AuthRegisterResponse,
 } from '../../types/api';
 
+const AUTH_TOKEN_KEY = 'auth_token';
+
+export interface CurrentUser {
+  id: number;
+  username: string;
+  email: string | null;
+  role: string;
+  slug: string;
+}
+
+/**
+ * Decodifica el payload de un JWT SIN verificar la firma.
+ * Se usa solo para extraer info de UI (role, slug). El backend
+ * sigue siendo la fuente de verdad en cada request protegida.
+ */
+const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = parts[1];
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(
+      normalized.length + ((4 - (normalized.length % 4)) % 4),
+      '=',
+    );
+    const json = atob(padded);
+    return JSON.parse(json) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+};
+
+const userFromToken = (token: string | null): CurrentUser | null => {
+  if (!token) return null;
+  const payload = decodeJwtPayload(token);
+  if (!payload) return null;
+  const id = Number(payload['id']);
+  if (!Number.isFinite(id)) return null;
+  return {
+    id,
+    username: String(payload['username'] ?? ''),
+    email: (payload['email'] as string | null) ?? null,
+    role: String(payload['role'] ?? 'user'),
+    slug: String(payload['slug'] ?? ''),
+  };
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -22,9 +69,12 @@ export class AuthService {
 
   // En SSR no hay localStorage → el usuario se considera no autenticado.
   // En cliente se lee el token persistido.
-  private isAuthenticatedSignal = signal<boolean>(this.checkToken());
+  private tokenSignal = signal<string | null>(this.readToken());
+  private currentUserSignal = signal<CurrentUser | null>(this.userFromPersistedToken());
 
-  isAuthenticated = this.isAuthenticatedSignal.asReadonly();
+  isAuthenticated = computed(() => !!this.tokenSignal());
+  currentUser = this.currentUserSignal.asReadonly();
+  isAdmin = computed(() => this.currentUserSignal()?.role === 'admin');
 
   login(credentials: AuthLoginRequest) {
     return this.http
@@ -32,8 +82,7 @@ export class AuthService {
       .pipe(
         tap((response) => {
           if (response?.token && isPlatformBrowser(this.platformId)) {
-            localStorage.setItem('auth_token', response.token);
-            this.isAuthenticatedSignal.set(true);
+            this.persistToken(response.token);
           }
         }),
         catchError((err) => {
@@ -49,8 +98,7 @@ export class AuthService {
       .pipe(
         tap((response) => {
           if (response?.token && isPlatformBrowser(this.platformId)) {
-            localStorage.setItem('auth_token', response.token);
-            this.isAuthenticatedSignal.set(true);
+            this.persistToken(response.token);
           }
         }),
         catchError((err) => {
@@ -62,16 +110,31 @@ export class AuthService {
 
   logout() {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('auth_token');
+      localStorage.removeItem(AUTH_TOKEN_KEY);
     }
-    this.isAuthenticatedSignal.set(false);
+    this.tokenSignal.set(null);
+    this.currentUserSignal.set(null);
     this.router.navigate(['/login']);
   }
 
-  private checkToken(): boolean {
-    if (!isPlatformBrowser(this.platformId)) {
-      return false;
-    }
-    return !!localStorage.getItem('auth_token');
+  /** Llamado por el interceptor o por el panel admin para refrescar el user. */
+  refreshCurrentUser() {
+    this.tokenSignal.set(this.readToken());
+    this.currentUserSignal.set(this.userFromPersistedToken());
+  }
+
+  private readToken(): string | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+  }
+
+  private userFromPersistedToken(): CurrentUser | null {
+    return userFromToken(this.readToken());
+  }
+
+  private persistToken(token: string) {
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+    this.tokenSignal.set(token);
+    this.currentUserSignal.set(userFromToken(token));
   }
 }
