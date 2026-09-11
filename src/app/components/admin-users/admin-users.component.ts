@@ -82,6 +82,9 @@ export class AdminUsersComponent implements OnInit {
   invitationCount = computed(
     () => this.users().filter((u) => u.hasInvitation).length,
   );
+  noInvitationCount = computed(
+    () => this.users().filter((u) => !u.hasInvitation).length,
+  );
 
   constructor() {
     // Foco inicial al abrir el modal (solo navegador; en SSR no hay DOM).

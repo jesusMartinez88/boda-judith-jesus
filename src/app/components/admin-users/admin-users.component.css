@@ -11,6 +11,7 @@
   --admin-success-bg: #d1fae5;
   --admin-info: #1d4ed8;
   --admin-info-bg: #dbeafe;
+  --admin-warning: #b45309;
   --admin-danger: #b91c1c;
   --admin-danger-hover: #991b1b;
   --admin-warning-bg: #fef3c7;
@@ -83,6 +84,14 @@
 
 .stat-pill--info strong {
   color: var(--admin-info);
+}
+
+.stat-pill--warning {
+  border-color: var(--admin-warning);
+}
+
+.stat-pill--warning strong {
+  color: var(--admin-warning);
 }
 
 .header-actions {
