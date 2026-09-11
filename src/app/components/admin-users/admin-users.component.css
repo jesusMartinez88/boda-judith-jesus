@@ -326,6 +326,27 @@
   font-size: 0.8rem;
 }
 
+.notes-cell {
+  max-width: 280px;
+}
+
+.notes-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.form-hint {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--admin-text-muted);
+  font-size: 0.8rem;
+}
+
 code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85em;

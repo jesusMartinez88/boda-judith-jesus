@@ -24,6 +24,7 @@ interface EditFormState {
   plan: 'free' | 'premium';
   paid: boolean;
   invitationCompleted: boolean;
+  notes: string;
 }
 
 @Component({
@@ -55,6 +56,7 @@ export class AdminUsersComponent implements OnInit {
     plan: 'free',
     paid: false,
     invitationCompleted: false,
+    notes: '',
   });
   isSaving = signal<boolean>(false);
 
@@ -69,7 +71,8 @@ export class AdminUsersComponent implements OnInit {
       return (
         u.username.toLowerCase().includes(query) ||
         (u.email ?? '').toLowerCase().includes(query) ||
-        u.slug.toLowerCase().includes(query)
+        u.slug.toLowerCase().includes(query) ||
+        (u.notes ?? '').toLowerCase().includes(query)
       );
     });
   });
@@ -127,6 +130,7 @@ export class AdminUsersComponent implements OnInit {
       plan: (user.plan === 'premium' ? 'premium' : 'free') as 'free' | 'premium',
       paid: user.paid,
       invitationCompleted: !!user.invitationCompletedAt,
+      notes: user.notes ?? '',
     });
   }
 
@@ -155,6 +159,7 @@ export class AdminUsersComponent implements OnInit {
       invitationCompletedAt: form.invitationCompleted
         ? new Date().toISOString()
         : null,
+      notes: form.notes.trim() ? form.notes.trim() : null,
     };
 
     this.isSaving.set(true);

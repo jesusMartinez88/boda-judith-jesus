@@ -310,6 +310,7 @@ export interface AdminUser {
   tableCount: number;
   financeCount: number;
   todoCount: number;
+  notes: string | null;
   isProtected: boolean;
 }
 
@@ -318,6 +319,7 @@ export type AdminUserPatch = Partial<{
   plan: 'free' | 'premium' | null;
   paidAt: string | null;
   invitationCompletedAt: string | null;
+  notes: string | null;
 }>;
 
 export interface AuthRegisterResponse {

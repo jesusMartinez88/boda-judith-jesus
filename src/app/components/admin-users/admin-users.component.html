@@ -33,7 +33,7 @@
       <span class="visually-hidden">Buscar usuarios</span>
       <input
         type="search"
-        placeholder="Buscar por nombre, email o slug…"
+        placeholder="Buscar por nombre, email, slug u observaciones…"
         [ngModel]="searchQuery()"
         (ngModelChange)="onSearchChange($event)"
         autocomplete="off"
@@ -92,12 +92,12 @@
           <tr>
             <th scope="col">Usuario</th>
             <th scope="col">Email</th>
-            <th scope="col">Slug</th>
             <th scope="col">Plan</th>
             <th scope="col">Pagado</th>
             <th scope="col">Invitación</th>
             <th scope="col">Actividad</th>
             <th scope="col">Último login</th>
+            <th scope="col">Observaciones</th>
             <th scope="col" class="actions-col">Acciones</th>
           </tr>
         </thead>
@@ -122,7 +122,6 @@
                   <span class="muted">—</span>
                 }
               </td>
-              <td><code>{{ user.slug }}</code></td>
               <td>
                 <span class="badge" [class.badge--premium]="user.plan === 'premium'">
                   {{ user.plan === 'premium' ? 'Premium' : 'Free' }}
@@ -150,9 +149,19 @@
                 </div>
               </td>
               <td class="muted small">
-                {{ user.tableCount }} mesas · {{ user.financeCount }} gastos
+                {{ user.tableCount }} mesas · {{ user.financeCount }} gastos ·
+                {{ user.todoCount }} tareas
               </td>
               <td class="muted">{{ formatDate(user.lastLoginAt) }}</td>
+              <td class="notes-cell">
+                @if (user.notes) {
+                  <span class="notes-preview" [title]="user.notes">
+                    {{ user.notes }}
+                  </span>
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
               <td class="actions-col">
                 <div class="row-actions">
                   <button
@@ -285,6 +294,19 @@
               {{ editForm().invitationCompleted ? 'Marcada como lista' : 'Aún no completada' }}
             </span>
           </label>
+        </div>
+
+        <div class="form-group">
+          <label [for]="'notes-' + user.id">Observaciones</label>
+          <textarea
+            [id]="'notes-' + user.id"
+            rows="4"
+            [ngModel]="editForm().notes"
+            (ngModelChange)="updateEditField('notes', $event)"
+            name="notes"
+            placeholder="Notas internas del admin sobre este usuario…"
+          ></textarea>
+          <small class="form-hint">Solo el admin puede ver y editar este campo.</small>
         </div>
 
         <footer class="modal-footer">
