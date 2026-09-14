@@ -574,6 +574,36 @@
   margin-bottom: 0.6rem;
 }
 
+.demo-rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.demo-rsvp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  background: #ffffff;
+  border: 1px solid #e9d5ff;
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.demo-rsvp-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #7e22ce;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.demo-rsvp-input {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
 .demo-rsvp-actions {
   display: flex;
   gap: 0.4rem;
