@@ -114,7 +114,7 @@
       </button>
       <a
         class="nav-item"
-        href="/"
+        href="/{{ tenant() }}"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Ver invitación"
@@ -602,8 +602,8 @@
     }
 
     <footer class="content-footer">
-      <p>© 2026 Admin Dashboard - BodasOnline</p>
-      <p class="version-info">{{ versionService.getFullVersion() }}</p>
+      <p>© 2026 users Dashboard - BodasOnline</p>
+      <p class="version-info">{{ appVersion }}</p>
     </footer>
   </main>
 </div>

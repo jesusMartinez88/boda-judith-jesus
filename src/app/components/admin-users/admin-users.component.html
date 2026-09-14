@@ -170,6 +170,16 @@
                   <button
                     type="button"
                     class="btn btn--small btn--ghost"
+                    (click)="openQuestionnaire(user)"
+                    [disabled]="user.isProtected"
+                    [attr.aria-disabled]="user.isProtected"
+                    [title]="user.isProtected ? 'El admin principal no tiene cuestionario' : 'Ver cuestionario inicial de la landing'"
+                  >
+                    📋 Cuestionario
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn--small btn--ghost"
                     (click)="openInvitation(user)"
                     [disabled]="!canOpenInvitation(user)"
                     [attr.aria-disabled]="!canOpenInvitation(user)"
@@ -383,6 +393,107 @@
   </div>
 }
 
+@if (viewingQuestionnaire(); as user) {
+  <div
+    class="modal-overlay"
+    role="presentation"
+    tabindex="-1"
+    (keydown.escape)="closeQuestionnaire()"
+  >
+    <div
+      class="modal modal--questionnaire"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'questionnaire-title-' + user.id"
+    >
+      <header class="modal-header">
+        <h2 [id]="'questionnaire-title-' + user.id">
+          📋 Cuestionario de {{ user.username }}
+        </h2>
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeQuestionnaire()"
+          [disabled]="questionnaireLoading()"
+          aria-label="Cerrar"
+        >
+          ✕
+        </button>
+      </header>
+
+      <div class="modal-body">
+        @if (questionnaireLoading()) {
+          <p class="muted" role="status" aria-live="polite">Cargando cuestionario…</p>
+        } @else if (questionnaireError(); as msg) {
+          <div class="alert alert--error" role="alert">{{ msg }}</div>
+        } @else if (questionnaire(); as q) {
+          <p class="muted small questionnaire-meta">
+            Última actualización: {{ formatDate(q.updatedAt ?? q.createdAt) }}
+          </p>
+
+          <dl class="questionnaire-grid">
+            <div class="questionnaire-row">
+              <dt>Fecha de la boda</dt>
+              <dd>{{ formatShortDate(q.weddingDate) }}</dd>
+            </div>
+            <div class="questionnaire-row">
+              <dt>Estimación de invitados</dt>
+              <dd>{{ q.estimatedGuests ?? '—' }}</dd>
+            </div>
+            <div class="questionnaire-row">
+              <dt>Color predominante</dt>
+              <dd>{{ q.predominantColor || '—' }}</dd>
+            </div>
+            <div class="questionnaire-row">
+              <dt>Cuenta atrás</dt>
+              <dd>{{ formatYesNo(q.hasCountdown) }}</dd>
+            </div>
+            <div class="questionnaire-row">
+              <dt>Servicio de autobús</dt>
+              <dd>{{ formatYesNo(q.hasBusService) }}</dd>
+            </div>
+            <div class="questionnaire-row">
+              <dt>Reserva de hotel</dt>
+              <dd>{{ formatYesNo(q.hasHotelService) }}</dd>
+            </div>
+            @if (q.additionalServices) {
+              <div class="questionnaire-row questionnaire-row--full">
+                <dt>Otros servicios / detalles</dt>
+                <dd class="multiline">{{ q.additionalServices }}</dd>
+              </div>
+            }
+            @if (q.notes) {
+              <div class="questionnaire-row questionnaire-row--full">
+                <dt>Comentarios del cliente</dt>
+                <dd class="multiline">{{ q.notes }}</dd>
+              </div>
+            }
+          </dl>
+        } @else {
+          <p class="muted">
+            Este cliente todavía no ha rellenado el cuestionario inicial.
+          </p>
+        }
+      </div>
+
+      <footer class="modal-footer">
+        <button
+          type="button"
+          class="btn btn--ghost"
+          (click)="closeQuestionnaire()"
+          [disabled]="questionnaireLoading()"
+        >
+          Cerrar
+        </button>
+      </footer>
+    </div>
+  </div>
+}
+
 @if (exitConfirmService.showExitConfirm()) {
   <app-exit-confirm-modal />
 }
+
+<footer class="admin-footer" role="contentinfo">
+  © 2026 Admin Dashboard - BodasOnline v{{ appVersion }}
+</footer>

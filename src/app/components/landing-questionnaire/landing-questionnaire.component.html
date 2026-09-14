@@ -1,0 +1,155 @@
+<form class="questionnaire" (ngSubmit)="onSubmit()" novalidate>
+  <p class="questionnaire-intro">
+    Cuéntanos cómo te imaginas tu landing. Con estas pistas el equipo podrá
+    diseñarla a tu medida sin darte la lata con preguntas después.
+  </p>
+
+  <div class="form-grid">
+    <!-- Fecha de la boda -->
+    <div class="form-field">
+      <label class="form-label" for="q-wedding-date">Fecha de la boda</label>
+      <input
+        id="q-wedding-date"
+        type="date"
+        [ngModel]="form().weddingDate"
+        (ngModelChange)="patchField('weddingDate', $event)"
+        name="weddingDate"
+        required
+        class="form-input">
+      <small class="form-hint">La fecha exacta (o aproximada) del gran día.</small>
+    </div>
+
+    <!-- Estimación de invitados -->
+    <div class="form-field">
+      <label class="form-label" for="q-estimated-guests">Estimación de invitados</label>
+      <input
+        id="q-estimated-guests"
+        type="number"
+        inputmode="numeric"
+        min="0"
+        step="1"
+        [ngModel]="form().estimatedGuests"
+        (ngModelChange)="onEstimatedGuestsChange($event)"
+        name="estimatedGuests"
+        required
+        placeholder="Ej: 80"
+        class="form-input">
+      <small class="form-hint">Número aproximado.</small>
+    </div>
+  </div>
+
+  <!-- Color predominante -->
+  <fieldset class="form-field form-field--fieldset">
+    <legend class="form-label">Color predominante de la landing</legend>
+    <p class="form-hint">Elige un tono principal. Después afinamos detalles en el diseño.</p>
+    <div class="color-presets" role="radiogroup" aria-label="Color predominante">
+      @for (preset of colorPresets; track preset.value) {
+        <button
+          type="button"
+          class="color-chip"
+          [class.color-chip--selected]="isPresetSelected(preset.value)"
+          role="radio"
+          [attr.aria-checked]="isPresetSelected(preset.value)"
+          (click)="onColorPresetClick(preset.value)">
+          <span class="color-chip__swatch" [style.background]="preset.hex" aria-hidden="true"></span>
+          <span class="color-chip__label">{{ preset.label }}</span>
+        </button>
+      }
+      <label class="color-chip color-chip--custom" [class.color-chip--selected]="form().predominantColor && !colorPresets.some(p => p.value === form().predominantColor)">
+        <span class="color-chip__swatch color-chip__swatch--custom" aria-hidden="true">🎨</span>
+        <span class="color-chip__label">Otro</span>
+        <input
+          type="text"
+          [ngModel]="form().predominantColor"
+          (ngModelChange)="patchField('predominantColor', $event)"
+          name="predominantColorCustom"
+          placeholder="Ej: verde menta"
+          class="color-chip__input"
+          aria-label="Color personalizado">
+      </label>
+    </div>
+  </fieldset>
+
+  <!-- Cuenta atrás -->
+  <div class="form-field form-field--toggle">
+    <div class="toggle-row">
+      <div>
+        <label class="form-label" for="q-countdown">Cuenta atrás</label>
+        <p class="form-hint">Reloj que va descontando días hasta la boda.</p>
+      </div>
+      <label class="toggle-switch">
+        <input
+          id="q-countdown"
+          type="checkbox"
+          [ngModel]="form().hasCountdown"
+          (ngModelChange)="patchField('hasCountdown', $event)"
+          name="hasCountdown">
+        <span class="toggle-slider"></span>
+        <span class="toggle-label">
+          {{ form().hasCountdown ? 'Sí, quiero cuenta atrás' : 'Sin cuenta atrás' }}
+        </span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Servicios extra -->
+  <fieldset class="form-field form-field--fieldset">
+    <legend class="form-label">Servicios extra</legend>
+    <p class="form-hint">Marca los que necesites; el resto los puedes dejar fuera.</p>
+
+    <label class="check-row">
+      <input
+        type="checkbox"
+        [ngModel]="form().hasBusService"
+        (ngModelChange)="patchField('hasBusService', $event)"
+        name="hasBusService">
+      <span>🚌 Servicio de autobús</span>
+    </label>
+
+    <label class="check-row">
+      <input
+        type="checkbox"
+        [ngModel]="form().hasHotelService"
+        (ngModelChange)="patchField('hasHotelService', $event)"
+        name="hasHotelService">
+      <span>🏨 Reserva de hotel para invitados</span>
+    </label>
+
+    <label class="form-field form-field--nested">
+      <span class="form-label">Otros servicios o detalles y cronograma de la boda</span>
+      <textarea
+        rows="3"
+        [ngModel]="form().additionalServices"
+        (ngModelChange)="patchField('additionalServices', $event)"
+        name="additionalServices"
+        placeholder="Ej: photocall, cóctel de bienvenida, menú infantil…"
+        class="form-input"></textarea>
+    </label>
+  </fieldset>
+
+  <!-- Comentarios libres -->
+  <div class="form-field">
+    <label class="form-label" for="q-notes">¿Algo más que quieras contarnos?</label>
+    <textarea
+      id="q-notes"
+      rows="3"
+      [ngModel]="form().notes"
+      (ngModelChange)="patchField('notes', $event)"
+      name="notes"
+      placeholder="Ideas, referencias, enlaces que te gusten…"
+      class="form-input"></textarea>
+    <small class="form-hint">Opcional. Lo leerá el equipo antes de empezar.</small>
+  </div>
+
+  @if (errorMessage(); as msg) {
+    <div class="form-error" role="alert">{{ msg }}</div>
+  }
+
+  <button
+    type="submit"
+    class="btn-primary"
+    [disabled]="!isValid() || submitting()"
+    [attr.aria-busy]="submitting()">
+    {{ submitting() ? 'Guardando…' : 'Continuar' }}
+  </button>
+</form>

@@ -15,9 +15,14 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AdminService } from '../../services/admin.service';
-import { AdminUser, AdminUserPatch } from '../../../types/api';
+import {
+  AdminUser,
+  AdminUserPatch,
+  LandingQuestionnaire,
+} from '../../../types/api';
 import { ExitConfirmService } from '../../services/exit-confirm.service';
 import { ExitConfirmModalComponent } from '../../shared/components/exit-confirm-modal/exit-confirm-modal.component';
+import { VersionService } from '../../services/version.service';
 
 interface EditFormState {
   email: string;
@@ -39,6 +44,7 @@ export class AdminUsersComponent implements OnInit {
   private adminService = inject(AdminService);
   private platformId = inject(PLATFORM_ID);
   protected exitConfirmService = inject(ExitConfirmService);
+  private versionService = inject(VersionService);
 
   // DOM refs para el focus trap del modal
   private firstFieldRef = viewChild<ElementRef<HTMLElement>>('firstField');
@@ -62,6 +68,15 @@ export class AdminUsersComponent implements OnInit {
 
   confirmingDelete = signal<AdminUser | null>(null);
   isDeleting = signal<boolean>(false);
+
+  // Cuestionario inicial de la landing del cliente. Se muestra en un
+  // modal aparte para que el admin pueda usarlo como brief de diseño.
+  viewingQuestionnaire = signal<AdminUser | null>(null);
+  questionnaire = signal<LandingQuestionnaire | null>(null);
+  questionnaireLoading = signal<boolean>(false);
+  questionnaireError = signal<string | null>(null);
+
+  protected readonly appVersion = this.versionService.getFullVersion();
 
   filteredUsers = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
@@ -194,6 +209,45 @@ export class AdminUsersComponent implements OnInit {
     this.confirmingDelete.set(null);
   }
 
+  /**
+   * Abre el modal con el cuestionario inicial de la landing de un usuario.
+   * El admin lo usa como brief para diseñar la página antes de empezar.
+   * El admin principal (`username === 'admin'`) está protegido en backend
+   * y nunca debería llegar aquí; mantenemos la guarda por si acaso.
+   */
+  openQuestionnaire(user: AdminUser) {
+    if (user.isProtected) return;
+    this.actionError.set(null);
+    this.questionnaireError.set(null);
+    this.questionnaire.set(null);
+    this.viewingQuestionnaire.set(user);
+    this.questionnaireLoading.set(true);
+
+    this.adminService
+      .getLandingQuestionnaire(user.id)
+      .then((data) => {
+        this.questionnaire.set(data);
+        this.questionnaireLoading.set(false);
+      })
+      .catch((err: HttpErrorResponse) => {
+        console.error('[admin] questionnaire error:', err);
+        this.questionnaireError.set(
+          this.extractMessage(
+            err,
+            'No se pudo cargar el cuestionario del usuario.',
+          ),
+        );
+        this.questionnaireLoading.set(false);
+      });
+  }
+
+  closeQuestionnaire() {
+    if (this.questionnaireLoading()) return;
+    this.viewingQuestionnaire.set(null);
+    this.questionnaire.set(null);
+    this.questionnaireError.set(null);
+  }
+
   confirmDelete() {
     const user = this.confirmingDelete();
     if (!user) return;
@@ -286,7 +340,7 @@ export class AdminUsersComponent implements OnInit {
     return 'Abrir invitación del usuario';
   }
 
-  formatDate(value: string | null): string {
+  formatDate(value: string | null | undefined): string {
     if (!value) return '—';
     try {
       const d = new Date(value);
@@ -301,6 +355,32 @@ export class AdminUsersComponent implements OnInit {
     } catch {
       return '—';
     }
+  }
+
+  /**
+   * Formatea una fecha "YYYY-MM-DD" (o ISO) como dd/mm/yyyy sin hora.
+   * El input `date` del cuestionario suele ser solo fecha.
+   */
+  formatShortDate(value: string | null | undefined): string {
+    if (!value) return '—';
+    try {
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+    } catch {
+      return '—';
+    }
+  }
+
+  /** 0/1 → Sí/No para los booleanos del cuestionario. */
+  formatYesNo(value: 0 | 1 | boolean | null | undefined): string {
+    if (value === 1 || value === true) return 'Sí';
+    if (value === 0 || value === false) return 'No';
+    return '—';
   }
 
   private extractMessage(err: HttpErrorResponse, fallback: string): string {

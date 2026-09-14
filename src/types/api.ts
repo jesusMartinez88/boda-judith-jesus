@@ -328,6 +328,39 @@ export interface AuthRegisterResponse {
   user: AuthUser;
 }
 
+/**
+ * Cuestionario inicial que el cliente rellena justo después de
+ * registrarse para que el admin sepa qué tipo de landing quiere.
+ *
+ * Los booleanos llegan como `0 | 1` por la convención del backend
+ * (mismo patrón que `BooleanFlag`); en la UI se convierten a `boolean`.
+ */
+export interface LandingQuestionnaire {
+  id: number;
+  userId: number;
+  weddingDate: string | null;
+  estimatedGuests: number | null;
+  predominantColor: string | null;
+  hasCountdown: 0 | 1;
+  hasBusService: 0 | 1;
+  hasHotelService: 0 | 1;
+  additionalServices: string | null;
+  notes: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type LandingQuestionnairePatch = Partial<{
+  weddingDate: string | null;
+  estimatedGuests: number | null;
+  predominantColor: string | null;
+  hasCountdown: boolean;
+  hasBusService: boolean;
+  hasHotelService: boolean;
+  additionalServices: string | null;
+  notes: string | null;
+}>;
+
 export interface AiGenerateRequest {
   type:
     | 'absence_reason'

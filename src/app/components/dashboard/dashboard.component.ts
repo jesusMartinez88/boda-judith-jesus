@@ -41,13 +41,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private statsService = inject(StatsService);
   private guestService = inject(GuestService);
   private settingsService = inject(SettingsService);
-  versionService = inject(VersionService);
+  private versionService = inject(VersionService);
   private route = inject(ActivatedRoute);
   exitConfirmService = inject(ExitConfirmService);
 
   tenant = signal<string>('');
   stats = signal<WeddingStats | null>(null);
   allergiesCount = signal<number | null>(null);
+
+  protected readonly appVersion = this.versionService.getFullVersion();
 
   // Invitados que han marcado que no asisten
   declinedGuestsList = computed(() => {
