@@ -110,12 +110,41 @@ export class LandingQuestionnaireComponent {
     this.submitted.emit(this.form());
   }
 
+  /** Indica si la opción personalizada 'Otro' está activa. */
+  protected readonly isCustomColorSelected = computed(() => {
+    const current = this.form().predominantColor;
+    if (!current) return false;
+    return !this.colorPresets.some((p) => p.value === current);
+  });
+
+  /** Valor hexadecimal para el input type="color". */
+  protected readonly customColorHex = computed(() => {
+    const current = this.form().predominantColor;
+    if (current && /^#[0-9a-fA-F]{6}$/i.test(current)) {
+      return current;
+    }
+    return '#ec4899';
+  });
+
   protected isPresetSelected(value: string): boolean {
     return this.form().predominantColor === value;
   }
 
   protected onColorPresetClick(value: string) {
     this.patchField('predominantColor', value);
+  }
+
+  protected onCustomColorChange(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    if (input?.value) {
+      this.patchField('predominantColor', input.value);
+    }
+  }
+
+  protected onCustomColorClick(): void {
+    if (!this.isCustomColorSelected()) {
+      this.patchField('predominantColor', this.customColorHex());
+    }
   }
 
   /**

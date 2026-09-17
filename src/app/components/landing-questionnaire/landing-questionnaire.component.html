@@ -55,17 +55,28 @@
           <span class="color-chip__label">{{ preset.label }}</span>
         </button>
       }
-      <label class="color-chip color-chip--custom" [class.color-chip--selected]="form().predominantColor && !colorPresets.some(p => p.value === form().predominantColor)">
-        <span class="color-chip__swatch color-chip__swatch--custom" aria-hidden="true">🎨</span>
+      <label
+        class="color-chip color-chip--custom"
+        [class.color-chip--selected]="isCustomColorSelected()"
+        [title]="isCustomColorSelected() ? 'Color seleccionado: ' + form().predominantColor : 'Elegir color personalizado'">
+        <span
+          class="color-chip__swatch"
+          [class.color-chip__swatch--custom]="!isCustomColorSelected()"
+          [style.background]="isCustomColorSelected() ? form().predominantColor : null"
+          aria-hidden="true">
+          @if (!isCustomColorSelected()) {
+            🎨
+          }
+        </span>
         <span class="color-chip__label">Otro</span>
         <input
-          type="text"
-          [ngModel]="form().predominantColor"
-          (ngModelChange)="patchField('predominantColor', $event)"
-          name="predominantColorCustom"
-          placeholder="Ej: verde menta"
-          class="color-chip__input"
-          aria-label="Color personalizado">
+          type="color"
+          class="color-chip__color-input"
+          [value]="customColorHex()"
+          (input)="onCustomColorChange($event)"
+          (change)="onCustomColorChange($event)"
+          (click)="onCustomColorClick()"
+          aria-label="Elegir color personalizado">
       </label>
     </div>
   </fieldset>

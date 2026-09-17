@@ -1,10 +1,10 @@
 {
-  "name": "boda-judith-jesus",
+  "name": "bodas-online",
   "version": "2.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --configuration production",
-    "dev": "ng serve --configuration development",
+    "dev": "ng serve --configuration development --host 0.0.0.0 --port 4200",
     "build": "ng build",
     "build:prod": "ng build --configuration production --base-href /boda-judith-jesus/",
     "deploy": "ng deploy --repo=https://github.com/jesusMartinez88/boda-judith-jesus.git --base-href=/boda-judith-jesus/",
@@ -17,7 +17,8 @@
     "version:major": "npm version major && npm run version:sync",
     "lint": "ng lint",
     "lint:fix": "ng lint --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "updatePnpm": "pnpm self-update"
   },
   "prettier": {
     "printWidth": 100,
@@ -32,7 +33,7 @@
     ]
   },
   "private": true,
-  "packageManager": "pnpm@12.4.1",
+  "packageManager": "pnpm@12.4.2",
   "engines": {
     "node": "24.20.0"
   },
