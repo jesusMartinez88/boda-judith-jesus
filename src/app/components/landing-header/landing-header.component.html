@@ -1,0 +1,61 @@
+<!-- Header sticky compartido por landing + páginas públicas -->
+<header class="landing-header">
+  <div class="header-container">
+    <a routerLink="/" class="brand-logo" aria-label="Inicio BodasOnline">
+      <span class="brand-icon" aria-hidden="true">💍</span>
+      <span class="brand-name">Bodas<span class="brand-highlight">Online</span></span>
+    </a>
+
+    <!-- Navegación Desktop -->
+    <nav class="desktop-nav" aria-label="Navegación principal">
+      @for (item of sectionLinks; track item.sectionId) {
+        <a
+          [href]="'/#' + item.sectionId"
+          class="nav-link"
+          (click)="goToSection($event, item.sectionId)"
+        >{{ item.label }}</a>
+      }
+      <a routerLink="/contacto" class="nav-link">Contacto</a>
+    </nav>
+
+    <!-- Acciones Desktop + toggle móvil -->
+    <div class="header-actions">
+      <a routerLink="/login" class="btn-text">Iniciar Sesión</a>
+      <a routerLink="/register" class="btn-header-cta">Crear Invitación</a>
+      <button
+        type="button"
+        class="mobile-menu-toggle"
+        (click)="toggleMobileMenu()"
+        [attr.aria-expanded]="isMobileMenuOpen()"
+        aria-controls="lh-mobile-drawer"
+        aria-label="Abrir menú de navegación"
+      >
+        @if (isMobileMenuOpen()) {
+          <span class="menu-icon" aria-hidden="true">✕</span>
+        } @else {
+          <span class="menu-icon" aria-hidden="true">☰</span>
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Menú Móvil Desplegable -->
+  @if (isMobileMenuOpen()) {
+    <div id="lh-mobile-drawer" class="mobile-drawer" role="dialog" aria-modal="true">
+      <nav class="mobile-nav">
+        @for (item of sectionLinks; track item.sectionId) {
+          <a
+            [href]="'/#' + item.sectionId"
+            class="mobile-nav-link"
+            (click)="goToSection($event, item.sectionId)"
+          >{{ item.label }}</a>
+        }
+        <a routerLink="/contacto" class="mobile-nav-link" (click)="closeMobileMenu()">Contacto</a>
+        <div class="mobile-actions">
+          <a routerLink="/login" class="mobile-btn-secondary" (click)="closeMobileMenu()">Iniciar Sesión</a>
+          <a routerLink="/register" class="mobile-btn-primary" (click)="closeMobileMenu()">Crear mi Invitación</a>
+        </div>
+      </nav>
+    </div>
+  }
+</header>

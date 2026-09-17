@@ -13,166 +13,8 @@
 
 /* --------------------------------------------------------------------------
    1. STICKY HEADER & NAVIGATION
+   (El header vive en `LandingHeaderComponent` con sus propios estilos.)
    -------------------------------------------------------------------------- */
-.landing-header {
-  position: sticky;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(244, 114, 182, 0.18);
-  transition: all 0.3s ease;
-}
-
-.header-container {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 0.85rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.brand-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  font-weight: 800;
-  font-size: 1.35rem;
-  color: #831843;
-  letter-spacing: -0.02em;
-}
-
-.brand-icon {
-  font-size: 1.4rem;
-}
-
-.brand-highlight {
-  background: linear-gradient(135deg, #ec4899, #be185d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.desktop-nav {
-  display: flex;
-  align-items: center;
-  gap: 1.75rem;
-}
-
-.nav-link {
-  color: #475569;
-  text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 600;
-  transition: color 0.2s ease;
-}
-
-.nav-link:hover {
-  color: #be185d;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.btn-text {
-  color: #64748b;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0.5rem 0.85rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
-}
-
-.btn-text:hover {
-  color: #831843;
-  background: rgba(253, 242, 248, 0.7);
-}
-
-.btn-header-cta {
-  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
-  color: #ffffff;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.9rem;
-  padding: 0.6rem 1.25rem;
-  border-radius: 9999px;
-  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35);
-  transition: all 0.25s ease;
-}
-
-.btn-header-cta:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(190, 24, 93, 0.45);
-}
-
-.mobile-menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #831843;
-  cursor: pointer;
-  padding: 0.25rem;
-}
-
-.mobile-drawer {
-  background: #ffffff;
-  border-bottom: 1px solid rgba(236, 72, 153, 0.15);
-  padding: 1.25rem 1.5rem 1.75rem;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-}
-
-.mobile-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.mobile-nav-link {
-  color: #334155;
-  text-decoration: none;
-  font-size: 1.05rem;
-  font-weight: 600;
-  padding: 0.5rem 0;
-}
-
-.mobile-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #f1f5f9;
-}
-
-.mobile-btn-secondary {
-  text-align: center;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid #cbd5e1;
-  color: #334155;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.mobile-btn-primary {
-  text-align: center;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  background: linear-gradient(135deg, #ec4899, #be185d);
-  color: #ffffff;
-  font-weight: 700;
-  text-decoration: none;
-}
 
 /* --------------------------------------------------------------------------
    2. HERO SECTION
@@ -1418,99 +1260,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   11. FOOTER
+   11. FOOTER (compartido en `LandingFooterComponent`)
    -------------------------------------------------------------------------- */
-.landing-footer {
-  background: #0f172a;
-  color: #94a3b8;
-  padding: 5rem 1.5rem 2.5rem;
-}
-
-.footer-container {
-  max-width: 1200px;
-  margin: 0 auto 3.5rem;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.5fr;
-  gap: 3rem;
-}
-
-.footer-logo {
-  color: #ffffff;
-  margin-bottom: 1rem;
-}
-
-.footer-desc {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-  max-width: 320px;
-}
-
-.footer-badges {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.secure-tag {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 0.35rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.footer-heading {
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 800;
-  margin-bottom: 1.25rem;
-  letter-spacing: -0.01em;
-}
-
-.footer-links {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.footer-links a {
-  color: #94a3b8;
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: color 0.2s ease;
-}
-
-.footer-links a:hover {
-  color: #ec4899;
-}
-
-.footer-help-text {
-  font-size: 0.92rem;
-  line-height: 1.55;
-  margin-bottom: 1rem;
-}
-
-.footer-contact-link {
-  color: #ec4899;
-  font-weight: 700;
-  text-decoration: none;
-  font-size: 0.95rem;
-}
-
-.footer-bottom {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  text-align: center;
-  font-size: 0.85rem;
-  color: #64748b;
-}
 
 /* --------------------------------------------------------------------------
    12. RESPONSIVE BREAKPOINTS
@@ -1521,23 +1272,9 @@
     gap: 2.5rem;
     padding: 2.25rem;
   }
-
-  .footer-container {
-    grid-template-columns: 1fr 1fr;
-    gap: 2.5rem;
-  }
 }
 
 @media (max-width: 768px) {
-  .desktop-nav,
-  .btn-text {
-    display: none;
-  }
-
-  .mobile-menu-toggle {
-    display: block;
-  }
-
   .steps-grid {
     flex-direction: column;
   }
@@ -1552,11 +1289,6 @@
 
   .mini-tables-layout {
     grid-template-columns: 1fr;
-  }
-
-  .footer-container {
-    grid-template-columns: 1fr;
-    gap: 2rem;
   }
 
   .pricing-box {

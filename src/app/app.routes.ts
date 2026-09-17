@@ -30,6 +30,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'contacto',
+    loadComponent: () =>
+      import('./components/contact-page/contact-page.component').then(
+        (m) => m.ContactPageComponent,
+      ),
+  },
+  {
     path: ':tenant/dashboard',
     loadComponent: () =>
       import('./components/dashboard/dashboard.component').then((m) => m.DashboardComponent),

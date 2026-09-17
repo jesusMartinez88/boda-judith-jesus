@@ -1,0 +1,101 @@
+<!-- Footer compartido por landing + páginas públicas -->
+<footer class="landing-footer">
+  <div class="footer-container">
+    <div class="footer-col-brand">
+      <a routerLink="/" class="brand-logo footer-logo" aria-label="Inicio BodasOnline">
+        <span class="brand-icon" aria-hidden="true">💍</span>
+        <span class="brand-name">Bodas<span class="brand-highlight">Online</span></span>
+      </a>
+      <p class="footer-desc">
+        La plataforma premium de invitaciones digitales y gestión integral para parejas de boda.
+      </p>
+      <div class="footer-badges">
+        <span class="secure-tag">🔒 Pago Seguro SSL</span>
+        <span class="secure-tag">🇪🇸 Servidores en la UE</span>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h4 class="footer-heading">Plataforma</h4>
+      <ul class="footer-links">
+        <li>
+          <a
+            href="/#caracteristicas"
+            (click)="goToSection($event, 'caracteristicas')"
+          >Funcionalidades</a>
+        </li>
+        <li>
+          <a
+            href="/#demo"
+            (click)="goToSection($event, 'demo')"
+          >Vista Previa</a>
+        </li>
+        <li>
+          <a
+            href="/#comparativa"
+            (click)="goToSection($event, 'comparativa')"
+          >Comparativa</a>
+        </li>
+        <li>
+          <a
+            href="/#precios"
+            (click)="goToSection($event, 'precios')"
+          >Precios</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4 class="footer-heading">Acceso</h4>
+      <ul class="footer-links">
+        <li><a routerLink="/login">Iniciar Sesión</a></li>
+        <li><a routerLink="/register">Registrar Pareja</a></li>
+        <li>
+          <a
+            href="/#faq"
+            (click)="goToSection($event, 'faq')"
+          >Preguntas Frecuentes</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4 class="footer-heading">Contacto</h4>
+      <p class="footer-help-text">
+        ¿Tenés preguntas antes de contratar o necesitas ayuda con tu
+        invitación? Estamos a un mensaje de distancia.
+      </p>
+      <ul class="footer-links footer-contact-list">
+        <li>
+          <a [href]="'mailto:' + supportEmail" class="footer-contact-link">
+            ✉️ {{ supportEmailLabel }}
+          </a>
+        </li>
+        <li>
+          <a
+            [href]="whatsappUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="footer-contact-link"
+          >
+            💬 {{ whatsappDisplay }}
+          </a>
+        </li>
+        <li>
+          <a routerLink="/contacto" class="footer-contact-link">
+            📝 Formulario de contacto
+          </a>
+        </li>
+        <li>
+          <a routerLink="/register" class="footer-contact-link">
+            🚀 Crear mi invitación →
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2025-{{ copyrightYear }} BodasOnline. Todos los derechos reservados. Diseñado con amor para novios y novias.</p>
+  </div>
+</footer>

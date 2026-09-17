@@ -1,0 +1,223 @@
+<section id="contacto" class="lc-section">
+  <div class="section-header">
+    <span class="section-tag">Hablemos</span>
+    <h2 class="section-title">¿Tenés alguna duda o sugerencia?</h2>
+    <p class="section-subtitle">
+      Escribinos y te respondemos en menos de 24&nbsp;horas. Si dejas tu
+      email te contestamos directamente.
+    </p>
+  </div>
+
+  <div class="lc-card">
+    <form
+      class="lc-form"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      novalidate
+      aria-labelledby="lc-form-title"
+      aria-describedby="lc-form-desc"
+    >
+      <h3 id="lc-form-title" class="lc-form-title">Envianos un mensaje</h3>
+      <p id="lc-form-desc" class="lc-form-desc">
+        Todos los campos marcados con
+        <span aria-hidden="true">*</span> son obligatorios.
+      </p>
+
+      <!-- Honeypot: oculto visual y asistivamente -->
+      <div class="hp-field" aria-hidden="true">
+        <label for="lc-website">Si ves esto, deja el campo vacío</label>
+        <input
+          id="lc-website"
+          type="text"
+          formControlName="website"
+          tabindex="-1"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="lc-form-row">
+        <div class="lc-field">
+          <label for="lc-name">Nombre <span aria-hidden="true">*</span></label>
+          <input
+            id="lc-name"
+            type="text"
+            formControlName="name"
+            autocomplete="name"
+            maxlength="100"
+            required
+            [attr.aria-invalid]="f.name.invalid && f.name.touched ? 'true' : null"
+            [attr.aria-describedby]="
+              f.name.invalid && f.name.touched ? 'lc-name-error' : null
+            "
+          />
+          @if (f.name.invalid && f.name.touched) {
+            <p id="lc-name-error" class="lc-field-error" role="alert">
+              @if (f.name.hasError('required')) {
+                El nombre es obligatorio.
+              } @else if (f.name.hasError('maxlength')) {
+                El nombre es demasiado largo.
+              }
+            </p>
+          }
+        </div>
+
+        <div class="lc-field">
+          <label for="lc-email">Email <span aria-hidden="true">*</span></label>
+          <input
+            id="lc-email"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            maxlength="255"
+            required
+            [attr.aria-invalid]="f.email.invalid && f.email.touched ? 'true' : null"
+            [attr.aria-describedby]="
+              f.email.invalid && f.email.touched ? 'lc-email-error' : null
+            "
+          />
+          @if (f.email.invalid && f.email.touched) {
+            <p id="lc-email-error" class="lc-field-error" role="alert">
+              @if (f.email.hasError('required')) {
+                El email es obligatorio.
+              } @else if (f.email.hasError('email')) {
+                El email no tiene un formato válido.
+              } @else if (f.email.hasError('maxlength')) {
+                El email es demasiado largo.
+              }
+            </p>
+          }
+        </div>
+      </div>
+
+      <fieldset class="lc-field lc-fieldset">
+        <legend>Motivo del mensaje <span aria-hidden="true">*</span></legend>
+        <div
+          class="lc-category-options"
+          role="radiogroup"
+          aria-label="Motivo del mensaje"
+        >
+          @for (opt of categories; track opt.value) {
+            <label
+              class="lc-category-option"
+              [class.selected]="f.category.value === opt.value"
+            >
+              <input
+                type="radio"
+                formControlName="category"
+                [value]="opt.value"
+              />
+              <span class="lc-category-emoji" aria-hidden="true">{{ opt.emoji }}</span>
+              <span class="lc-category-body">
+                <span class="lc-category-label">{{ opt.label }}</span>
+                <span class="lc-category-helper">{{ opt.helper }}</span>
+              </span>
+            </label>
+          }
+        </div>
+      </fieldset>
+
+      <div class="lc-field">
+        <label for="lc-subject">
+          Asunto <span class="optional">(opcional)</span>
+        </label>
+        <input
+          id="lc-subject"
+          type="text"
+          formControlName="subject"
+          maxlength="200"
+        />
+      </div>
+
+      <div class="lc-field">
+        <label for="lc-message">Mensaje <span aria-hidden="true">*</span></label>
+        <textarea
+          id="lc-message"
+          formControlName="message"
+          rows="5"
+          maxlength="2000"
+          required
+          [attr.aria-invalid]="f.message.invalid && f.message.touched ? 'true' : null"
+          [attr.aria-describedby]="
+            f.message.invalid && f.message.touched
+              ? 'lc-message-error'
+              : 'lc-message-hint'
+          "
+        ></textarea>
+        <p id="lc-message-hint" class="lc-field-hint">
+          {{ f.message.value.length }} / 2000 caracteres
+        </p>
+        @if (f.message.invalid && f.message.touched) {
+          <p id="lc-message-error" class="lc-field-error" role="alert">
+            @if (f.message.hasError('required')) {
+              El mensaje es obligatorio.
+            } @else if (f.message.hasError('maxlength')) {
+              El mensaje es demasiado largo.
+            }
+          </p>
+        }
+      </div>
+
+      <button
+        type="submit"
+        class="lc-submit-btn"
+        [disabled]="!canSubmit"
+        [attr.aria-busy]="submitStatus() === 'sending' ? 'true' : null"
+      >
+        @if (submitStatus() === 'sending') {
+          <span class="lc-spinner" aria-hidden="true"></span>
+          Enviando…
+        } @else {
+          Enviar mensaje 💌
+        }
+      </button>
+
+      <div class="lc-form-status" aria-live="polite" aria-atomic="true">
+        @if (submitStatus() === 'success') {
+          <p class="lc-status lc-status-success" role="status">
+            ¡Gracias por escribirnos! 💖 Te respondemos en menos de
+            24&nbsp;horas.
+          </p>
+        }
+        @if (submitStatus() === 'error' && errorMessage()) {
+          <p class="lc-status lc-status-error" role="alert">
+            {{ errorMessage() }}
+          </p>
+        }
+      </div>
+    </form>
+  </div>
+
+  <!--
+    Atajo rápido: si la persona prefiere inmediatez, le abrimos WhatsApp
+    directamente con un mensaje pre-rellenado (configurable desde
+    `environment.ts`).
+  -->
+  <div class="lc-quick-contact">
+    <p class="lc-quick-contact-title">¿Necesitás una respuesta más rápida?</p>
+    <a
+      class="lc-whatsapp-btn"
+      [href]="whatsappUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Abrir chat de WhatsApp con el equipo de BodasOnline"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          d="M19.05 4.91A9.82 9.82 0 0 0 12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.91-7.01Zm-7.01 15.24h-.01a8.23 8.23 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.23 8.23 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23Zm4.53-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.16.25-.64.81-.79.97-.14.16-.29.18-.54.06-.25-.12-1.04-.38-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.16.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.49-.41-.42-.56-.43h-.48c-.16 0-.43.06-.66.31-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.57.12.16 1.74 2.65 4.21 3.71.59.25 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.31Z"
+        />
+      </svg>
+      <span class="lc-whatsapp-btn-text">
+        <span class="lc-whatsapp-btn-primary">Hablar por WhatsApp</span>
+        <span class="lc-whatsapp-btn-secondary">{{ whatsappDisplay }} · respuesta inmediata</span>
+      </span>
+    </a>
+  </div>
+
+</section>

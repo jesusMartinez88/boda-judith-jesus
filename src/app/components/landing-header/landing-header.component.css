@@ -1,0 +1,187 @@
+/* ==========================================================================
+   LANDING HEADER — Componente compartido
+   Usado en la landing principal (`/`) y en la página de contacto (`/contacto`).
+   ========================================================================== */
+
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.landing-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(244, 114, 182, 0.18);
+  transition: all 0.3s ease;
+}
+
+.header-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: #831843;
+  letter-spacing: -0.02em;
+}
+
+.brand-icon {
+  font-size: 1.4rem;
+}
+
+.brand-highlight {
+  background: linear-gradient(135deg, #ec4899, #be185d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+.nav-link {
+  color: #475569;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+  color: #be185d;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-text {
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-text:hover {
+  color: #831843;
+  background: rgba(253, 242, 248, 0.7);
+}
+
+.btn-header-cta {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35);
+  transition: all 0.25s ease;
+}
+
+.btn-header-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(190, 24, 93, 0.45);
+}
+
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #831843;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.menu-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.mobile-drawer {
+  background: #ffffff;
+  border-bottom: 1px solid rgba(236, 72, 153, 0.15);
+  padding: 1.25rem 1.5rem 1.75rem;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.mobile-nav-link {
+  color: #334155;
+  text-decoration: none;
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding: 0.5rem 0;
+}
+
+.mobile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.mobile-btn-secondary {
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mobile-btn-primary {
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #ec4899, #be185d);
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-nav,
+  .btn-text {
+    display: none;
+  }
+
+  .mobile-menu-toggle {
+    display: block;
+  }
+}

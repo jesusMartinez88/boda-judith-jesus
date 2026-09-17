@@ -1,0 +1,16 @@
+/* ==========================================================================
+   CONTACT PAGE — Solo el `<main>`.
+   Header y footer son componentes compartidos (`LandingHeaderComponent`,
+   `LandingFooterComponent`). Aquí únicamente hace falta asegurar que
+   la página rellene la altura de la ventana y el `<main>` crezca.
+   ========================================================================== */
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.cp-main {
+  display: block;
+}

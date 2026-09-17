@@ -1,59 +1,5 @@
-<!-- Header Sticky de Navegación -->
-<header class="landing-header">
-  <div class="header-container">
-    <a routerLink="/" class="brand-logo" aria-label="Inicio BodasOnline">
-      <span class="brand-icon">💍</span>
-      <span class="brand-name">Bodas<span class="brand-highlight">Online</span></span>
-    </a>
-
-    <!-- Navegación Desktop -->
-    <nav class="desktop-nav" aria-label="Navegación principal">
-      <a href="#caracteristicas" class="nav-link" (click)="scrollToSection($event, 'caracteristicas')">Funcionalidades</a>
-      <a href="#demo" class="nav-link" (click)="scrollToSection($event, 'demo')">Vista Previa</a>
-      <a href="#comparativa" class="nav-link" (click)="scrollToSection($event, 'comparativa')">¿Por qué digital?</a>
-      <a href="#testimonios" class="nav-link" (click)="scrollToSection($event, 'testimonios')">Opiniones</a>
-      <a href="#precios" class="nav-link" (click)="scrollToSection($event, 'precios')">Precios</a>
-      <a href="#faq" class="nav-link" (click)="scrollToSection($event, 'faq')">Preguntas</a>
-    </nav>
-
-    <!-- Acciones Desktop -->
-    <div class="header-actions">
-      <a routerLink="/login" class="btn-text">Iniciar Sesión</a>
-      <a routerLink="/register" class="btn-header-cta">Crear Invitación</a>
-      <button
-        type="button"
-        class="mobile-menu-toggle"
-        (click)="toggleMobileMenu()"
-        [attr.aria-expanded]="isMobileMenuOpen()"
-        aria-label="Abrir menú de navegación"
-      >
-        @if (isMobileMenuOpen()) {
-          <span class="menu-icon">✕</span>
-        } @else {
-          <span class="menu-icon">☰</span>
-        }
-      </button>
-    </div>
-  </div>
-
-  <!-- Menú Móvil Desplegable -->
-  @if (isMobileMenuOpen()) {
-    <div class="mobile-drawer" role="dialog" aria-modal="true">
-      <nav class="mobile-nav">
-        <a href="#caracteristicas" class="mobile-nav-link" (click)="scrollToSection($event, 'caracteristicas')">Funcionalidades</a>
-        <a href="#demo" class="mobile-nav-link" (click)="scrollToSection($event, 'demo')">Vista Previa</a>
-        <a href="#comparativa" class="mobile-nav-link" (click)="scrollToSection($event, 'comparativa')">¿Por qué digital?</a>
-        <a href="#testimonios" class="mobile-nav-link" (click)="scrollToSection($event, 'testimonios')">Opiniones</a>
-        <a href="#precios" class="mobile-nav-link" (click)="scrollToSection($event, 'precios')">Precios</a>
-        <a href="#faq" class="mobile-nav-link" (click)="scrollToSection($event, 'faq')">Preguntas Frecuentes</a>
-        <div class="mobile-actions">
-          <a routerLink="/login" class="mobile-btn-secondary" (click)="closeMobileMenu()">Iniciar Sesión</a>
-          <a routerLink="/register" class="mobile-btn-primary" (click)="closeMobileMenu()">Crear mi Invitación</a>
-        </div>
-      </nav>
-    </div>
-  }
-</header>
+<!-- Header compartido (landing + páginas públicas) -->
+<app-landing-header />
 
 <main class="landing-main">
   <!-- Hero Section -->
@@ -79,7 +25,7 @@
           <span>Crear mi web de boda</span>
           <span class="btn-subtext">59€ pago único · Sin suscripciones</span>
         </a>
-        <a href="#demo" class="hero-btn-secondary" (click)="scrollToSection($event, 'demo')">
+        <a href="/#demo" class="hero-btn-secondary" (click)="nav.goToSection($event, 'demo')">
           <span class="play-icon">▶</span>
           <span>Ver demo interactiva</span>
         </a>
@@ -567,55 +513,5 @@
   </section>
 </main>
 
-<!-- Footer Profesional -->
-<footer class="landing-footer">
-  <div class="footer-container">
-    <div class="footer-col-brand">
-      <div class="brand-logo footer-logo">
-        <span class="brand-icon">💍</span>
-        <span class="brand-name">Bodas<span class="brand-highlight">Online</span></span>
-      </div>
-      <p class="footer-desc">
-        La plataforma premium de invitaciones digitales y gestión integral para parejas de boda.
-      </p>
-      <div class="footer-badges">
-        <span class="secure-tag">🔒 Pago Seguro SSL</span>
-        <span class="secure-tag">🇪🇸 Servidores en la UE</span>
-      </div>
-    </div>
-
-    <div class="footer-col">
-      <h4 class="footer-heading">Plataforma</h4>
-      <ul class="footer-links">
-        <li><a href="#caracteristicas" (click)="scrollToSection($event, 'caracteristicas')">Funcionalidades</a></li>
-        <li><a href="#demo" (click)="scrollToSection($event, 'demo')">Vista Previa</a></li>
-        <li><a href="#comparativa" (click)="scrollToSection($event, 'comparativa')">Comparativa</a></li>
-        <li><a href="#precios" (click)="scrollToSection($event, 'precios')">Precios</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-col">
-      <h4 class="footer-heading">Acceso</h4>
-      <ul class="footer-links">
-        <li><a routerLink="/login">Iniciar Sesión</a></li>
-        <li><a routerLink="/register">Registrar Pareja</a></li>
-        <li><a href="#faq" (click)="scrollToSection($event, 'faq')">Preguntas Frecuentes</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-col">
-      <h4 class="footer-heading">Confianza</h4>
-      <p class="footer-help-text">
-        ¿Tenés preguntas antes de contratar? Escribinos y te ayudamos encantados a preparar tu boda.
-      </p>
-      <a routerLink="/register" class="footer-contact-link">
-        Crear mi invitación →
-      </a>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <p>© 2025-2026 BodasOnline. Todos los derechos reservados. Diseñado con amor para novios y novias.</p>
-  </div>
-</footer>
-
+<!-- Footer compartido (landing + páginas públicas) -->
+<app-landing-footer />

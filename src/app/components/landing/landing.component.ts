@@ -1,5 +1,8 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { LandingFooterComponent } from '../landing-footer/landing-footer.component';
+import { LandingHeaderComponent } from '../landing-header/landing-header.component';
+import { SectionNavigationService } from '../../services/section-navigation.service';
 
 interface Testimonial {
   couple: string;
@@ -26,15 +29,17 @@ interface FeaturePill {
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink],
+  imports: [RouterLink, LandingHeaderComponent, LandingFooterComponent],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingComponent {
+  /** Acceso público al servicio para usarlo desde la plantilla. */
+  readonly nav = inject(SectionNavigationService);
+
   readonly activePreviewTab = signal<'guest' | 'couple'>('guest');
   readonly openFaqIndex = signal<number | null>(0);
-  readonly isMobileMenuOpen = signal<boolean>(false);
 
   readonly features: FeaturePill[] = [
     {
@@ -184,26 +189,4 @@ export class LandingComponent {
   toggleFaq(index: number): void {
     this.openFaqIndex.update((current) => (current === index ? null : index));
   }
-
-  toggleMobileMenu(): void {
-    this.isMobileMenuOpen.update((v) => !v);
-  }
-
-  scrollToSection(event: Event, sectionId: string): void {
-    event.preventDefault();
-
-    const section = document.getElementById(sectionId);
-    if (!section) {
-      return;
-    }
-
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    window.history.replaceState(null, '', `#${sectionId}`);
-    this.closeMobileMenu();
-  }
-
-  closeMobileMenu(): void {
-    this.isMobileMenuOpen.set(false);
-  }
 }
-
