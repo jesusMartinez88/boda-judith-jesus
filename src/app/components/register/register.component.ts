@@ -153,6 +153,7 @@ export class RegisterComponent {
             username: this.formData.username,
             email: this.formData.email,
             password: this.formData.password,
+            estimatedGuests: value.estimatedGuests,
           })
           .subscribe({
             next: (r) => resolve({ slug: r.user.slug }),

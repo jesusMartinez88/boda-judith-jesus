@@ -149,13 +149,13 @@ export class LandingComponent {
       category: 'Envío y Acceso',
       question: '¿Cómo reciben mis invitados la invitación?',
       answer:
-        'Les enviás un enlace personalizado o un código QR por WhatsApp, email o redes sociales. No necesitan descargar ninguna aplicación ni registrarse: se abre al instante en cualquier navegador de móvil, tablet u ordenador.',
+        'Les enviás un enlace personalizado por WhatsApp, email o redes sociales. No necesitan descargar ninguna aplicación ni registrarse: se abre al instante en cualquier navegador de móvil, tablet u ordenador.',
     },
     {
       category: 'Personalización',
       question: '¿Puedo personalizar los textos, fotos, horarios y colores?',
       answer:
-        'Sí, 100%. Podés añadir vuestras fotos, la historia de cómo os conocisteis, los horarios del itinerario, mapas exactos con GPS, cuenta bancaria para regalos y activar o desactivar las secciones que necesites.',
+        'Sí, 100%. Podés añadir vuestras fotos, la historia de cómo os conocisteis, los horarios del itinerario, mapas exactos con GPS, cuenta bancaria para regalos y solicitar las secciones que necesites.',
     },
     {
       category: 'Gestión',
@@ -167,13 +167,13 @@ export class LandingComponent {
       category: 'Pagos y Garantía',
       question: '¿Hay cuotas mensuales o pagos adicionales?',
       answer:
-        'No. Es un pago único de 59€ con acceso ilimitado para siempre. No hay suscripciones recurrentes, no cobramos por número de invitados y disfrutás de todas las actualizaciones y soporte prioritario.',
+        'No. Es un pago único de 59€ con acceso ilimitado hasta 1 mes después de tu fecha de boda. No hay suscripciones recurrentes, no cobramos por número de invitados y disfrutás de todas las actualizaciones y soporte prioritario.',
     },
     {
       category: 'Soporte',
       question: '¿Qué pasa si cambian los horarios o algún detalle antes de la boda?',
       answer:
-        'Podés entrar a tu panel en cualquier momento, modificar cualquier dato y se actualiza al instante para todos tus invitados sin tener que volver a enviar nada.',
+        'Puedés entrar a tu panel en cualquier momento, modificar cualquier dato y se actualiza al instante para todos tus invitados sin tener que volver a enviar nada.',
     },
   ];
 

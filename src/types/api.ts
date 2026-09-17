@@ -270,6 +270,7 @@ export interface AuthRegisterRequest {
   username: string;
   email: string;
   password: string;
+  estimatedGuests?: number | null;
 }
 
 export interface AuthUser {
