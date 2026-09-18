@@ -2,7 +2,7 @@ import { Injectable, signal, inject, PLATFORM_ID, computed } from '@angular/core
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, of, tap, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   AuthLoginRequest,
@@ -132,6 +132,92 @@ export class AuthService {
           return of(fallback);
         }),
       );
+  }
+
+  /**
+   * Solicita un código de 6 dígitos enviado al email registrado del usuario
+   * para restablecer la contraseña desde la configuración.
+   */
+  requestPasswordResetCode(): Observable<{ success: boolean; message: string; code?: string }> {
+    return this.http.post<{ success: boolean; message: string; code?: string }>(
+      `${this.baseUrl}/api/auth/me/request-reset-code`,
+      {},
+    );
+  }
+
+  /**
+   * Actualiza el email del usuario autenticado.
+   * Requiere la contraseña actual como medida anti-JWT-robado
+   * (el backend la valida antes de aplicar el cambio).
+   *
+   * El email puede ser `''` para borrarlo; el backend lo convierte a `null`.
+   */
+  updateMyEmail(payload: {
+    email: string;
+    currentPassword: string;
+  }): Observable<{
+    success: boolean;
+    message: string;
+    data?: {
+      id: number;
+      username: string;
+      email: string | null;
+      role: string;
+      slug: string;
+    };
+  }> {
+    return this.http.patch<{
+      success: boolean;
+      message: string;
+      data?: {
+        id: number;
+        username: string;
+        email: string | null;
+        role: string;
+        slug: string;
+      };
+    }>(`${this.baseUrl}/api/auth/me`, payload);
+  }
+
+  /**
+   * Recupera los datos frescos del usuario autenticado (incluye email).
+   * Útil cuando el JWT no lleva un campo actualizado.
+   */
+  fetchMyProfile(): Observable<{
+    success: boolean;
+    user?: {
+      id: number;
+      username: string;
+      email: string | null;
+      role: string;
+      slug: string;
+    };
+    message?: string;
+  }> {
+    return this.http.get<{
+      success: boolean;
+      user?: {
+        id: number;
+        username: string;
+        email: string | null;
+        role: string;
+        slug: string;
+      };
+      message?: string;
+    }>(`${this.baseUrl}/api/auth/me`);
+  }
+
+  /**
+   * Valida el código de verificación recibido y establece la nueva contraseña.
+   */
+  resetPasswordWithCode(
+    code: string,
+    newPassword: string,
+  ): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.baseUrl}/api/auth/me/reset-password-with-code`,
+      { code, newPassword },
+    );
   }
 
   logout() {
