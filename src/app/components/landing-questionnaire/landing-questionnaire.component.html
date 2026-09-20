@@ -126,6 +126,112 @@
       <span>🏨 Reserva de hotel para invitados</span>
     </label>
 
+    <label class="check-row">
+      <input
+        type="checkbox"
+        [ngModel]="form().hasOurStory"
+        (ngModelChange)="patchField('hasOurStory', $event)"
+        name="hasOurStory">
+      <span>📖 Resumen de vuestra historia con fotos</span>
+    </label>
+
+    <label class="check-row">
+      <input
+        type="checkbox"
+        [ngModel]="form().hasGallery"
+        (ngModelChange)="patchField('hasGallery', $event)"
+        name="hasGallery">
+      <span>📸 Galería de fotos</span>
+    </label>
+
+    <label class="check-row">
+      <input
+        type="checkbox"
+        [ngModel]="form().hasAddToCalendar"
+        (ngModelChange)="patchField('hasAddToCalendar', $event)"
+        name="hasAddToCalendar">
+      <span>📅 Agregar la fecha a la agenda del invitado</span>
+    </label>
+
+    <label class="check-row">
+      <input
+        type="checkbox"
+        [ngModel]="form().hasVenueMap"
+        (ngModelChange)="patchField('hasVenueMap', $event)"
+        name="hasVenueMap">
+      <span>📍 Ubicación de la celebración o ceremonia</span>
+    </label>
+
+    <div class="check-row check-row--expandable">
+      <label class="check-row__label">
+        <input
+          type="checkbox"
+          [ngModel]="form().hasGiftRegistry"
+          (ngModelChange)="patchField('hasGiftRegistry', $event)"
+          name="hasGiftRegistry"
+          [attr.aria-expanded]="form().hasGiftRegistry"
+          aria-controls="gift-registry-details">
+        <span>🎁 Lista de regalos</span>
+      </label>
+
+      @if (form().hasGiftRegistry) {
+        <div id="gift-registry-details" class="contact-phones" role="group" aria-label="Detalles de lista de regalos">
+          <label class="contact-phone-field">
+            <span class="contact-phone-label">🏦 Cuenta bancaria (opcional)</span>
+            <input
+              type="text"
+              [ngModel]="form().giftBankAccount"
+              (ngModelChange)="patchField('giftBankAccount', $event)"
+              name="giftBankAccount"
+              placeholder="ES00 0000 0000 0000 0000 0000"
+              class="form-input"
+              autocomplete="off">
+          </label>
+        </div>
+      }
+    </div>
+
+    <!-- Contactar con novio o novia -->
+    <div class="check-row check-row--expandable">
+      <label class="check-row__label">
+        <input
+          type="checkbox"
+          [ngModel]="form().contactCouple"
+          (ngModelChange)="patchField('contactCouple', $event)"
+          name="contactCouple"
+          [attr.aria-expanded]="form().contactCouple"
+          aria-controls="contact-couple-phones">
+        <span>💬 Contactar con novio o novia</span>
+      </label>
+
+      @if (form().contactCouple) {
+        <div id="contact-couple-phones" class="contact-phones" role="group" aria-label="Teléfonos de contacto">
+          <label class="contact-phone-field">
+            <span class="contact-phone-label">📞 Teléfono del novio</span>
+            <input
+              type="tel"
+              [ngModel]="form().contactGroomPhone"
+              (ngModelChange)="patchField('contactGroomPhone', $event)"
+              name="contactGroomPhone"
+              placeholder="+34 XXX XXX XXX"
+              class="form-input"
+              autocomplete="tel">
+          </label>
+          <label class="contact-phone-field">
+            <span class="contact-phone-label">📞 Teléfono de la novia</span>
+            <input
+              type="tel"
+              [ngModel]="form().contactBridePhone"
+              (ngModelChange)="patchField('contactBridePhone', $event)"
+              name="contactBridePhone"
+              placeholder="+34 XXX XXX XXX"
+              class="form-input"
+              autocomplete="tel">
+          </label>
+        </div>
+      }
+    </div>
+
     <label class="form-field form-field--nested">
       <span class="form-label">Otros servicios o detalles y cronograma de la boda</span>
       <textarea

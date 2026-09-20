@@ -1,0 +1,108 @@
+<section class="invitation-editor" aria-labelledby="invitation-editor-title">
+  <header class="editor-header">
+    <div>
+      <p class="eyebrow">Personaliza tu web</p>
+      <h1 id="invitation-editor-title">Editar invitación</h1>
+      <p class="subtitle">
+        Elige la imagen que abre vuestra historia y los recuerdos que queréis compartir.
+      </p>
+    </div>
+    <a class="preview-button" [href]="invitationUrl()" target="_blank" rel="noopener noreferrer">
+      <span aria-hidden="true">↗</span> Ver invitación
+    </a>
+  </header>
+
+  <div class="privacy-notice" role="status">
+    <span aria-hidden="true">✦</span>
+    <p>
+      Las imágenes se comprueban y se recodifican antes de previsualizarlas, no se aceptan SVG, para que aparezcan en la invitación debe ser aprobado por el equipo de moderación.
+    </p>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="upload-error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <div class="editor-grid">
+    <article class="media-card cover-card">
+      <div class="card-heading">
+        <div>
+          <p class="card-kicker">Imagen principal</p>
+          <h2>Foto de portada</h2>
+        </div>
+        <span class="format-label">Horizontal</span>
+      </div>
+
+      @if (coverPhoto(); as photo) {
+        <div class="cover-preview">
+          <img [src]="photo.url" [alt]="'Previsualización de portada: ' + photo.name" />
+          <button
+            type="button"
+            class="remove-button"
+            (click)="removeCover()"
+            aria-label="Eliminar foto de portada"
+          >
+            ×
+          </button>
+        </div>
+      } @else {
+        <label class="upload-dropzone upload-dropzone--cover" for="cover-upload">
+          <span class="upload-icon" aria-hidden="true">⌁</span>
+          <strong>Sube vuestra foto favorita</strong>
+          <span>JPEG, PNG o WebP · Máximo 10 MB</span>
+        </label>
+      }
+      <input
+        id="cover-upload"
+        class="visually-hidden"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        (change)="selectCover($event)"
+      />
+    </article>
+
+    <article class="media-card gallery-card">
+      <div class="card-heading">
+        <div>
+          <p class="card-kicker">Vuestros recuerdos</p>
+          <h2>Galería</h2>
+        </div>
+        <span class="format-label">{{ galleryPhotos().length }}/12 fotos</span>
+      </div>
+
+      <div class="gallery-grid">
+        @for (photo of galleryPhotos(); track photo.id) {
+          <figure class="gallery-photo">
+            <img [src]="photo.url" [alt]="photo.name" />
+            <button
+              type="button"
+              class="remove-button"
+              (click)="removeGalleryPhoto(photo.id)"
+              [attr.aria-label]="'Eliminar ' + photo.name"
+            >
+              ×
+            </button>
+          </figure>
+        }
+        @if (galleryPhotos().length < 12) {
+          <label class="upload-dropzone upload-dropzone--gallery" for="gallery-upload">
+            <span aria-hidden="true">＋</span>
+            <strong>Añadir fotos</strong>
+          </label>
+        }
+      </div>
+      <input
+        id="gallery-upload"
+        class="visually-hidden"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        (change)="addGalleryPhotos($event)"
+      />
+    </article>
+  </div>
+
+  @if (isPreparing()) {
+    <p class="processing-message" role="status">Preparando una copia segura de la imagen…</p>
+  }
+</section>

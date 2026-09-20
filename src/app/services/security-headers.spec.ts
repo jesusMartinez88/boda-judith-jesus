@@ -17,6 +17,7 @@ describe('security headers policy', () => {
     expect(headers.get('Referrer-Policy')).toBe('no-referrer');
     expect(headers.get('Permissions-Policy')).toContain('microphone=()');
     expect(headers.get('Content-Security-Policy')).toContain("frame-ancestors 'none'");
+    expect(headers.get('Content-Security-Policy')).toContain('http://localhost:3000');
     expect(next).toHaveBeenCalledOnce();
   });
 });

@@ -94,6 +94,39 @@
   color: var(--admin-warning);
 }
 
+.stat-pill--visits {
+  border-color: #6366f1;
+}
+
+.stat-pill--visits strong {
+  color: #6366f1;
+}
+
+.stat-pill__sub {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #6b7280;
+  margin-left: 0.25rem;
+}
+
+.visit-count {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.visit-count--zero .visit-badge {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.visit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 .header-actions {
   display: flex;
   align-items: center;
@@ -495,6 +528,27 @@ code {
 
 .questionnaire-row--full {
   grid-column: 1 / -1;
+}
+
+.questionnaire-row--section-header {
+  grid-column: 1 / -1;
+  padding: 0.5rem 0 0.25rem;
+  border-bottom: 1px solid rgba(190, 24, 93, 0.15);
+  margin-top: 0.25rem;
+}
+
+.questionnaire-row--section-header dt {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #be185d;
+}
+
+.questionnaire-row dd.monospace {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
 }
 
 @media (max-width: 540px) {

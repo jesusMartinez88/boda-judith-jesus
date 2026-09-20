@@ -18,6 +18,12 @@
         <span class="stat-pill stat-pill--warning">
           <strong>{{ noInvitationCount() }}</strong> sin invitación
         </span>
+        @if (visitStats(); as vs) {
+          <span class="stat-pill stat-pill--visits" title="Hoy: {{ vs.todayVisits }} · Esta semana: {{ vs.weekVisits }}">
+            👁 <strong>{{ vs.totalVisits }}</strong> visitas
+            <span class="stat-pill__sub">hoy: {{ vs.todayVisits }}</span>
+          </span>
+        }
       </div>
       <button
         type="button"
@@ -95,7 +101,6 @@
           <tr>
             <th scope="col">Usuario</th>
             <th scope="col">Email</th>
-            <th scope="col">Plan</th>
             <th scope="col">Pagado</th>
             <th scope="col">Invitación</th>
             <th scope="col">Actividad</th>
@@ -124,11 +129,6 @@
                 } @else {
                   <span class="muted">—</span>
                 }
-              </td>
-              <td>
-                <span class="badge" [class.badge--premium]="user.plan === 'premium'">
-                  {{ user.plan === 'premium' ? 'Premium' : 'Free' }}
-                </span>
               </td>
               <td>
                 @if (user.paid) {
@@ -260,19 +260,6 @@
             name="email"
             autocomplete="email"
           />
-        </div>
-
-        <div class="form-group">
-          <label [for]="'plan-' + user.id">Plan</label>
-          <select
-            [id]="'plan-' + user.id"
-            [ngModel]="editForm().plan"
-            (ngModelChange)="updateEditField('plan', $event)"
-            name="plan"
-          >
-            <option value="free">Free</option>
-            <option value="premium">Premium</option>
-          </select>
         </div>
 
         <div class="form-group form-group--toggle">
@@ -448,14 +435,69 @@
               <dt>Cuenta atrás</dt>
               <dd>{{ formatYesNo(q.hasCountdown) }}</dd>
             </div>
+
+            <div class="questionnaire-row questionnaire-row--section-header">
+              <dt colspan="2">Servicios extra</dt>
+            </div>
+
             <div class="questionnaire-row">
-              <dt>Servicio de autobús</dt>
+              <dt>🚌 Autobús</dt>
               <dd>{{ formatYesNo(q.hasBusService) }}</dd>
             </div>
             <div class="questionnaire-row">
-              <dt>Reserva de hotel</dt>
+              <dt>🏨 Hotel para invitados</dt>
               <dd>{{ formatYesNo(q.hasHotelService) }}</dd>
             </div>
+            <div class="questionnaire-row">
+              <dt>📖 Historia con fotos</dt>
+              <dd>{{ formatYesNo(q.hasOurStory) }}</dd>
+            </div>
+            <div class="questionnaire-row">
+              <dt>📸 Galería de fotos</dt>
+              <dd>{{ formatYesNo(q.hasGallery) }}</dd>
+            </div>
+            <div class="questionnaire-row">
+              <dt>📅 Añadir a la agenda</dt>
+              <dd>{{ formatYesNo(q.hasAddToCalendar) }}</dd>
+            </div>
+            <div class="questionnaire-row">
+              <dt>📍 Mapa del lugar</dt>
+              <dd>{{ formatYesNo(q.hasVenueMap) }}</dd>
+            </div>
+            <div class="questionnaire-row">
+              <dt>🎁 Lista de regalos</dt>
+              <dd>{{ formatYesNo(q.hasGiftRegistry) }}</dd>
+            </div>
+            @if (q.hasGiftRegistry && q.giftBankAccount) {
+              <div class="questionnaire-row questionnaire-row--full">
+                <dt>🏦 Cuenta bancaria</dt>
+                <dd class="monospace">{{ q.giftBankAccount }}</dd>
+              </div>
+            }
+
+            <div class="questionnaire-row questionnaire-row--section-header">
+              <dt colspan="2">Contacto</dt>
+            </div>
+
+            <div class="questionnaire-row">
+              <dt>💬 Contactar con novio/novia</dt>
+              <dd>{{ formatYesNo(q.contactCouple) }}</dd>
+            </div>
+            @if (q.contactCouple) {
+              @if (q.contactGroomPhone) {
+                <div class="questionnaire-row">
+                  <dt>📞 Teléfono del novio</dt>
+                  <dd>{{ q.contactGroomPhone }}</dd>
+                </div>
+              }
+              @if (q.contactBridePhone) {
+                <div class="questionnaire-row">
+                  <dt>📞 Teléfono de la novia</dt>
+                  <dd>{{ q.contactBridePhone }}</dd>
+                </div>
+              }
+            }
+
             @if (q.additionalServices) {
               <div class="questionnaire-row questionnaire-row--full">
                 <dt>Otros servicios / detalles</dt>

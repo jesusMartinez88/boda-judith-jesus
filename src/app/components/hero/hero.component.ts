@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ElementRef, OnDestroy, viewChild } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, OnDestroy, input, viewChild } from '@angular/core';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CountdownComponent } from '../countdown/countdown.component';
@@ -13,6 +13,7 @@ gsap.registerPlugin(ScrollTrigger);
   styleUrl: './hero.component.css',
 })
 export class HeroComponent implements AfterViewInit, OnDestroy {
+  readonly coverUrl = input<string | null>(null);
   readonly heroContent = viewChild.required<ElementRef>('heroContent');
   readonly heroTitle = viewChild.required<ElementRef>('heroTitle');
   readonly heroSubtitle = viewChild.required<ElementRef>('heroSubtitle');

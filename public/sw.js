@@ -1,4 +1,4 @@
-const CACHE_NAME = 'boda-judith-jesus-v1.13.2';
+const CACHE_NAME = 'bodas-online-v2.0.0';
 const urlsToCache = ['/', '/index.html', '/styles.css', '/favicon.svg', '/favicon-ring.svg'];
 
 /**
@@ -62,6 +62,12 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (!url.protocol.startsWith('http')) return;
 
+  // Las imágenes y peticiones de la API viven en otro origen durante el
+  // desarrollo (localhost:3000). El SW solo puede cachear recursos propios:
+  // interceptar respuestas cross-origin puede devolver una respuesta opaca o
+  // ningún fallback válido y rompe la carga de imágenes.
+  if (url.origin !== self.location.origin) return;
+
   // No interceptar API ni chunks de build: el navegador los maneja
   // directamente con su propia caché, sin warnings de preload cross-world.
   if (url.pathname.startsWith('/api/') || isBuildChunk(url)) {
@@ -80,9 +86,9 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(() => {
+      .catch(async () => {
         // Si falla la red, intentamos obtener de caché
-        return caches.match(event.request);
+        return (await caches.match(event.request)) ?? new Response('', { status: 504 });
       }),
   );
 });

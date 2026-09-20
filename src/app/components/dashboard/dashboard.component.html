@@ -112,17 +112,17 @@
         <span class="icon">📱</span>
         <span class="nav-label">Invitaciones</span>
       </button>
-      <a
+      <button
+        type="button"
         class="nav-item"
-        href="/{{ tenant() }}"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Ver invitación"
-        title="Ver invitación"
+        aria-label="Editar invitación"
+        title="Editar invitación"
+        [class.active]="currentView() === 'invitation'"
+        (click)="setView('invitation')"
       >
-        <span class="icon">✉️</span>
-        <span class="nav-label">Ver invitación</span>
-      </a>
+        <span class="icon">✦</span>
+        <span class="nav-label">Editar invitación</span>
+      </button>
       <button
         type="button"
         class="nav-item"
@@ -594,6 +594,10 @@
 
     @if (currentView() === 'music') {
       <app-music />
+    }
+
+    @if (currentView() === 'invitation') {
+      <app-invitation-editor [invitationUrl]="'/' + tenant()" />
     }
 
     <!-- Modal de Confirmación de Salida (visible en todas las vistas) -->

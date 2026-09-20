@@ -14,7 +14,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AdminService } from '../../services/admin.service';
+import { AdminService, VisitStats } from '../../services/admin.service';
 import {
   AdminUser,
   AdminUserPatch,
@@ -26,7 +26,6 @@ import { VersionService } from '../../services/version.service';
 
 interface EditFormState {
   email: string;
-  plan: 'free' | 'premium';
   paid: boolean;
   invitationCompleted: boolean;
   notes: string;
@@ -59,7 +58,6 @@ export class AdminUsersComponent implements OnInit {
   editingUser = signal<AdminUser | null>(null);
   editForm = signal<EditFormState>({
     email: '',
-    plan: 'free',
     paid: false,
     invitationCompleted: false,
     notes: '',
@@ -101,6 +99,9 @@ export class AdminUsersComponent implements OnInit {
     () => this.users().filter((u) => !u.hasInvitation).length,
   );
 
+  // Visitas globales — cargadas desde el endpoint admin independiente.
+  visitStats = signal<VisitStats | null>(null);
+
   constructor() {
     // Foco inicial al abrir el modal (solo navegador; en SSR no hay DOM).
     effect(() => {
@@ -115,6 +116,14 @@ export class AdminUsersComponent implements OnInit {
 
   ngOnInit() {
     this.loadUsers();
+    this.loadVisitStats();
+  }
+
+  loadVisitStats() {
+    this.adminService
+      .getVisitStats()
+      .then((stats) => this.visitStats.set(stats))
+      .catch(() => { /* no-op: el stat pill simplemente no aparece */ });
   }
 
   loadUsers() {
@@ -145,7 +154,6 @@ export class AdminUsersComponent implements OnInit {
     this.editingUser.set(user);
     this.editForm.set({
       email: user.email ?? '',
-      plan: (user.plan === 'premium' ? 'premium' : 'free') as 'free' | 'premium',
       paid: user.paid,
       invitationCompleted: !!user.invitationCompletedAt,
       notes: user.notes ?? '',
@@ -172,7 +180,6 @@ export class AdminUsersComponent implements OnInit {
     const form = this.editForm();
     const patch: AdminUserPatch = {
       email: form.email.trim() ? form.email.trim() : null,
-      plan: form.plan,
       paidAt: form.paid ? new Date().toISOString() : null,
       invitationCompletedAt: form.invitationCompleted
         ? new Date().toISOString()

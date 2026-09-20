@@ -299,7 +299,6 @@ export interface AdminUser {
   email: string | null;
   role: string;
   slug: string;
-  plan: string | null;
   paidAt: string | null;
   paid: boolean;
   invitationCompletedAt: string | null;
@@ -317,7 +316,6 @@ export interface AdminUser {
 
 export type AdminUserPatch = Partial<{
   email: string | null;
-  plan: 'free' | 'premium' | null;
   paidAt: string | null;
   invitationCompletedAt: string | null;
   notes: string | null;
@@ -345,6 +343,15 @@ export interface LandingQuestionnaire {
   hasCountdown: 0 | 1;
   hasBusService: 0 | 1;
   hasHotelService: 0 | 1;
+  hasOurStory: 0 | 1;
+  hasGallery: 0 | 1;
+  hasAddToCalendar: 0 | 1;
+  hasVenueMap: 0 | 1;
+  hasGiftRegistry: 0 | 1;
+  giftBankAccount: string | null;
+  contactCouple: 0 | 1;
+  contactGroomPhone: string | null;
+  contactBridePhone: string | null;
   additionalServices: string | null;
   notes: string | null;
   createdAt?: string;
@@ -358,6 +365,15 @@ export type LandingQuestionnairePatch = Partial<{
   hasCountdown: boolean;
   hasBusService: boolean;
   hasHotelService: boolean;
+  hasOurStory: boolean;
+  hasGallery: boolean;
+  hasAddToCalendar: boolean;
+  hasVenueMap: boolean;
+  hasGiftRegistry: boolean;
+  giftBankAccount: string | null;
+  contactCouple: boolean;
+  contactGroomPhone: string | null;
+  contactBridePhone: string | null;
   additionalServices: string | null;
   notes: string | null;
 }>;

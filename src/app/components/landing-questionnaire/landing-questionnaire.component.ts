@@ -32,6 +32,17 @@ export interface LandingQuestionnaireValue {
   hasCountdown: boolean;
   hasBusService: boolean;
   hasHotelService: boolean;
+  // Extra landing sections
+  hasOurStory: boolean;
+  hasGallery: boolean;
+  hasAddToCalendar: boolean;
+  hasVenueMap: boolean;
+  hasGiftRegistry: boolean;
+  giftBankAccount: string;
+  // Contact the couple
+  contactCouple: boolean;
+  contactGroomPhone: string;
+  contactBridePhone: string;
   additionalServices: string;
   notes: string;
 }
@@ -53,6 +64,15 @@ export class LandingQuestionnaireComponent {
     hasCountdown: true,
     hasBusService: false,
     hasHotelService: false,
+    hasOurStory: false,
+    hasGallery: false,
+    hasAddToCalendar: false,
+    hasVenueMap: false,
+    hasGiftRegistry: false,
+    giftBankAccount: '',
+    contactCouple: false,
+    contactGroomPhone: '',
+    contactBridePhone: '',
     additionalServices: '',
     notes: '',
   });

@@ -1,8 +1,10 @@
 import { Component, afterNextRender, HostListener, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { PwaPromptComponent } from './components/pwa-prompt/pwa-prompt.component';
 import { ExitConfirmModalComponent } from './shared/components/exit-confirm-modal/exit-confirm-modal.component';
 import { ExitConfirmService } from './services/exit-confirm.service';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -18,15 +20,20 @@ import { ExitConfirmService } from './services/exit-confirm.service';
 })
 export class App {
   exitConfirmService = inject(ExitConfirmService);
+  private http = inject(HttpClient);
 
   constructor() {
-    // `afterNextRender` solo se ejecuta en el navegador, justo después de
-    // que la primera renderización se hidrate. Esto evita tocar
-    // `window`/`history` durante el render del servidor (SSR).
     afterNextRender(() => {
-      // Push initial state to handle browser back button
-        if (!this.isGuardedRoute(window.location.pathname)) return;
+      // Registrar visita global: una sola llamada por sesión de navegador.
+      // El header x-app-visit=1 distingue este ping de monitores externos.
+      this.http
+        .get(`${environment.apiBaseUrl}/health`, {
+          headers: { 'x-app-visit': '1' },
+        })
+        .subscribe({ error: () => { /* silencioso */ } });
 
+      // Push initial state to handle browser back button
+      if (!this.isGuardedRoute(window.location.pathname)) return;
       try {
         history.pushState({ dashboardGuard: true }, '', window.location.href);
       } catch {

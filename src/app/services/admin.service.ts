@@ -10,15 +10,19 @@ import {
 } from '../../types/api';
 import { LandingQuestionnaireService } from './landing-questionnaire.service';
 
+export interface VisitStats {
+  totalVisits: number;
+  todayVisits: number;
+  weekVisits: number;
+  lastVisitAt: string | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AdminService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiBaseUrl;
-  // Reutilizamos el servicio "privado" para el endpoint admin; ambos
-  // exponen la misma forma de respuesta, así que duplicar el método
-  // solo añadiría confusión.
   private questionnaireService = inject(LandingQuestionnaireService);
 
   listUsers(): Promise<AdminUser[]> {
@@ -42,10 +46,12 @@ export class AdminService {
     ).then(() => undefined);
   }
 
-  /**
-   * Recupera el cuestionario inicial de la landing de un usuario
-   * concreto. Devuelve `null` si todavía no lo ha rellenado.
-   */
+  getVisitStats(): Promise<VisitStats> {
+    return firstValueFrom(
+      this.http.get<ApiResponse<VisitStats>>(`${this.baseUrl}/api/admin/stats/visits`),
+    ).then((res) => res.data as VisitStats);
+  }
+
   getLandingQuestionnaire(userId: number): Promise<LandingQuestionnaire | null> {
     return this.questionnaireService.getForUser(userId);
   }

@@ -36,13 +36,13 @@
   <div class="infinite-slider-container">
     <div class="infinite-slider-track" #sliderTrack>
       <!-- First set of images -->
-      @for (img of sliderImages; track $index) {
+      @for (img of visibleSliderImages(); track img) {
         <div class="slider-item">
           <img [src]="img" alt="Boda Judith y Jesús" loading="lazy" />
         </div>
       }
       <!-- Duplicated set for seamless loop -->
-      @for (img of sliderImages; track $index + 'dup') {
+      @for (img of visibleSliderImages(); track img + 'dup') {
         <div class="slider-item">
           <img [src]="img" alt="Boda Judith y Jesús" loading="lazy" />
         </div>

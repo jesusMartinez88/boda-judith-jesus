@@ -1,5 +1,9 @@
 <div class="hero">
-  <div class="hero-background" #heroBackground></div>
+  <div
+    class="hero-background"
+    #heroBackground
+    [style.backgroundImage]="coverUrl() ? 'url(' + coverUrl() + ')' : null"
+  ></div>
   <canvas class="hero-particles" #particlesCanvas></canvas>
   <div class="hero-overlay" #heroOverlay></div>
 

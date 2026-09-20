@@ -17,6 +17,7 @@ import { GuestFormModalComponent } from '../../shared/components/guest-form-moda
 import { GuestDeleteModalComponent } from '../../shared/components/guest-delete-modal/guest-delete-modal.component';
 import { ExitConfirmService } from '../../services/exit-confirm.service';
 import { ExitConfirmModalComponent } from '../../shared/components/exit-confirm-modal/exit-confirm-modal.component';
+import { InvitationEditorComponent } from './invitation-editor/invitation-editor.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,6 +34,7 @@ import { ExitConfirmModalComponent } from '../../shared/components/exit-confirm-
     GuestFormModalComponent,
     GuestDeleteModalComponent,
     ExitConfirmModalComponent,
+    InvitationEditorComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
@@ -184,7 +186,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isLoading = signal(true);
   error = signal<string | null>(null);
   currentView = signal<
-    'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts' | 'music'
+    'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts' | 'music' | 'invitation'
   >('stats');
   isMenuOpen = signal(false);
   isSidebarCollapsed = signal(false);
@@ -199,7 +201,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const savedView = localStorage.getItem('dashboard.currentView');
       if (
         savedView &&
-        ['stats', 'tables', 'settings', 'finances', 'todos', 'contacts', 'music'].includes(
+        ['stats', 'tables', 'settings', 'finances', 'todos', 'contacts', 'music', 'invitation'].includes(
           savedView,
         )
       ) {
@@ -211,7 +213,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
             | 'finances'
             | 'todos'
             | 'contacts'
-            | 'music',
+            | 'music'
+            | 'invitation',
         );
       }
     } catch {
@@ -377,7 +380,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  setView(view: 'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts' | 'music') {
+  setView(view: 'stats' | 'tables' | 'settings' | 'finances' | 'todos' | 'contacts' | 'music' | 'invitation') {
     this.currentView.set(view);
     try {
       localStorage.setItem('dashboard.currentView', view);

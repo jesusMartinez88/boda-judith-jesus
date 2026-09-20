@@ -1,8 +1,8 @@
 <div class="app-container">
-  <app-hero />
+  <app-hero [coverUrl]="coverUrl()" />
 
   <section id="gallery" class="section bg-light">
-    <app-gallery />
+    <app-gallery [galleryUrls]="galleryUrls()" />
   </section>
 
   <section id="timeline" class="section">
