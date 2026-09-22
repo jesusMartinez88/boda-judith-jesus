@@ -126,23 +126,155 @@
       <span>🏨 Reserva de hotel para invitados</span>
     </label>
 
-    <label class="check-row">
-      <input
-        type="checkbox"
-        [ngModel]="form().hasOurStory"
-        (ngModelChange)="patchField('hasOurStory', $event)"
-        name="hasOurStory">
-      <span>📖 Resumen de vuestra historia con fotos</span>
-    </label>
+    <!-- Nuestra historia con fotos (expandible, filas foto+caption) -->
+    <div class="check-row check-row--expandable">
+      <label class="check-row__label">
+        <input
+          type="checkbox"
+          [ngModel]="form().hasOurStory"
+          (ngModelChange)="onOurStoryToggle($event)"
+          name="hasOurStory"
+          [attr.aria-expanded]="form().hasOurStory"
+          aria-controls="our-story-details">
+        <span>📖 Resumen de vuestra historia con fotos</span>
+      </label>
 
-    <label class="check-row">
-      <input
-        type="checkbox"
-        [ngModel]="form().hasGallery"
-        (ngModelChange)="patchField('hasGallery', $event)"
-        name="hasGallery">
-      <span>📸 Galería de fotos</span>
-    </label>
+      @if (form().hasOurStory) {
+        <div id="our-story-details" class="contact-phones" role="group" aria-label="Fotos de vuestra historia">
+          @if (form().ourStoryPhotos.length === 0) {
+            <button
+              type="button"
+              class="gallery-uploader__btn"
+              (click)="addOurStoryPhoto()">
+              📷 Añadir primera foto
+            </button>
+          } @else {
+            <ul class="our-story-list">
+              @for (photo of form().ourStoryPhotos; track $index; let i = $index) {
+                <li class="our-story-row">
+                  <div class="our-story-row__file">
+                    <label class="gallery-uploader__btn our-story-row__upload">
+                      {{ photo.file ? '🔄 Cambiar foto' : '📎 Adjuntar foto' }}
+                      <input
+                        type="file"
+                        class="visually-hidden"
+                        accept="image/jpeg,image/png,image/webp"
+                        (change)="onOurStoryFileSelected($event, i)">
+                    </label>
+                    @if (photo.file) {
+                      <span class="our-story-row__filename" [title]="photo.file.name">
+                        📷 {{ photo.file.name }}
+                      </span>
+                    } @else {
+                      <span class="our-story-row__filename our-story-row__filename--empty">
+                        Sin foto seleccionada
+                      </span>
+                    }
+                  </div>
+
+                  <label class="our-story-row__caption">
+                    <span class="our-story-row__caption-label">Texto de la foto</span>
+                    <input
+                      type="text"
+                      class="form-input"
+                      [ngModel]="photo.caption"
+                      (ngModelChange)="onOurStoryCaptionChange(i, $event)"
+                      [name]="'ourStoryCaption-' + i"
+                      placeholder="Ej: El día que nos conocimos en la playa…"
+                      autocomplete="off">
+                  </label>
+
+                  <button
+                    type="button"
+                    class="gallery-preview__remove our-story-row__remove"
+                    (click)="removeOurStoryPhoto(i)"
+                    [attr.aria-label]="'Quitar foto ' + (i + 1)">
+                    ✕
+                  </button>
+                </li>
+              }
+            </ul>
+
+            <button
+              type="button"
+              class="gallery-uploader__btn"
+              [disabled]="form().ourStoryPhotos.length >= 12"
+              (click)="addOurStoryPhoto()">
+              ➕ Añadir otra foto
+              @if (form().ourStoryPhotos.length >= 12) {
+                <span class="our-story-row__max">(máx. 12)</span>
+              }
+            </button>
+          }
+
+          @if (ourStoryError(); as msg) {
+            <div class="form-error" role="alert">{{ msg }}</div>
+          }
+
+          <p class="form-hint our-story-count" aria-live="polite">
+            {{ form().ourStoryPhotos.length }} / 12 fotos
+          </p>
+        </div>
+      }
+    </div>
+
+    <!-- Galería de fotos (expandible) -->
+    <div class="check-row check-row--expandable">
+      <label class="check-row__label">
+        <input
+          type="checkbox"
+          [ngModel]="form().hasGallery"
+          (ngModelChange)="onGalleryToggle($event)"
+          name="hasGallery"
+          [attr.aria-expanded]="form().hasGallery"
+          aria-controls="gallery-uploader-details">
+        <span>📸 Galería de fotos</span>
+      </label>
+
+      @if (form().hasGallery) {
+        <div id="gallery-uploader-details" class="contact-phones" role="group" aria-label="Adjuntar fotos para la galería">
+          <div class="gallery-uploader">
+            <label class="btn-secondary gallery-uploader__btn">
+              📎 Adjuntar fotos
+              <input
+                type="file"
+                class="visually-hidden"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                (change)="onGalleryFilesSelected($event)">
+            </label>
+
+            <p
+              class="form-hint gallery-uploader__count"
+              [class.gallery-uploader__count--full]="form().galleryFiles.length >= 12"
+              aria-live="polite">
+              {{ form().galleryFiles.length }} fotos adjuntadas (máx. 12)
+            </p>
+
+            @if (galleryError(); as msg) {
+              <div class="form-error" role="alert">{{ msg }}</div>
+            }
+
+            @if (form().galleryFiles.length > 0) {
+              <ul class="gallery-preview">
+                @for (file of form().galleryFiles; track file.name; let i = $index) {
+                  <li class="gallery-preview__item">
+                    <span class="gallery-preview__name">📷 {{ file.name }}</span>
+                    <button
+                      type="button"
+                      class="gallery-preview__remove"
+                      (click)="removeGalleryFile(i)"
+                      [attr.aria-label]="'Quitar foto ' + file.name">
+                      ✕
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+      }
+    </div>
 
     <label class="check-row">
       <input
@@ -171,7 +303,7 @@
           name="hasGiftRegistry"
           [attr.aria-expanded]="form().hasGiftRegistry"
           aria-controls="gift-registry-details">
-        <span>🎁 Lista de regalos</span>
+        <span>🎁 Lista de regalos (CC)</span>
       </label>
 
       @if (form().hasGiftRegistry) {
@@ -184,6 +316,36 @@
               (ngModelChange)="patchField('giftBankAccount', $event)"
               name="giftBankAccount"
               placeholder="ES00 0000 0000 0000 0000 0000"
+              class="form-input"
+              autocomplete="off">
+          </label>
+        </div>
+      }
+    </div>
+
+    <!-- Música de fondo -->
+    <div class="check-row check-row--expandable">
+      <label class="check-row__label">
+        <input
+          type="checkbox"
+          [ngModel]="form().hasBackgroundMusic"
+          (ngModelChange)="patchField('hasBackgroundMusic', $event)"
+          name="hasBackgroundMusic"
+          [attr.aria-expanded]="form().hasBackgroundMusic"
+          aria-controls="background-music-details">
+        <span>🎵 Música de fondo</span>
+      </label>
+
+      @if (form().hasBackgroundMusic) {
+        <div id="background-music-details" class="contact-phones" role="group" aria-label="Canción de fondo">
+          <label class="contact-phone-field">
+            <span class="contact-phone-label">🎶 Canción de fondo</span>
+            <input
+              type="text"
+              [ngModel]="form().backgroundMusicSong"
+              (ngModelChange)="patchField('backgroundMusicSong', $event)"
+              name="backgroundMusicSong"
+              placeholder="Ej: Perfect — Ed Sheeran"
               class="form-input"
               autocomplete="off">
           </label>

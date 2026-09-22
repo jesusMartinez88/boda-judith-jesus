@@ -349,6 +349,23 @@ export interface LandingQuestionnaire {
   hasVenueMap: 0 | 1;
   hasGiftRegistry: 0 | 1;
   giftBankAccount: string | null;
+  hasBackgroundMusic: 0 | 1;
+  backgroundMusicSong: string | null;
+  /**
+   * Entradas de "Nuestra historia": cada una es un par `{ url, caption }`
+   * serializado en una sola columna TEXT como JSON array. La `url` apunta
+   * a la imagen subida en /api/invitation-media/gallery y `caption` es
+   * el texto descriptivo que el cliente escribió para esa foto. Si el
+   * cliente desactivó la historia o no subió nada, queda `null`.
+   */
+  ourStoryEntries: string | null;
+  /**
+   * LEGACY: columna vieja que solo guardaba los captions como JSON array
+   * de strings (sin URL). Se sigue leyendo para no perder los registros
+   * que se guardaron con el formato anterior; el frontend lo muestra
+   * como fallback con un aviso de "foto no asociada".
+   */
+  ourStoryCaptions?: string | null;
   contactCouple: 0 | 1;
   contactGroomPhone: string | null;
   contactBridePhone: string | null;
@@ -371,6 +388,14 @@ export type LandingQuestionnairePatch = Partial<{
   hasVenueMap: boolean;
   hasGiftRegistry: boolean;
   giftBankAccount: string | null;
+  hasBackgroundMusic: boolean;
+  backgroundMusicSong: string | null;
+  /**
+   * Entradas `{ url, caption }[]` para "Nuestra historia", serializadas
+   * como JSON string en una sola columna. Cada entry vincula una URL
+   * de foto subida con su caption correspondiente.
+   */
+  ourStoryEntries: string | null;
   contactCouple: boolean;
   contactGroomPhone: string | null;
   contactBridePhone: string | null;

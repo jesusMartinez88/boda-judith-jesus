@@ -145,6 +145,20 @@
           </div>
         }
 
+        @if (galleryUploadError()) {
+          <div class="form-error" role="alert" style="margin-bottom: 1.5rem;">
+            Tu cuenta se ha creado, pero no pudimos subir las fotos de la
+            galería. Podrás volver a adjuntarlas desde tu panel de control.
+          </div>
+        }
+
+        @if (ourStoryUploadError()) {
+          <div class="form-error" role="alert" style="margin-bottom: 1.5rem;">
+            Tu cuenta se ha creado, pero no pudimos subir las fotos de
+            "Nuestra historia". Podrás volver a adjuntarlas desde tu panel.
+          </div>
+        }
+
         <button type="button" (click)="goToDashboard()" class="btn-primary">
           Ir a mi Panel de Control
         </button>

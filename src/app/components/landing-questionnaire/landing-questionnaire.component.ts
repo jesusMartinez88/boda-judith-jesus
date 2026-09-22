@@ -25,6 +25,19 @@ import { FormsModule } from '@angular/forms';
  *   - El campo `notes` y los servicios extra (autobús, hotel) son
  *     opcionales: el cliente puede no tener autobus/hotel y no pasa nada.
  */
+/**
+ * Foto individual de "Nuestra historia": el archivo pendiente de subir y
+ * el caption (texto descriptivo) que el cliente escribe al lado.
+ *
+ * `file` puede ser `null` si la fila se añadió con el botón "+" pero el
+ * usuario todavía no eligió archivo (en ese caso la fila se ignora al
+ * enviar, pero le permite ir rellenando captions y subir al final).
+ */
+export interface OurStoryPhoto {
+  file: File | null;
+  caption: string;
+}
+
 export interface LandingQuestionnaireValue {
   weddingDate: string;
   estimatedGuests: number | null;
@@ -34,11 +47,21 @@ export interface LandingQuestionnaireValue {
   hasHotelService: boolean;
   // Extra landing sections
   hasOurStory: boolean;
+  // Fotos de "Nuestra historia": pares archivo + caption. Solo frontend;
+  // los archivos se suben aparte y los captions se persisten con el
+  // cuestionario en una columna JSON (ourStoryCaptions).
+  ourStoryPhotos: OurStoryPhoto[];
   hasGallery: boolean;
+  // Archivos pendientes de subir para la galería (solo frontend; no se
+  // envían al backend como parte del cuestionario: se suben aparte vía
+  // /api/invitation-media/gallery después de crear la cuenta).
+  galleryFiles: File[];
   hasAddToCalendar: boolean;
   hasVenueMap: boolean;
   hasGiftRegistry: boolean;
   giftBankAccount: string;
+  hasBackgroundMusic: boolean;
+  backgroundMusicSong: string;
   // Contact the couple
   contactCouple: boolean;
   contactGroomPhone: string;
@@ -46,6 +69,15 @@ export interface LandingQuestionnaireValue {
   additionalServices: string;
   notes: string;
 }
+
+/** Máximo de fotos permitidas en la galería (alineado con el backend). */
+export const GALLERY_MAX_FILES = 12;
+
+/** Tipos MIME aceptados para la galería (alineado con el backend). */
+export const GALLERY_ACCEPTED_MIME = ['image/jpeg', 'image/png', 'image/webp'] as const;
+
+/** Máximo de fotos permitidas en "Nuestra historia" (alineado con el backend). */
+export const OUR_STORY_MAX_PHOTOS = 12;
 
 @Component({
   selector: 'app-landing-questionnaire',
@@ -65,11 +97,15 @@ export class LandingQuestionnaireComponent {
     hasBusService: false,
     hasHotelService: false,
     hasOurStory: false,
+    ourStoryPhotos: [],
     hasGallery: false,
+    galleryFiles: [],
     hasAddToCalendar: false,
     hasVenueMap: false,
     hasGiftRegistry: false,
     giftBankAccount: '',
+    hasBackgroundMusic: false,
+    backgroundMusicSong: '',
     contactCouple: false,
     contactGroomPhone: '',
     contactBridePhone: '',
@@ -128,6 +164,174 @@ export class LandingQuestionnaireComponent {
     if (this.submitting()) return;
     if (!this.isValid()) return;
     this.submitted.emit(this.form());
+  }
+
+  /** Mensaje de error específico de la galería (formato, máximo, etc.). */
+  protected readonly galleryError = signal<string | null>(null);
+
+  /** Si el checkbox de galería está desmarcado, descartamos los archivos seleccionados. */
+  protected onGalleryToggle(checked: boolean) {
+    this.patchField('hasGallery', checked);
+    if (!checked) {
+      this.patchField('galleryFiles', []);
+      this.galleryError.set(null);
+    }
+  }
+
+  /**
+   * Maneja la selección de archivos desde el input. Filtra por MIME
+   * (JPEG/PNG/WebP) y respeta el máximo de 12. Resetea el valor del
+   * input para permitir re-seleccionar el mismo archivo si se borró.
+   */
+  protected onGalleryFilesSelected(event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    const files = input?.files ? Array.from(input.files) : [];
+    if (input) input.value = '';
+
+    const current = this.form().galleryFiles;
+    const accepted = files.filter((file) =>
+      (GALLERY_ACCEPTED_MIME as readonly string[]).includes(file.type),
+    );
+    const rejectedCount = files.length - accepted.length;
+
+    const remaining = GALLERY_MAX_FILES - current.length;
+    if (remaining <= 0) {
+      this.galleryError.set(
+        `Has llegado al máximo de ${GALLERY_MAX_FILES} fotos. Quita alguna para añadir más.`,
+      );
+      return;
+    }
+
+    const toAdd = accepted.slice(0, remaining);
+    const overflow = accepted.length - toAdd.length;
+
+    const parts: string[] = [];
+    if (rejectedCount > 0) {
+      parts.push('Solo se admiten fotos en formato JPEG, PNG o WebP.');
+    }
+    if (overflow > 0) {
+      parts.push(
+        `Solo cabían ${remaining} foto(s) más; se ignoraron ${overflow}.`,
+      );
+    }
+    this.galleryError.set(parts.length ? parts.join(' ') : null);
+
+    if (toAdd.length > 0) {
+      this.patchField('galleryFiles', [...current, ...toAdd]);
+    }
+  }
+
+  /** Quita una foto de la lista de pendientes. */
+  protected removeGalleryFile(index: number) {
+    this.form.update((f) => ({
+      ...f,
+      galleryFiles: f.galleryFiles.filter((_, i) => i !== index),
+    }));
+    this.galleryError.set(null);
+  }
+
+  /** Mensaje de error específico del uploader de "Nuestra historia". */
+  protected readonly ourStoryError = signal<string | null>(null);
+
+  /** Si se desmarca "Nuestra historia", descartamos las filas añadidas. */
+  protected onOurStoryToggle(checked: boolean) {
+    this.patchField('hasOurStory', checked);
+    if (!checked) {
+      this.patchField('ourStoryPhotos', []);
+      this.ourStoryError.set(null);
+    }
+  }
+
+  /** Añade una fila vacía (sin archivo) al final. Bloqueado al llegar al máximo. */
+  protected addOurStoryPhoto() {
+    const current = this.form().ourStoryPhotos;
+    if (current.length >= OUR_STORY_MAX_PHOTOS) {
+      this.ourStoryError.set(`Has llegado al máximo de ${OUR_STORY_MAX_PHOTOS} fotos.`);
+      return;
+    }
+    this.patchField('ourStoryPhotos', [...current, { file: null, caption: '' }]);
+    this.ourStoryError.set(null);
+  }
+
+  /** Quita una fila entera (foto + caption). */
+  protected removeOurStoryPhoto(index: number) {
+    this.form.update((f) => ({
+      ...f,
+      ourStoryPhotos: f.ourStoryPhotos.filter((_, i) => i !== index),
+    }));
+    this.ourStoryError.set(null);
+  }
+
+  /**
+   * Asigna el archivo elegido a la fila `index`. Si el usuario selecciona
+   * varios a la vez, se reparten por las filas vacías que haya (o se
+   * rechazan si no caben). Filtra por MIME y respeta el máximo global.
+   */
+  protected onOurStoryFileSelected(event: Event, index: number) {
+    const input = event.target as HTMLInputElement | null;
+    const files = input?.files ? Array.from(input.files) : [];
+    if (input) input.value = '';
+
+    const current = this.form().ourStoryPhotos;
+
+    const accepted = files.filter((file) =>
+      (GALLERY_ACCEPTED_MIME as readonly string[]).includes(file.type),
+    );
+    const rejectedCount = files.length - accepted.length;
+
+    const totalFilesSelected = current.filter((p) => p.file).length;
+    const remaining = OUR_STORY_MAX_PHOTOS - totalFilesSelected;
+    if (remaining <= 0) {
+      this.ourStoryError.set(
+        `Has llegado al máximo de ${OUR_STORY_MAX_PHOTOS} fotos. Quita alguna para añadir más.`,
+      );
+      return;
+    }
+
+    const toAdd = accepted.slice(0, remaining);
+    const overflow = accepted.length - toAdd.length;
+
+    const parts: string[] = [];
+    if (rejectedCount > 0) {
+      parts.push('Solo se admiten fotos en formato JPEG, PNG o WebP.');
+    }
+    if (overflow > 0) {
+      parts.push(
+        `Solo cabían ${remaining} foto(s) más; se ignoraron ${overflow}.`,
+      );
+    }
+    this.ourStoryError.set(parts.length ? parts.join(' ') : null);
+
+    if (toAdd.length === 0) return;
+
+    // Si el usuario seleccionó varios archivos en una sola pasada, los
+    // colocamos en orden: primero en la fila que disparó el evento, y
+    // los siguientes en las filas vacías siguientes (si existen). Si no
+    // quedan filas vacías y aún cabe alguno, los añadimos como filas
+    // nuevas al final.
+    const next = current.map((p) => ({ ...p }));
+    let cursor = index;
+    for (const file of toAdd) {
+      while (cursor < next.length && next[cursor].file !== null) cursor += 1;
+      if (cursor >= next.length) {
+        if (next.length >= OUR_STORY_MAX_PHOTOS) break;
+        next.push({ file, caption: '' });
+      } else {
+        next[cursor] = { file, caption: next[cursor].caption };
+      }
+      cursor += 1;
+    }
+    this.patchField('ourStoryPhotos', next);
+  }
+
+  /** Actualiza el caption de la fila `index`. */
+  protected onOurStoryCaptionChange(index: number, value: string) {
+    this.form.update((f) => {
+      const next = f.ourStoryPhotos.map((p, i) =>
+        i === index ? { ...p, caption: value } : p,
+      );
+      return { ...f, ourStoryPhotos: next };
+    });
   }
 
   /** Indica si la opción personalizada 'Otro' está activa. */

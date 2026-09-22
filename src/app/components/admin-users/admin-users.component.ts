@@ -390,6 +390,56 @@ export class AdminUsersComponent implements OnInit {
     return '—';
   }
 
+  /**
+   * Parsea la columna JSON `ourStoryEntries` y devuelve un array de
+   * `{ url, caption }`. Si el valor es null/inválido o no es un array
+   * de objetos con `url`, devuelve `null` para que el template no
+   * muestre nada.
+   */
+  parseOurStoryEntries(
+    value: string | null | undefined,
+  ): Array<{ url: string; caption: string }> | null {
+    if (!value) return null;
+    try {
+      const parsed = JSON.parse(value);
+      if (!Array.isArray(parsed)) return null;
+      const cleaned = parsed
+        .map((entry) => {
+          if (!entry || typeof entry !== 'object') return null;
+          const url = typeof entry.url === 'string' ? entry.url.trim() : '';
+          const caption =
+            typeof entry.caption === 'string' ? entry.caption.trim() : '';
+          if (!url) return null;
+          return { url, caption };
+        })
+        .filter((e): e is { url: string; caption: string } => e !== null);
+      return cleaned.length > 0 ? cleaned : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * LEGACY: parsea la columna JSON `ourStoryCaptions` (formato antiguo,
+   * array de strings) y devuelve los strings limpios. Si no hay datos
+   * válidos, devuelve `null`.
+   */
+  parseLegacyOurStoryCaptions(
+    value: string | null | undefined,
+  ): string[] | null {
+    if (!value) return null;
+    try {
+      const parsed = JSON.parse(value);
+      if (!Array.isArray(parsed)) return null;
+      const cleaned = parsed
+        .map((c) => (typeof c === 'string' ? c.trim() : ''))
+        .filter((c) => c.length > 0);
+      return cleaned.length > 0 ? cleaned : null;
+    } catch {
+      return null;
+    }
+  }
+
   private extractMessage(err: HttpErrorResponse, fallback: string): string {
     const body = err.error as { message?: string; error?: string } | null;
     return body?.message || body?.error || fallback;

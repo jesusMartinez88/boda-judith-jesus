@@ -452,6 +452,49 @@
               <dt>📖 Historia con fotos</dt>
               <dd>{{ formatYesNo(q.hasOurStory) }}</dd>
             </div>
+            @if (q.hasOurStory && parseOurStoryEntries(q.ourStoryEntries); as entries) {
+              <div class="questionnaire-row questionnaire-row--full">
+                <dt>🖼 Fotos de la historia</dt>
+                <dd>
+                  <ol class="story-entries">
+                    @for (entry of entries; track entry.url; let i = $index) {
+                      <li class="story-entry">
+                        <a [href]="entry.url" target="_blank" rel="noopener noreferrer" class="story-entry__thumb-link">
+                          <img
+                            [src]="entry.url"
+                            [alt]="entry.caption || ('Foto ' + (i + 1) + ' de la historia')"
+                            loading="lazy"
+                            class="story-entry__thumb">
+                        </a>
+                        <div class="story-entry__caption">
+                          <strong>{{ i + 1 }}.</strong>
+                          @if (entry.caption) {
+                            <span>{{ entry.caption }}</span>
+                          } @else {
+                            <span class="muted">Sin texto</span>
+                          }
+                        </div>
+                      </li>
+                    }
+                  </ol>
+                </dd>
+              </div>
+            } @else if (q.hasOurStory && parseLegacyOurStoryCaptions(q.ourStoryCaptions); as legacy) {
+              <div class="questionnaire-row questionnaire-row--full">
+                <dt>📝 Captions de la historia</dt>
+                <dd>
+                  <p class="story-legacy-notice">
+                    ⚠️ Datos anteriores: los captions se guardaron sin foto asociada.
+                    Si necesitas vincularlos, vuelve a pedírselos al cliente.
+                  </p>
+                  <ol class="captions-list">
+                    @for (caption of legacy; track $index; let i = $index) {
+                      <li><strong>{{ i + 1 }}.</strong> {{ caption }}</li>
+                    }
+                  </ol>
+                </dd>
+              </div>
+            }
             <div class="questionnaire-row">
               <dt>📸 Galería de fotos</dt>
               <dd>{{ formatYesNo(q.hasGallery) }}</dd>
@@ -465,13 +508,24 @@
               <dd>{{ formatYesNo(q.hasVenueMap) }}</dd>
             </div>
             <div class="questionnaire-row">
-              <dt>🎁 Lista de regalos</dt>
+              <dt>🎁 Lista de regalos (tarjeta cc)</dt>
               <dd>{{ formatYesNo(q.hasGiftRegistry) }}</dd>
             </div>
             @if (q.hasGiftRegistry && q.giftBankAccount) {
               <div class="questionnaire-row questionnaire-row--full">
                 <dt>🏦 Cuenta bancaria</dt>
                 <dd class="monospace">{{ q.giftBankAccount }}</dd>
+              </div>
+            }
+
+            <div class="questionnaire-row">
+              <dt>🎵 Música de fondo</dt>
+              <dd>{{ formatYesNo(q.hasBackgroundMusic) }}</dd>
+            </div>
+            @if (q.hasBackgroundMusic && q.backgroundMusicSong) {
+              <div class="questionnaire-row questionnaire-row--full">
+                <dt>🎶 Canción</dt>
+                <dd>{{ q.backgroundMusicSong }}</dd>
               </div>
             }
 
