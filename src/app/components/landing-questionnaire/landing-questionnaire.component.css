@@ -418,6 +418,25 @@
   animation: expand-in 0.2s ease;
 }
 
+.cover-photo-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cover-photo-preview img {
+  width: 7rem;
+  height: 4.5rem;
+  object-fit: cover;
+  border-radius: 0.625rem;
+  border: 1px solid rgba(236, 72, 153, 0.2);
+}
+
+.cover-photo-preview--pending {
+  min-height: 2.5rem;
+}
+
 @keyframes expand-in {
   from {
     opacity: 0;
@@ -573,9 +592,9 @@
 .our-story-row {
   display: grid;
   grid-template-columns: minmax(160px, 1fr) minmax(180px, 1.4fr) auto;
-  gap: 0.5rem;
+  gap: 0.4rem;
   align-items: center;
-  padding: 0.55rem 0.625rem;
+  padding: 0.44rem 0.5rem;
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(236, 72, 153, 0.18);
   border-radius: 0.625rem;
@@ -593,7 +612,7 @@
 .our-story-row__file {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.24rem;
   min-width: 0;
 }
 
@@ -658,4 +677,35 @@
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
+}
+
+/* Miniatura de foto existente o pendiente dentro de una fila
+   de "Nuestra historia" en el editor del dashboard. */
+.our-story-row__thumb-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(236, 72, 153, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.our-story-row__thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.our-story-row__thumb-wrap--pending {
+  background: rgba(236, 72, 153, 0.08);
+  border-style: dashed;
+  color: #831843;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.4rem;
+  text-align: center;
 }

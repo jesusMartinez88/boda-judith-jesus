@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   input,
   output,
   signal,
@@ -26,16 +27,36 @@ import { FormsModule } from '@angular/forms';
  *     opcionales: el cliente puede no tener autobus/hotel y no pasa nada.
  */
 /**
- * Foto individual de "Nuestra historia": el archivo pendiente de subir y
- * el caption (texto descriptivo) que el cliente escribe al lado.
+ * Payload emitido por el cuestionario al hacer submit. Incluye el value
+ * final del formulario más las URLs de "Nuestra historia" que el usuario
+ * marcó para eliminar (modo dashboard). En el registro la lista de URLs
+ * a borrar va vacía.
+ */
+export interface LandingQuestionnaireSubmission {
+  value: LandingQuestionnaireValue;
+  ourStoryPhotosToDelete: string[];
+}
+
+/**
+ * Foto individual de "Nuestra historia".
  *
- * `file` puede ser `null` si la fila se añadió con el botón "+" pero el
- * usuario todavía no eligió archivo (en ese caso la fila se ignora al
- * enviar, pero le permite ir rellenando captions y subir al final).
+ * - En el registro: el usuario selecciona un archivo nuevo (`file`),
+ *   `existingUrl` es `null`.
+ * - En el editor del dashboard: la fila representa una foto ya subida
+ *   al media server (`existingUrl` con la URL absoluta) y opcionalmente
+ *   el usuario puede reemplazarla (`file` con un nuevo archivo).
+ *
+ * `caption` se mantiene editable en ambos flujos.
  */
 export interface OurStoryPhoto {
+  existingUrl: string | null;
   file: File | null;
   caption: string;
+}
+
+export interface CoverPhoto {
+  existingUrl: string | null;
+  file: File | null;
 }
 
 export interface LandingQuestionnaireValue {
@@ -45,6 +66,8 @@ export interface LandingQuestionnaireValue {
   hasCountdown: boolean;
   hasBusService: boolean;
   hasHotelService: boolean;
+  hasCoverPhoto: boolean;
+  coverPhoto: CoverPhoto;
   // Extra landing sections
   hasOurStory: boolean;
   // Fotos de "Nuestra historia": pares archivo + caption. Solo frontend;
@@ -96,6 +119,8 @@ export class LandingQuestionnaireComponent {
     hasCountdown: true,
     hasBusService: false,
     hasHotelService: false,
+    hasCoverPhoto: false,
+    coverPhoto: { existingUrl: null, file: null },
     hasOurStory: false,
     ourStoryPhotos: [],
     hasGallery: false,
@@ -122,14 +147,32 @@ export class LandingQuestionnaireComponent {
   /**
    * Se dispara cuando el usuario quiere avanzar. El padre es responsable
    * de llamar al backend y decidir qué pantalla mostrar a continuación.
+   *
+   * Se emite un `LandingQuestionnaireSubmission` que incluye el value
+   * final y las URLs existentes que el usuario marcó para eliminar (solo
+   * se rellena en el editor del dashboard; en el registro va vacío).
    */
-  readonly submitted = output<LandingQuestionnaireValue>();
+  readonly submitted = output<LandingQuestionnaireSubmission>();
 
   /**
    * Estado interno del formulario. Se inicializa desde `initialValue()`
    * cada vez que cambia la entrada (patrón signal-driven).
    */
   protected form = signal<LandingQuestionnaireValue>(this.initialValue());
+
+  constructor() {
+    effect(() => {
+      const initialValue = this.initialValue();
+
+      this.form.set({
+        ...initialValue,
+        coverPhoto: { ...initialValue.coverPhoto },
+        ourStoryPhotos: initialValue.ourStoryPhotos.map((photo) => ({ ...photo })),
+        galleryFiles: [...initialValue.galleryFiles],
+      });
+      this.removedOurStoryUrls.set([]);
+    });
+  }
 
   /** Swatches rápidos para el color predominante. */
   protected readonly colorPresets = [
@@ -159,15 +202,58 @@ export class LandingQuestionnaireComponent {
     this.form.update((current) => ({ ...current, [key]: value }));
   }
 
+  /**
+   * URLs de fotos de "Nuestra historia" que el usuario eliminó durante
+   * la edición. Se vacía al inicializar (cambio de `initialValue`) y se
+   * emite en `onSubmit` para que el padre las borre del media server
+   * antes de subir el cuestionario actualizado.
+   */
+  protected readonly removedOurStoryUrls = signal<string[]>([]);
+
   /** El usuario quiere enviar el cuestionario. */
   protected onSubmit() {
     if (this.submitting()) return;
     if (!this.isValid()) return;
-    this.submitted.emit(this.form());
+    this.submitted.emit({
+      value: this.form(),
+      ourStoryPhotosToDelete: this.removedOurStoryUrls(),
+    });
   }
 
   /** Mensaje de error específico de la galería (formato, máximo, etc.). */
   protected readonly galleryError = signal<string | null>(null);
+
+  protected readonly coverError = signal<string | null>(null);
+
+  protected onCoverToggle(checked: boolean) {
+    this.patchField('hasCoverPhoto', checked);
+    if (!checked) {
+      this.patchField('coverPhoto', { existingUrl: null, file: null });
+      this.coverError.set(null);
+    }
+  }
+
+  protected onCoverFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.item(0) ?? null;
+    if (input) input.value = '';
+
+    if (!file) return;
+    if (!(GALLERY_ACCEPTED_MIME as readonly string[]).includes(file.type)) {
+      this.coverError.set('Solo se admiten fotos en formato JPEG, PNG o WebP.');
+      return;
+    }
+
+    this.patchField('hasCoverPhoto', true);
+    this.patchField('coverPhoto', { existingUrl: null, file });
+    this.coverError.set(null);
+  }
+
+  protected removeCoverFile() {
+    this.patchField('hasCoverPhoto', false);
+    this.patchField('coverPhoto', { existingUrl: null, file: null });
+    this.coverError.set(null);
+  }
 
   /** Si el checkbox de galería está desmarcado, descartamos los archivos seleccionados. */
   protected onGalleryToggle(checked: boolean) {
@@ -249,12 +335,27 @@ export class LandingQuestionnaireComponent {
       this.ourStoryError.set(`Has llegado al máximo de ${OUR_STORY_MAX_PHOTOS} fotos.`);
       return;
     }
-    this.patchField('ourStoryPhotos', [...current, { file: null, caption: '' }]);
+    this.patchField('ourStoryPhotos', [
+      ...current,
+      { existingUrl: null, file: null, caption: '' },
+    ]);
     this.ourStoryError.set(null);
   }
 
-  /** Quita una fila entera (foto + caption). */
+  /**
+   * Quita una fila entera. Si la fila representa una foto ya subida al
+   * media server (`existingUrl`), guardamos esa URL en `removedOurStoryUrls`
+   * para que el padre la borre del backend antes de guardar el cuestionario.
+   */
   protected removeOurStoryPhoto(index: number) {
+    const removed = this.form().ourStoryPhotos[index];
+    if (removed?.existingUrl) {
+      this.removedOurStoryUrls.update((urls) =>
+        urls.includes(removed.existingUrl as string)
+          ? urls
+          : [...urls, removed.existingUrl as string],
+      );
+    }
     this.form.update((f) => ({
       ...f,
       ourStoryPhotos: f.ourStoryPhotos.filter((_, i) => i !== index),
@@ -309,15 +410,30 @@ export class LandingQuestionnaireComponent {
     // los siguientes en las filas vacías siguientes (si existen). Si no
     // quedan filas vacías y aún cabe alguno, los añadimos como filas
     // nuevas al final.
+    //
+    // Si la fila destino ya tenía una foto subida al media server, la
+    // marcamos para eliminar (porque va a ser reemplazada por la nueva)
+    // y conservamos el caption escrito por el usuario.
     const next = current.map((p) => ({ ...p }));
     let cursor = index;
     for (const file of toAdd) {
       while (cursor < next.length && next[cursor].file !== null) cursor += 1;
       if (cursor >= next.length) {
         if (next.length >= OUR_STORY_MAX_PHOTOS) break;
-        next.push({ file, caption: '' });
+        next.push({ existingUrl: null, file, caption: '' });
       } else {
-        next[cursor] = { file, caption: next[cursor].caption };
+        if (next[cursor].existingUrl) {
+          this.removedOurStoryUrls.update((urls) =>
+            urls.includes(next[cursor].existingUrl as string)
+              ? urls
+              : [...urls, next[cursor].existingUrl as string],
+          );
+        }
+        next[cursor] = {
+          existingUrl: null,
+          file,
+          caption: next[cursor].caption,
+        };
       }
       cursor += 1;
     }

@@ -159,6 +159,13 @@
           </div>
         }
 
+        @if (coverUploadError()) {
+          <div class="form-error" role="alert" style="margin-bottom: 1.5rem;">
+            Tu cuenta se ha creado, pero no pudimos subir la foto de portada.
+            Podrás volver a adjuntarla desde tu panel de control.
+          </div>
+        }
+
         <button type="button" (click)="goToDashboard()" class="btn-primary">
           Ir a mi Panel de Control
         </button>

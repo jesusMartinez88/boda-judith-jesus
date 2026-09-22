@@ -126,6 +126,60 @@
       <span>🏨 Reserva de hotel para invitados</span>
     </label>
 
+    <!-- Foto de portada (una sola imagen) -->
+    <div class="check-row check-row--expandable">
+      <label class="check-row__label">
+        <input
+          type="checkbox"
+          [ngModel]="form().hasCoverPhoto"
+          (ngModelChange)="onCoverToggle($event)"
+          name="hasCoverPhoto"
+          [attr.aria-expanded]="form().hasCoverPhoto"
+          aria-controls="cover-photo-details">
+        <span>🖼️ Foto de portada</span>
+      </label>
+
+      @if (form().hasCoverPhoto) {
+        <div id="cover-photo-details" class="contact-phones" role="group" aria-label="Foto de portada">
+          <div class="gallery-uploader">
+            <label class="btn-secondary gallery-uploader__btn">
+              {{ form().coverPhoto.file || form().coverPhoto.existingUrl ? '🔄 Cambiar foto' : '📎 Adjuntar foto' }}
+              <input
+                type="file"
+                class="visually-hidden"
+                accept="image/jpeg,image/png,image/webp"
+                (change)="onCoverFileSelected($event)">
+            </label>
+
+            @if (form().coverPhoto.existingUrl && !form().coverPhoto.file) {
+              <div class="cover-photo-preview">
+                <img [src]="form().coverPhoto.existingUrl" alt="Foto de portada actual" loading="lazy">
+                <span class="gallery-preview__name">Foto de portada guardada</span>
+              </div>
+            } @else if (form().coverPhoto.file) {
+              <div class="cover-photo-preview cover-photo-preview--pending">
+                <span class="gallery-preview__name">📷 {{ form().coverPhoto.file?.name }}</span>
+              </div>
+            }
+
+            @if (form().coverPhoto.file || form().coverPhoto.existingUrl) {
+              <button
+                type="button"
+                class="gallery-preview__remove"
+                (click)="removeCoverFile()"
+                aria-label="Quitar foto de portada">
+                ✕ Quitar
+              </button>
+            }
+
+            @if (coverError(); as msg) {
+              <div class="form-error" role="alert">{{ msg }}</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
     <!-- Nuestra historia con fotos (expandible, filas foto+caption) -->
     <div class="check-row check-row--expandable">
       <label class="check-row__label">
@@ -153,23 +207,29 @@
               @for (photo of form().ourStoryPhotos; track $index; let i = $index) {
                 <li class="our-story-row">
                   <div class="our-story-row__file">
+                    @if (photo.existingUrl && !photo.file) {
+                      <div class="our-story-row__thumb-wrap">
+                        <img
+                          [src]="photo.existingUrl"
+                          [alt]="photo.caption || ('Foto ' + (i + 1) + ' de la historia')"
+                          class="our-story-row__thumb"
+                          loading="lazy">
+                      </div>
+                    } @else if (photo.file) {
+                      <div class="our-story-row__thumb-wrap our-story-row__thumb-wrap--pending">
+                        <span class="our-story-row__filename" [title]="photo.file.name">
+                          📷 {{ photo.file.name }}
+                        </span>
+                      </div>
+                    }
                     <label class="gallery-uploader__btn our-story-row__upload">
-                      {{ photo.file ? '🔄 Cambiar foto' : '📎 Adjuntar foto' }}
+                      {{ photo.file || photo.existingUrl ? '🔄 Cambiar foto' : '📎 Adjuntar foto' }}
                       <input
                         type="file"
                         class="visually-hidden"
                         accept="image/jpeg,image/png,image/webp"
                         (change)="onOurStoryFileSelected($event, i)">
                     </label>
-                    @if (photo.file) {
-                      <span class="our-story-row__filename" [title]="photo.file.name">
-                        📷 {{ photo.file.name }}
-                      </span>
-                    } @else {
-                      <span class="our-story-row__filename our-story-row__filename--empty">
-                        Sin foto seleccionada
-                      </span>
-                    }
                   </div>
 
                   <label class="our-story-row__caption">
@@ -429,6 +489,6 @@
     class="btn-primary"
     [disabled]="!isValid() || submitting()"
     [attr.aria-busy]="submitting()">
-    {{ submitting() ? 'Guardando…' : 'Continuar' }}
+    {{ submitting() ? 'Guardando…' : 'Guardar cambios' }}
   </button>
 </form>

@@ -343,6 +343,7 @@ export interface LandingQuestionnaire {
   hasCountdown: 0 | 1;
   hasBusService: 0 | 1;
   hasHotelService: 0 | 1;
+  hasCoverPhoto: 0 | 1;
   hasOurStory: 0 | 1;
   hasGallery: 0 | 1;
   hasAddToCalendar: 0 | 1;
@@ -382,6 +383,7 @@ export type LandingQuestionnairePatch = Partial<{
   hasCountdown: boolean;
   hasBusService: boolean;
   hasHotelService: boolean;
+  hasCoverPhoto: boolean;
   hasOurStory: boolean;
   hasGallery: boolean;
   hasAddToCalendar: boolean;

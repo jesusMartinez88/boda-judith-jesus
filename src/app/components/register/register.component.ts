@@ -23,6 +23,11 @@ type UsernameStatus =
   | 'unavailable'
   | 'server_error';
 
+const MAX_COVER_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_COVER_PIXELS = 20_000_000;
+const MAX_COVER_DIMENSION = 2560;
+const COVER_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+
 /**
  * Flujo de registro (3 pasos):
  *
@@ -66,6 +71,8 @@ export class RegisterComponent {
    */
   protected readonly ourStoryUploadError = signal<boolean>(false);
 
+  protected readonly coverUploadError = signal<boolean>(false);
+
   protected formData = {
     names: '',
     username: '',
@@ -85,6 +92,8 @@ export class RegisterComponent {
     hasCountdown: true,
     hasBusService: false,
     hasHotelService: false,
+    hasCoverPhoto: false,
+    coverPhoto: { existingUrl: null, file: null },
     hasOurStory: false,
     ourStoryPhotos: [],
     hasGallery: false,
@@ -169,13 +178,19 @@ export class RegisterComponent {
    * las respuestas/fotos más tarde), pero sí informamos al usuario
    * en el paso 3.
    */
-  async onQuestionnaireSubmitted(value: LandingQuestionnaireValue) {
+  async onQuestionnaireSubmitted(submission: {
+    value: LandingQuestionnaireValue;
+    ourStoryPhotosToDelete: string[];
+  }) {
+    const value = submission.value;
+
     if (this.processing()) return;
 
     this.questionnaireValue.set(value);
     this.errorMessage.set(null);
     this.galleryUploadError.set(false);
     this.ourStoryUploadError.set(false);
+    this.coverUploadError.set(false);
     this.processing.set(true);
 
     try {
@@ -192,6 +207,17 @@ export class RegisterComponent {
             error: (err: HttpErrorResponse) => reject(err),
           });
       });
+
+      if (value.hasCoverPhoto && value.coverPhoto.file) {
+        try {
+          const coverBlob = await this.prepareCoverPhoto(value.coverPhoto.file);
+          if (!coverBlob) throw new Error('Invalid cover photo');
+          await firstValueFrom(this.invitationMediaService.uploadCover(coverBlob));
+        } catch (uploadErr) {
+          console.error('[register] cover upload failed:', uploadErr);
+          this.coverUploadError.set(true);
+        }
+      }
 
       // Cuenta creada. Si el cliente marcó "Nuestra historia" y seleccionó
       // fotos, las subimos antes del cuestionario. Como el endpoint
@@ -255,6 +281,7 @@ export class RegisterComponent {
           hasCountdown: value.hasCountdown,
           hasBusService: value.hasBusService,
           hasHotelService: value.hasHotelService,
+          hasCoverPhoto: value.hasCoverPhoto,
           hasOurStory: value.hasOurStory,
           hasGallery: value.hasGallery,
           hasAddToCalendar: value.hasAddToCalendar,
@@ -309,5 +336,40 @@ export class RegisterComponent {
     this.usernameStatus.set('idle');
     this.usernameMessage.set(null);
     this.step.set(1);
+  }
+
+  private async prepareCoverPhoto(file: File): Promise<Blob | null> {
+    if (
+      file.size === 0 ||
+      file.size > MAX_COVER_FILE_SIZE ||
+      !(COVER_MIME_TYPES as readonly string[]).includes(file.type)
+    ) {
+      return null;
+    }
+
+    try {
+      const bitmap = await createImageBitmap(file);
+      try {
+        if (bitmap.width * bitmap.height > MAX_COVER_PIXELS) return null;
+
+        const scale = Math.min(
+          1,
+          MAX_COVER_DIMENSION / Math.max(bitmap.width, bitmap.height),
+        );
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+        canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+        const context = canvas.getContext('2d');
+        if (!context) return null;
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        return await new Promise<Blob | null>((resolve) =>
+          canvas.toBlob(resolve, 'image/webp', 0.9),
+        );
+      } finally {
+        bitmap.close();
+      }
+    } catch {
+      return null;
+    }
   }
 }
