@@ -1,4 +1,4 @@
-import { Component, inject, effect } from '@angular/core';
+import { Component, effect, inject, input } from '@angular/core';
 
 import { AudioService } from '../../services/audio.service';
 
@@ -11,6 +11,8 @@ import { AudioService } from '../../services/audio.service';
 export class MusicPlayerComponent {
   private readonly audioService = inject(AudioService);
 
+  readonly song = input.required<string>();
+
   // Exponer signals del servicio para el template
   readonly isPlaying = this.audioService.isPlaying;
   readonly isLoaded = this.audioService.isLoaded;
@@ -18,9 +20,8 @@ export class MusicPlayerComponent {
   constructor() {
     // Usar effect para configurar la música cuando el componente se inicializa
     effect(() => {
-      // Configurar la ruta de la música de fondo
-      // El archivo está en public/music/ que Angular sirve desde la raíz
-      this.audioService.setSource('music/background-music.mp3');
+      // Configurar la ruta de la música de fondo desde el slug de la invitación.
+      this.audioService.setSource(`music/${this.song()}`);
 
       // Intentar reproducir automáticamente
       // Nota: Los navegadores pueden bloquear esto si el usuario no ha interactuado

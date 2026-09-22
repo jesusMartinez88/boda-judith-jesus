@@ -7,6 +7,7 @@ export class AudioService {
   private readonly destroyRef = inject(DestroyRef);
 
   private audio: HTMLAudioElement | null = null;
+  private source = '';
 
   // Signals para estado reactivo
   private readonly isPlayingSignal = signal(false);
@@ -54,6 +55,7 @@ export class AudioService {
 
   setSource(src: string): void {
     if (this.audio) {
+      this.source = src;
       this.audio.src = src;
       this.isLoadedSignal.set(false);
       console.log('🎵 Intentando cargar música desde:', src);
@@ -74,7 +76,7 @@ export class AudioService {
       if (error instanceof Error) {
         if (error.name === 'NotSupportedError') {
           throw new Error(
-            'No se encontró el archivo de música. Verifica que existe en public/music/background-music.mp3',
+            `No se encontró el archivo de música. Verifica que existe en public/${this.source}`,
             { cause: error },
           );
         } else if (error.name === 'NotAllowedError') {
